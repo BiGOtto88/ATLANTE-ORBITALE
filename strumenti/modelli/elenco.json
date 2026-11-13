@@ -1,0 +1,182 @@
+{
+ "iss": {
+  "file": "iss_b",
+  "max": 109,
+  "tri": 70000,
+  "err": 0.03
+ },
+ "hubble": {
+  "file": "hubble",
+  "max": 13.2,
+  "tri": 60000
+ },
+ "jwst": {
+  "file": "jwst_b",
+  "max": 21.2,
+  "tri": 60000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "terra": {
+  "file": "terra",
+  "max": 9.0,
+  "tri": 50000
+ },
+ "aqua": {
+  "file": "aqua",
+  "max": 16.7,
+  "tri": 50000
+ },
+ "aura": {
+  "file": "aura",
+  "max": 17.0,
+  "tri": 50000
+ },
+ "landsat8": {
+  "file": "landsat8",
+  "max": 12.0,
+  "tri": 50000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "suominpp": {
+  "file": "suominpp",
+  "max": null,
+  "tri": 50000
+ },
+ "goes": {
+  "file": "goes",
+  "max": 6.1,
+  "tri": 40000
+ },
+ "tdrs": {
+  "file": "tdrs",
+  "max": 17.4,
+  "tri": 40000
+ },
+ "chandra": {
+  "file": "chandra",
+  "max": null,
+  "tri": 40000
+ },
+ "fermi": {
+  "file": "fermi",
+  "max": 15.0,
+  "tri": 40000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "swift": {
+  "file": "swift",
+  "max": 5.6,
+  "tri": 40000
+ },
+ "tess": {
+  "file": "tess",
+  "max": 3.9,
+  "tri": 40000
+ },
+ "sdo": {
+  "file": "sdo",
+  "max": 6.25,
+  "tri": 50000
+ },
+ "gpm": {
+  "file": "gpm",
+  "max": 13.0,
+  "tri": 60000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "icesat2": {
+  "file": "icesat2",
+  "max": null,
+  "tri": 50000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "oco2": {
+  "file": "oco2",
+  "max": 9.0,
+  "tri": 40000
+ },
+ "sentinel6": {
+  "file": "sentinel6",
+  "max": null,
+  "tri": 40000
+ },
+ "grace": {
+  "file": "grace",
+  "max": null,
+  "tri": 40000
+ },
+ "cygnss": {
+  "file": "cygnss",
+  "max": null,
+  "tri": 40000
+ },
+ "juno": {
+  "file": "juno",
+  "max": 20.0,
+  "tri": 50000
+ },
+ "mro": {
+  "file": "mro",
+  "max": 13.6,
+  "tri": 50000
+ },
+ "lro": {
+  "file": "lro",
+  "max": 5.5,
+  "tri": 50000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "odyssey": {
+  "file": "odyssey",
+  "max": null,
+  "tri": 40000
+ },
+ "psp": {
+  "file": "psp",
+  "max": null,
+  "tri": 40000
+ },
+ "voyager": {
+  "file": "voyager",
+  "max": 16.0,
+  "tri": 40000
+ },
+ "osirisrex": {
+  "file": "osirisrex",
+  "max": 8.4,
+  "tri": 50000,
+  "err": 0.01,
+  "piatto": true
+ },
+ "soho": {
+  "file": "soho",
+  "max": 9.5,
+  "tri": 40000
+ },
+ "ace": {
+  "file": "ace",
+  "max": 8.3,
+  "tri": 40000
+ },
+ "dscovr": {
+  "file": "dscovr",
+  "max": 5.0,
+  "tri": 40000
+ },
+ "stereo": {
+  "file": "stereo",
+  "max": 7.5,
+  "tri": 40000
+ },
+ "themis": {
+  "file": "themis",
+  "max": null,
+  "tri": 40000
+ }
+}
