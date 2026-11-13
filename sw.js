@@ -15,7 +15,7 @@ const BASE = new URL('./', self.location).href;          // cartella in cui vive
 const INDICE = new URL('index.html', BASE).href;
 
 const FISSI = [
-  'index.html', 'manifest.webmanifest',
+  'index.html', 'manifest.webmanifest', 'LICENZE.txt',
   'vendor/three.min.js', 'vendor/OrbitControls.js', 'vendor/LineSegmentsGeometry.js', 'vendor/LineGeometry.js',
   'vendor/LineMaterial.js', 'vendor/LineSegments2.js', 'vendor/Line2.js', 'vendor/GLTFLoader.js', 'vendor/satellite.min.js', 'vendor/astronomy.browser.min.js',
   'fonts/b612-latin-400-normal.woff2', 'fonts/b612-latin-700-normal.woff2',

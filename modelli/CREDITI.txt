@@ -1,0 +1,42 @@
+MODELLI 3D DEI VEICOLI: FONTI E CREDITI
+
+Credito: NASA 3D Resources, NASA (https://github.com/nasa/NASA-3D-Resources). Materiale NASA, di norma non soggetto a diritto d'autore
+negli Stati Uniti (linee guida: https://www.nasa.gov/nasa-brand-center/images-and-media/). Nessun sostegno da parte della NASA o di altri enti.
+Modifiche: compressione Draco rimossa, scala in metri, assi dell'app, geometria alleggerita, texture in WebP (strumenti/modelli/prepara.mjs).
+Condizioni complete e avvertenze su insegne e parti di terzi: LICENZE.txt, sezione 5.
+
+File del sito | cartella e file originale nella raccolta NASA 3D Resources
+----------------------------------------------------------------------
+ace.glb | Advanced Composition Explorer/Advanced Composition Explorer.glb
+aqua.glb | Aqua (A)/Aqua (A).glb
+aura.glb | Aura (A)/Aura (A).glb
+chandra.glb | Chandra X-ray Observatory/Chandra X-ray Observatory.glb
+cygnss.glb | Cyclone Global Navigation Satellite System (CYGNSS)/Cyclone Global Navigation Satellite System (CYGNSS).glb
+dscovr.glb | Deep Space Climate Observatory (DSCOVR) (Triana)/Deep Space Climate Observatory (DSCOVR) (Triana).glb
+fermi.glb | Fermi Gamma-ray Large Area Space Telescope/Fermi Gamma-ray Large Area Space Telescope.glb
+goes.glb | Geostationary Operational Environmental Satellites/Geostationary Operational Environmental Satellites.glb
+gpm.glb | Global Precipitation Measurement/Global Precipitation Measurement.glb
+grace.glb | Gravity Recovery and Climate Experiment (GRACE) (A)/Gravity Recovery and Climate Experiment (GRACE) (A).glb
+hubble.glb | Hubble Space Telescope (A)/Hubble Space Telescope (A).glb
+icesat2.glb | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A)/Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A).glb
+iss.glb | International Space Station (ISS) (B)/International Space Station (ISS) (B).glb
+juno.glb | Juno (A)/Juno (A).glb
+jwst.glb | James Webb Space Telescope (B)/James Webb Space Telescope (B).glb
+landsat8.glb | Landsat 8/Landsat 8.glb
+lro.glb | Lunar Reconnaissance Orbiter (A)/Lunar Reconnaissance Orbiter (A).glb
+mro.glb | Mars Reconnaissance Orbiter (MRO) (A)/Mars Reconnaissance Orbiter (MRO) (A).glb
+oco2.glb | Orbiting Carbon Observatory (OCO) 2/Orbiting Carbon Observatory (OCO) 2.glb
+odyssey.glb | Mars Odyssey/Mars Odyssey.glb
+osirisrex.glb | OSIRIS-REx/OSIRIS-REx.glb
+psp.glb | Parker Solar Probe/Parker Solar Probe.glb
+sdo.glb | Solar Dynamics Observatory/Solar Dynamics Observatory.glb
+sentinel6.glb | Jason Continuity of Service (Sentinel-6)/Jason Continuity of Service (Sentinel-6).glb
+soho.glb | Solar and Heliospheric Observatory/Solar and Heliospheric Observatory.glb
+stereo.glb | Solar TErrestrial RElations Observatory (STEREO)/Solar TErrestrial RElations Observatory (STEREO).glb
+suominpp.glb | Suomi National Polar-orbiting Partnership (Suomi NPP)/Suomi National Polar-orbiting Partnership (Suomi NPP).glb
+swift.glb | Swift/Swift.glb
+tdrs.glb | Tracking and Data Relay Satellites (TDRS) (A)/Tracking and Data Relay Satellites (TDRS) (A).glb
+terra.glb | Terra/Terra.glb
+tess.glb | Transiting Exoplanet Survey Satellite (TESS) (A)/Transiting Exoplanet Survey Satellite (TESS) (A).glb
+themis.glb | Time History of Events and Macroscale Interactions During Substorms (THEMIS)/Time History of Events and Macroscale Interactions During Substorms (THEMIS).glb
+voyager.glb | Voyager Probe (A)/Voyager Probe (A).glb

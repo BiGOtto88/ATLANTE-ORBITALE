@@ -115,20 +115,39 @@ index.html              la pagina del sito (generata)
 manifest.webmanifest    nome, icone e colori dell'app installata
 sw.js                   tiene una copia del sito sul dispositivo per l'uso senza rete
 data/                   satelliti, lanci, sonde, stelle
-tex/                    texture di Terra, Luna, Sole e pianeti
-modelli/                forme reali: modelli 3D dei veicoli (NASA 3D Resources), già in metri e negli assi dell'app
+tex/                    texture di Terra, Luna, Sole e pianeti (Solar System Scope, CC BY 4.0); CREDITI.txt
+modelli/                forme reali: modelli 3D dei veicoli (NASA 3D Resources), già in metri e negli assi dell'app; CREDITI.txt
 vendor/                 three.js r128, satellite.js 5.0.0, Astronomy Engine 2.1.19
 fonts/                  carattere B612
 icone/                  icona dell'app
+LICENSE                 licenza MIT del codice dell'app
 sorgente/               la pagina sviluppata in Claude
 strumenti/              aggiornamento dei dati, conversione della pagina, prove
 .github/workflows/      aggiornamento giornaliero e pubblicazione su GitHub Pages
-LICENZE.txt             licenze delle librerie e del carattere inclusi
+LICENZE.txt             fonti, crediti e licenze di tutto ciò che il sito contiene (librerie, carattere, texture, modelli, dati)
 ```
 
-## Prima di rendere pubblico il sito
+## Licenze e crediti
 
-- Le texture in `tex/` vengono dalle prime fasi del progetto e la loro provenienza non è annotata:
-  controlla da dove arrivano e con quale licenza, e aggiungi il credito richiesto.
-- I TLE sono dati pubblici di CelesTrak, le effemeridi delle sonde di JPL Horizons, le stelle dal
-  catalogo Hipparcos: è buona norma citarli nella pagina o nel repository.
+Il sito è pronto da pubblicare sul piano legale: ogni componente ha la sua fonte e la sua licenza, annotate in questa cartella.
+
+| Cosa | Licenza | Dove |
+| --- | --- | --- |
+| Codice dell'app (pagina, service worker, strumenti, icona, anelli di Saturno) | MIT, Copyright (c) 2026 Davide Ottoninuoto | `LICENSE` |
+| three.js, satellite.js, Astronomy Engine | MIT | `LICENZE.txt` sezioni 2 e 11, intestazioni dentro `vendor/` |
+| Carattere B612 | SIL Open Font License 1.1 | `fonts/OFL.txt`, `LICENZE.txt` sezioni 3 e 12 |
+| Texture dei pianeti | CC BY 4.0, Solar System Scope (attribuzione obbligatoria) | `tex/CREDITI.txt`, `LICENZE.txt` sezioni 4 e 13 |
+| Modelli 3D dei veicoli | NASA 3D Resources: di norma senza diritto d'autore negli USA; insegne NASA escluse | `modelli/CREDITI.txt`, `LICENZE.txt` sezione 5 |
+| TLE e lanci, effemeridi, stelle, campo IGRF | dati pubblici, con la fonte da citare | `LICENZE.txt` sezione 6 |
+
+La pagina cita le fonti nel pannello **Dati** e rimanda a `LICENZE.txt`; il flusso di pubblicazione copia `LICENSE` e
+`LICENZE.txt` nel sito, perché le licenze devono accompagnare i file distribuiti. Se cambi il tuo nome come titolare o la licenza del
+codice, correggi `LICENSE`, la sezione 1 e la sezione 10 di `LICENZE.txt` e la riga iniziale di `strumenti/da_claude_a_sito.py`.
+
+Quando aggiungi qualcosa (un modello, una texture, una libreria, una nuova fonte dati): annota fonte, autore, licenza e modifiche
+in `LICENZE.txt` e nel `CREDITI.txt` della cartella, **prima** di pubblicare. Non aggiungere materiale di cui non conosci la licenza.
+Le texture si rigenerano o si sostituiscono solo con file la cui licenza permette la ridistribuzione; gli anelli di Saturno si
+ricreano con `python3 strumenti/genera_anelli.py tex/ring.png`.
+
+Il sito è uno strumento didattico: posizioni e orbite non vanno usate per operazioni di volo (avviso in `LICENZE.txt`, sezione 9).
+Ricorda che con un account GitHub gratuito il repository di GitHub Pages è pubblico: il codice sarà visibile a tutti, con la licenza MIT.

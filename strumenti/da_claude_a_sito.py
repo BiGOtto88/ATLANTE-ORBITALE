@@ -58,6 +58,8 @@ def converti(pagina):
                     'src:url(fonts/%s) format("woff2");unicode-range:%s}\n' % (fam, peso, file, RANGE_LATINO)
                     for fam, peso, file in CARATTERI)
     testata = '''<!doctype html>
+<!-- Atlante Orbitale. Copyright (c) 2026 Davide Ottoninuoto, licenza MIT (file LICENSE). Librerie, caratteri, texture, modelli 3D e dati di terzi:
+     fonti e licenze in LICENZE.txt. -->
 <html lang="it">
 <head>
 <meta charset="utf-8">

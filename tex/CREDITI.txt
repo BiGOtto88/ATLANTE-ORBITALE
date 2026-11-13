@@ -1,0 +1,24 @@
+TEXTURE: FONTI, LICENZA E MODIFICHE
+
+Licenza delle texture di terzi: Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/), testo in LICENZE.txt sezione 13.
+Autore: Solar System Scope, Copyright (c) 2010-2017 Solar System Scope, https://www.solarsystemscope.com/textures (dati e immagini di base: NASA).
+Nessun sostegno da parte di Solar System Scope, Qt o three.js.
+
+File | origine | modifiche
+----------------------------------------------------------------------
+day.jpg | three.js, examples/textures/planets/earth_day_4096.jpg (dichiarata «from Solar System Scope, resized and merged») | nessuna
+night.jpg | three.js, examples/textures/planets/earth_night_4096.jpg (stessa dichiarazione) | nessuna
+clouds.jpg | three.js, examples/textures/planets/earth_bump_roughness_clouds_4096.jpg, canale blu (stessa dichiarazione) | canale estratto, immagine in grigi, JPEG qualità 90
+spec.jpg | Qt 3D, tests/manual/planets-qml/images/solarsystemscope/earthspec2k.jpg | nessuna
+mercury.jpg | Qt 3D, .../solarsystemscope/mercurymap.jpg | rinominato
+venus.jpg | Qt 3D, .../solarsystemscope/venusmap.jpg | rinominato
+mars.jpg | Qt 3D, .../solarsystemscope/marsmap2k.jpg | rinominato
+jupiter.jpg | Qt 3D, .../solarsystemscope/jupitermap.jpg | rinominato
+saturn.jpg | Qt 3D, .../solarsystemscope/saturnmap.jpg | rinominato
+uranus.jpg | Qt 3D, .../solarsystemscope/uranusmap.jpg | rinominato
+neptune.jpg | Qt 3D, .../solarsystemscope/neptunemap.jpg | rinominato
+sun.jpg | Qt 3D, .../solarsystemscope/sunmap.jpg | rinominato
+moon.jpg | Qt 3D, .../solarsystemscope/moonmap2k.jpg | rinominato
+ring.png | opera originale del progetto, generata da strumenti/genera_anelli.py (licenza MIT del codice) | non deriva da file di terzi
+
+Nel repository Qt 3D (github.com/qt/qt3d) i file portano la dichiarazione «Copyright (c) 2010-2017, Solar System Scope», licenza CC-BY-4.0.
