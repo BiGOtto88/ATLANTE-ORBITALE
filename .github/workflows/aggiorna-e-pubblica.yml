@@ -1,0 +1,67 @@
+# Aggiorna i dati (satelliti terrestri e sonde) e pubblica il sito su GitHub Pages.
+# Parte da solo ogni giorno, a ogni modifica caricata sul ramo main, oppure a mano dalla scheda "Actions".
+name: Aggiorna i dati e pubblica il sito
+
+on:
+  schedule:
+    - cron: '23 4 * * *'          # ogni giorno alle 04:23 UTC
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write                 # per salvare i dati nel repository una volta alla settimana
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pubblica-il-sito
+  cancel-in-progress: false
+
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblicazione.outputs.page_url }}
+    steps:
+      - name: Scarica il repository
+        uses: actions/checkout@v7
+
+      - name: Legge l'indirizzo del sito
+        id: pagine
+        uses: actions/configure-pages@v6
+
+      # Gli strumenti partono dai dati del sito in linea (l'ultimo aggiornamento riuscito) e li sostituiscono
+      # solo con dati nuovi che superano i controlli. Se una fonte non risponde, il sito resta com'era.
+      - name: Aggiorna i satelliti terrestri (TLE da CelesTrak)
+        run: python3 strumenti/aggiorna_tle.py --in-linea "${{ steps.pagine.outputs.base_url }}" || echo "::warning::Catalogo dei satelliti non aggiornato, restano i dati di prima"
+
+      - name: Aggiorna le sonde (JPL Horizons)
+        run: python3 strumenti/aggiorna_sonde.py --in-linea "${{ steps.pagine.outputs.base_url }}" || echo "::warning::Sonde non aggiornate, restano i dati di prima"
+
+      # GitHub sospende i flussi pianificati dei repository fermi da 60 giorni: il salvataggio del lunedì lo evita
+      # e tiene nel repository una copia recente dei dati.
+      - name: Salva i dati nel repository (il lunedì)
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(date -u +%u)" = "1" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data
+            git diff --cached --quiet || { git commit -m "Dati aggiornati al $(date -u +%F)" && git push; } || echo "::warning::Dati non salvati nel repository"
+          fi
+
+      - name: Prepara i file del sito
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest sw.js data tex vendor fonts icone modelli _site/
+
+      - name: Carica i file
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Pubblica
+        id: pubblicazione
+        uses: actions/deploy-pages@v5
