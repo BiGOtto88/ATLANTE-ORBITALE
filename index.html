@@ -606,17 +606,32 @@ const probeMat=new THREE.ShaderMaterial({uniforms:{uPR:{value:1},uBoost:{value:1
 let satPoints=null, probePoints=null;
 
 // --- orbit ribbons
-const N_ORB=288;
+/* Precision: the GPU works in single precision (about 7 digits) and the scene unit is 1000 km, so a vertex 7000 km from
+   the centre is rounded to about half a metre. Every line is therefore stored relative to its own origin (begin()), placed
+   on the selected object: three.js combines object and camera matrices in double precision, so near the object the
+   vertices stay accurate to well below a millimetre at any zoom. */
+const N_ORB=480;
 function fatLine(width,fade,parent,rgb){
   const geo=new THREE.LineGeometry(), z=new Float32Array((N_ORB+1)*3), c=new Float32Array((N_ORB+1)*3);
   for(let i=0;i<=N_ORB;i++){ const f=fade?1-0.7*i/N_ORB:1; c[3*i]=rgb[0]*f; c[3*i+1]=rgb[1]*f; c[3*i+2]=rgb[2]*f; }
   geo.setPositions(z); geo.setColors(c);
   const mat=new THREE.LineMaterial({linewidth:width,vertexColors:true,transparent:true,opacity:fade?1:0.85,depthWrite:false});
   const l=new THREE.Line2(geo,mat); l.frustumCulled=false; l.visible=false; l.renderOrder=8; parent.add(l);
-  return {line:l,mat,geo,arr:geo.attributes.instanceStart.data.array,
-    set(i,x,y,z){ const a=this.arr; if(i<N_ORB){ a[6*i]=x; a[6*i+1]=y; a[6*i+2]=z; } if(i>0){ a[6*i-3]=x; a[6*i-2]=y; a[6*i-1]=z; } },
-    commit(n){ geo.instanceCount=Math.max(0,n-1); geo.attributes.instanceStart.data.needsUpdate=true; }};
+  return {line:l,mat,geo,arr:geo.attributes.instanceStart.data.array,col:geo.attributes.instanceColorStart.data.array,o:new THREE.Vector3(),
+    begin(x,y,z){ this.o.set(x,y,z); l.position.copy(this.o); },
+    // f: fraction of revolution ahead of the object (0 = here, 1 = back here): the colour fades along the direction of motion
+    set(i,x,y,z,f){ const a=this.arr, o=this.o; x-=o.x; y-=o.y; z-=o.z; if(i<N_ORB){ a[6*i]=x; a[6*i+1]=y; a[6*i+2]=z; } if(i>0){ a[6*i-3]=x; a[6*i-2]=y; a[6*i-1]=z; }
+      if(fade&&f!=null){ const k=1-0.7*f, c=this.col, r=rgb[0]*k, g=rgb[1]*k, b=rgb[2]*k; if(i<N_ORB){ c[6*i]=r; c[6*i+1]=g; c[6*i+2]=b; } if(i>0){ c[6*i-3]=r; c[6*i-2]=g; c[6*i-1]=b; } } },
+    commit(n){ geo.instanceCount=Math.max(0,n-1); geo.attributes.instanceStart.data.needsUpdate=true; if(fade) geo.attributes.instanceColorStart.data.needsUpdate=true; }};
 }
+/* Sampling of one revolution, as offsets in [−½, ½] of a revolution around the object: the object sits in the middle of
+   the line, so the seam of the ring (where the end meets the start) is on the far side. Steps are fine next to the object
+   (10⁻⁷ of a revolution, a few millimetres in low orbit) and grow geometrically up to an even step of 1°, so that at any
+   zoom the drawn chord stays on the true path. */
+const ORB_F=(function(){ const pos=[0]; let s=1e-7, x=0; const hU=1/360;
+  while(true){ if(s>=hU) s=hU; if(x+s>=0.5-1e-12){ pos.push(0.5); break; } x+=s; pos.push(x); s*=1.35; }
+  const out=[]; for(let i=pos.length-1;i>0;i--) out.push(-pos[i]); return Float64Array.from(out.concat(pos)); })();
+const ORB_MID=(ORB_F.length-1)/2;
 const MG=[1.0,0.384,0.831];
 const orb=fatLine(2.2,true,earthAnchor,MG), trk=fatLine(1.6,false,earthGroup,MG);
 const pOrbAnchor=new THREE.Group(); scene.add(pOrbAnchor); const pOrb=fatLine(2.2,true,pOrbAnchor,MG);
@@ -693,9 +708,10 @@ function propagateAll(){ const jd=jdOf(simMs); for(let i=0;i<N;i++) propOne(i,jd
 let cursor=0;
 function propagateSome(budgetMs){ if(!N) return; const jd=jdOf(simMs), t0=performance.now(); let n=0;
   while(n<N){ for(let j=0;j<160&&n<N;j++,n++){ propOne(cursor,jd,simMs); cursor=(cursor+1)%N; } if(performance.now()-t0>budgetMs) break; } }
-function extrapolate(){ // second-order two-body coast between SGP4 refreshes
+function extrapolate(){ // second-order two-body coast between SGP4 refreshes; positions relative to the selected satellite (precision, see fatLine)
+  let ox=0, oy=0, oz=0; if(sel&&sel.t==='sat'){ const k=3*sel.i; ox=p0[k]*KM; oy=p0[k+2]*KM; oz=-p0[k+1]*KM; } satPoints.position.set(ox,oy,oz);
   for(let i=0;i<N;i++){ const k=3*i, dt=(simMs-tp[i])*1e-3, x=p0[k], y=p0[k+1], z=p0[k+2], r2=x*x+y*y+z*z, q=-0.5*MU_E*dt*dt/(r2*Math.sqrt(r2));
-    pos[k]=(x+v0[k]*dt+q*x)*KM; pos[k+1]=(z+v0[k+2]*dt+q*z)*KM; pos[k+2]=-(y+v0[k+1]*dt+q*y)*KM; }
+    pos[k]=(x+v0[k]*dt+q*x)*KM-ox; pos[k+1]=(z+v0[k+2]*dt+q*z)*KM-oy; pos[k+2]=-(y+v0[k+1]*dt+q*y)*KM-oz; }
   satPoints.geometry.attributes.position.needsUpdate=true;
 }
 function refreshSizes(){ if(!satPoints) return; let shown=0; for(let i=0;i<N;i++){ const on=vis[i]&&alive[i]; sizes[i]=on?REG[sats[i].regime].size:0; if(on) shown++; } satPoints.geometry.attributes.size.needsUpdate=true;
@@ -705,18 +721,37 @@ function applyFilter(){ for(let i=0;i<N;i++){ const s=sats[i]; vis[i]=(regOn[s.r
 /* ================= probes beyond Earth orbit (JPL Horizons elements) ================= */
 let probes=[], probeById={}, pPos=null, probesGen='', probesFrom=2461356.5;
 const xy=[0,0];
-// Position relative to the probe's central body, km, ICRF axes. Returns the central body key.
-function probeRel(p,jd,out,segFix){
+/* Osculating conic of a probe's model at TDB Julian date jt: periapsis distance q (km), e, i, Ω, ω (rad), mean anomaly M (rad),
+   μ of the central body and the frame of the elements (fr: null = ICRF, 'eqj' = Earth equator of date, or a basis whose
+   rows are the frame's axes in ICRF). Position, velocity and the drawn orbit all come from this one set, so they agree. */
+const KO={c:'sun',q:1,e:0,i:0,O:0,w:0,M:0,mu:1,fr:null};
+function probeOsc(p,jt,segFix,K){ K=K||KO;
+  if(p.type==='des'){ const b=BODY[p.c], dt=(jt-p.t0)*86400, a=p.a, e=p.e, n=Math.sqrt(b.gm/(a*a*a)), pp=a*(1-e*e), k=1.5*J2[p.c]*(b.R/pp)*(b.R/pp)*n, si=Math.sin(p.i), ci=Math.cos(p.i);
+    K.c=p.c; K.q=a*(1-e); K.e=e; K.i=p.i; K.O=p.Om-k*ci*dt; K.w=p.w+k*(2-2.5*si*si)*dt; K.M=p.M0+(n+k*Math.sqrt(1-e*e)*(1-1.5*si*si))*dt; K.mu=b.gm;
+    K.fr=p.c==='earth'?'eqj':p.c==='sun'?ECL_BASIS:b.basis; return K; }
+  if(p.type==='fit'){ const tau=jt-p.t0, w=(p.w[0]+p.w[1]*tau)*D2R, u=(p.u[0]+p.u[1]*tau+p.u[2]*tau*tau)*D2R;
+    K.c=p.c; K.q=p.a*(1-p.e); K.e=p.e; K.i=p.i*D2R; K.O=(p.om[0]+p.om[1]*tau)*D2R; K.w=w; K.M=u-w; K.mu=BODY[p.c].gm; K.fr=BODY[p.c].basis; return K; }
+  let s=segFix; if(!s){ s=p.seg[0]; for(const g of p.seg){ if(g.frm<=jt) s=g; else break; } }
+  const k=s.k, a=Math.abs(k[0]/(1-k[1])), mu=BODY[s.c].gm;
+  K.c=s.c; K.q=k[0]; K.e=k[1]; K.i=k[2]*D2R; K.O=k[3]*D2R; K.w=k[4]*D2R; K.M=Math.sqrt(mu/(a*a*a))*(jt-k[5])*86400; K.mu=mu; K.fr=null; return K;
+}
+// Position (km) on the conic K at eccentric (or hyperbolic) anomaly an, in ICRF axes relative to the central body; with v, also the velocity (km/s).
+function kepFrame(K,x,y,o){ rotOrb(x,y,K.i,K.O,K.w,tB); const B=K.fr;
+  if(!B){ o[0]=tB[0]; o[1]=tB[1]; o[2]=tB[2]; } else if(B==='eqj') toEqj(tB[0],tB[1],tB[2],o);
+  else { o[0]=B[0][0]*tB[0]+B[1][0]*tB[1]+B[2][0]*tB[2]; o[1]=B[0][1]*tB[0]+B[1][1]*tB[1]+B[2][1]*tB[2]; o[2]=B[0][2]*tB[0]+B[1][2]*tB[1]+B[2][2]*tB[2]; } return o; }
+function kepAt(K,an,out,v){ const e=K.e; let x, y, vx, vy;
+  if(e<1){ const a=K.q/(1-e), b=a*Math.sqrt(1-e*e), c=Math.cos(an), s=Math.sin(an); x=a*(c-e); y=b*s;
+    if(v){ const r=a*(1-e*c), k=Math.sqrt(K.mu*a)/r; vx=-k*s; vy=k*Math.sqrt(1-e*e)*c; } }
+  else { const a=K.q/(e-1), b=a*Math.sqrt(e*e-1), c=Math.cosh(an), s=Math.sinh(an); x=a*(e-c); y=b*s;
+    if(v){ const r=a*(e*c-1), k=Math.sqrt(K.mu*a)/r; vx=-k*s; vy=k*Math.sqrt(e*e-1)*c; } }
+  kepFrame(K,x,y,out); if(v) kepFrame(K,vx,vy,v); return out; }
+// Position relative to the probe's central body, km, ICRF axes; with v also the two-body velocity, km/s. Returns the central body key.
+function probeRel(p,jd,out,segFix,v){
   const jt=jd+TDB_UTC;
-  if(p.type==='des'){ desRel(p,jt,out); return p.c; }
-  if(p.type==='fit'){ const tau=jt-p.t0, Om=(p.om[0]+p.om[1]*tau)*D2R, w=(p.w[0]+p.w[1]*tau)*D2R, u=(p.u[0]+p.u[1]*tau+p.u[2]*tau*tau)*D2R;
-    perifocal(p.a*(1-p.e),p.e,u-w,xy); rotOrb(xy[0],xy[1],p.i*D2R,Om,w,tB); const B=BODY[p.c].basis;
-    out[0]=B[0][0]*tB[0]+B[1][0]*tB[1]+B[2][0]*tB[2]; out[1]=B[0][1]*tB[0]+B[1][1]*tB[1]+B[2][1]*tB[2]; out[2]=B[0][2]*tB[0]+B[1][2]*tB[1]+B[2][2]*tB[2]; return p.c; }
-  if(p.type==='kep'){ let s=segFix; if(!s){ s=p.seg[0]; for(const g of p.seg){ if(g.frm<=jt) s=g; else break; } }
-    const k=s.k, a=Math.abs(k[0]/(1-k[1])), n=Math.sqrt(BODY[s.c].gm/(a*a*a)); perifocal(k[0],k[1],n*(jt-k[5])*86400,xy); rotOrb(xy[0],xy[1],k[2]*D2R,k[3]*D2R,k[4]*D2R,out); return s.c; }
+  if(p.type!=='L'){ const K=probeOsc(p,jt,segFix); kepAt(K,K.e<1?keplerE(K.M,K.e):keplerH(K.M,K.e),out,v); return K.c; }
   const f=p.point===1?0.99003:1.01004;   // Sun-Earth L1 / L2, on the Sun-Earth line
   if(Math.abs(msOfJd(jd)-ephMs)<1){ out[0]=earthJ[0]*f; out[1]=earthJ[1]*f; out[2]=earthJ[2]*f; }
-  else { const v=A.HelioVector(A.Body.Earth,A.MakeTime(new Date(msOfJd(jd)))); out[0]=v.x*AU*f; out[1]=v.y*AU*f; out[2]=v.z*AU*f; }
+  else { const q=A.HelioVector(A.Body.Earth,A.MakeTime(new Date(msOfJd(jd)))); out[0]=q.x*AU*f; out[1]=q.y*AU*f; out[2]=q.z*AU*f; }
   return 'sun';
 }
 function currentSeg(p,jd){ if(p.type!=='kep') return null; const jt=jd+TDB_UTC; let s=p.seg[0]; for(const g of p.seg){ if(g.frm<=jt) s=g; else break; } return s; }
@@ -727,15 +762,18 @@ function buildProbes(data){
   setProbes();
 }
 function updateProbes(jd){
-  const c=helio[centre];
   for(let i=0;i<probes.length;i++){ const p=probes[i]; p.c=probeRel(p,jd,p.rel); toEqd(p.rel[0],p.rel[1],p.rel[2],tA); const h=helio[p.c], w=p.world;
-    w[0]=h[0]+tA[0]; w[1]=h[1]+tA[1]; w[2]=h[2]+tA[2]; pPos[3*i]=(w[0]-c[0])*KM; pPos[3*i+1]=(w[2]-c[2])*KM; pPos[3*i+2]=-(w[1]-c[1])*KM; }
+    w[0]=h[0]+tA[0]; w[1]=h[1]+tA[1]; w[2]=h[2]+tA[2]; }
+  // relative to the selected probe (precision, see fatLine): the differences are taken in double precision before storing
+  const c=helio[centre], o=sel&&sel.t==='probe'&&sel.p.world?sel.p.world:c; probePoints.position.set((o[0]-c[0])*KM,(o[2]-c[2])*KM,-(o[1]-c[1])*KM);
+  for(let i=0;i<probes.length;i++){ const w=probes[i].world; pPos[3*i]=(w[0]-o[0])*KM; pPos[3*i+1]=(w[2]-o[2])*KM; pPos[3*i+2]=-(w[1]-o[1])*KM; }
   probePoints.geometry.attributes.position.needsUpdate=true;
 }
 // State relative to the central body in the frame used for the elements: body equator (orbiters) or ecliptic J2000 (heliocentric).
 function probeState(p,jd){
-  const seg=currentSeg(p,jd), r=[0,0,0], a=[0,0,0], b=[0,0,0]; const c=probeRel(p,jd,r,seg), dt=(c==='sun'?10:1)/86400; probeRel(p,jd-dt,a,seg); probeRel(p,jd+dt,b,seg);
-  const v=[(b[0]-a[0])/(2*dt*86400),(b[1]-a[1])/(2*dt*86400),(b[2]-a[2])/(2*dt*86400)], B=BODY[c].basis; let rf, vf, frame;
+  const seg=currentSeg(p,jd), r=[0,0,0]; let v=[0,0,0]; const c=probeRel(p,jd,r,seg,v);
+  if(p.type==='L'){ const a=[0,0,0], b=[0,0,0], dt=10/86400; probeRel(p,jd-dt,a,seg); probeRel(p,jd+dt,b,seg); v=[(b[0]-a[0])/(2*dt*86400),(b[1]-a[1])/(2*dt*86400),(b[2]-a[2])/(2*dt*86400)]; }
+  const B=BODY[c].basis; let rf, vf, frame;
   if(c==='earth'){ rf=toEqd(r[0],r[1],r[2],[0,0,0]); vf=toEqd(v[0],v[1],v[2],[0,0,0]); frame='equatore terrestre'; }
   else if(B){ const d=(u,w)=>u[0]*w[0]+u[1]*w[1]+u[2]*w[2]; rf=[d(r,B[0]),d(r,B[1]),d(r,B[2])]; vf=[d(v,B[0]),d(v,B[1]),d(v,B[2])]; frame='equatore di '+BODY[c].name; }
   else { const ce=Math.cos(EPS0), se=Math.sin(EPS0); rf=[r[0],r[1]*ce+r[2]*se,-r[1]*se+r[2]*ce]; vf=[v[0],v[1]*ce+v[2]*se,-v[1]*se+v[2]*ce]; frame='eclittica J2000'; }
@@ -1074,23 +1112,42 @@ function updateSelState(){
   }
 }
 function selVelFromProbe(st){ toEqd(st.vj[0],st.vj[1],st.vj[2],tA); selVel.set(tA[0],tA[2],-tA[1]); }
-// Sample one revolution evenly in eccentric anomaly, so that fast periapsis passes stay smooth. Fills dt (days from now).
+// One revolution of an Earth satellite, sampled at the offsets ORB_F in eccentric anomaly (so that fast perigee passes stay
+// smooth), half a revolution behind and half ahead. Fills orbDt (days from now).
 const orbDt=new Float64Array(N_ORB+1);
 function orbitTimes(el,Tdays){
-  const e=el.e, nu=isFinite(el.nu)?el.nu:0, E0=2*Math.atan2(Math.sqrt(1-e)*Math.sin(nu/2),Math.sqrt(1+e)*Math.cos(nu/2)), M0=E0-e*Math.sin(E0);
-  for(let i=0;i<=N_ORB;i++){ const E=E0+TAU*i/N_ORB; orbDt[i]=Tdays*((E-e*Math.sin(E))-M0)/TAU; }
+  const e=Math.min(el.e,0.999), nu=isFinite(el.nu)?el.nu:0, E0=2*Math.atan2(Math.sqrt(1-e)*Math.sin(nu/2),Math.sqrt(1+e)*Math.cos(nu/2)), M0=E0-e*Math.sin(E0);
+  for(let i=0;i<ORB_F.length;i++){ const E=E0+TAU*ORB_F[i]; orbDt[i]=Tdays*((E-e*Math.sin(E))-M0)/TAU; }
 }
+const orbS=new Float64Array((N_ORB+1)*3), orbOk=new Uint8Array(N_ORB+1);
 function updateOrbit(){
-  if(!sel) return; const jd0=jdOf(simMs);
-  if(sel.t==='sat'){ const s=sats[sel.i], rec=s.rec, t0=(jd0-rec.jdsatepoch)*1440, doTrk=trk.line.visible, k=3*sel.i; let ok=0;
+  if(!sel) return; const jd0=jdOf(simMs), nF=ORB_F.length, m=ORB_MID;
+  if(sel.t==='sat'){ const s=sats[sel.i], rec=s.rec, t0=(jd0-rec.jdsatepoch)*1440, doTrk=trk.line.visible, k=3*sel.i;
     orbitTimes(elementsFromState([p0[k],p0[k+1],p0[k+2]],[v0[k],v0[k+1],v0[k+2]],MU_E),1/s.nRev);
-    for(let i=0;i<=N_ORB;i++){ const dt=orbDt[i]*1440; let pv; try{ pv=satellite.sgp4(rec,t0+dt); }catch(e){ pv=null; } const p=pv&&pv.position; if(!p||!isFinite(p.x)) break;
-      orb.set(i,p.x*KM,p.z*KM,-p.y*KM); ok=i+1;
-      if(doTrk){ const th=satellite.gstime(jd0+dt/1440), c=Math.cos(th), sn=Math.sin(th), ex=c*p.x+sn*p.y, ey=-sn*p.x+c*p.y, f=R_E*1.004/Math.hypot(p.x,p.y,p.z); trk.set(i,ex*f,p.z*f,-ey*f); } }
-    orb.commit(ok); if(doTrk) trk.commit(ok);
-  } else { const p=sel.p; if(p.type==='L') return; const st=probeState(p,jd0), seg=currentSeg(p,jd0), bound=st.el.e<1, span=5844; if(bound) orbitTimes(st.el,st.el.T/86400);
-    for(let i=0;i<=N_ORB;i++){ probeRel(p,bound?jd0+orbDt[i]:jd0-span/2+span*i/N_ORB,tC,seg); toEqd(tC[0],tC[1],tC[2],tD); pOrb.set(i,tD[0]*KM,tD[2]*KM,-tD[1]*KM); }
-    pOrb.commit(N_ORB+1); }
+    for(let i=0;i<nF;i++){ let pv; try{ pv=satellite.sgp4(rec,t0+orbDt[i]*1440); }catch(e){ pv=null; } const p=pv&&pv.position, ok=!!(p&&isFinite(p.x)&&isFinite(p.y)&&isFinite(p.z));
+      orbOk[i]=ok?1:0; if(ok){ orbS[3*i]=p.x; orbS[3*i+1]=p.y; orbS[3*i+2]=p.z; } }
+    let a=m, b=m; while(a>0&&orbOk[a-1]) a--; while(b<nF-1&&orbOk[b+1]) b++;   // contiguous stretch around the satellite (SGP4 fails after re-entry)
+    if(!orbOk[m]){ orb.commit(0); trk.commit(0); return; }
+    // After one revolution SGP4 does not come back to the same point (nodal regression, drag: typically 0.3 % of the orbit
+    // in low orbit). The gap sits on the far side; it is closed there by sharing it out over the far half (|offset| > ¼),
+    // so the half revolution around the satellite stays exactly the SGP4 path.
+    if(a===0&&b===nF-1){ const j=3*(nF-1), gx=orbS[0]-orbS[j], gy=orbS[1]-orbS[j+1], gz=orbS[2]-orbS[j+2];
+      if(Math.hypot(gx,gy,gz)<0.2*Math.hypot(orbS[3*m],orbS[3*m+1],orbS[3*m+2])) for(let i=0;i<nF;i++){ const f=ORB_F[i], t=Math.min(1,Math.max(0,(Math.abs(f)-0.25)/0.25)), w=t*t*(3-2*t)*(f<0?-0.5:0.5);
+        orbS[3*i]+=gx*w; orbS[3*i+1]+=gy*w; orbS[3*i+2]+=gz*w; } }
+    orb.begin(p0[k]*KM,p0[k+2]*KM,-p0[k+1]*KM);
+    for(let i=a;i<=b;i++){ const x=orbS[3*i], y=orbS[3*i+1], z=orbS[3*i+2], f=ORB_F[i]<0?1+ORB_F[i]:ORB_F[i]; orb.set(i-a,x*KM,z*KM,-y*KM,f);
+      if(doTrk){ const th=satellite.gstime(jd0+orbDt[i]), c=Math.cos(th), sn=Math.sin(th), ex=c*x+sn*y, ey=-sn*x+c*y, g=R_E*1.004/Math.hypot(x,y,z); trk.set(i-a,ex*g,z*g,-ey*g); } }
+    orb.commit(b-a+1); if(doTrk) trk.commit(b-a+1);
+  } else { const p=sel.p; if(p.type==='L'){ pOrb.commit(0); return; } const seg=currentSeg(p,jd0), K=probeOsc(p,jd0+TDB_UTC,seg);
+    // The drawn path is the osculating conic of the model at this instant: closed by construction for ellipses and always
+    // through the probe. Hyperbolas: eight years either side of now.
+    let H0=0, Ha=0, Hb=0; if(K.e>=1){ const n=Math.sqrt(K.mu/Math.pow(K.q/(K.e-1),3))*86400, sp=2922; H0=keplerH(K.M,K.e); Ha=keplerH(K.M-n*sp,K.e); Hb=keplerH(K.M+n*sp,K.e); }
+    const E0=K.e<1?keplerE(K.M,K.e):0;
+    // origin on the probe, relative to its central body
+    kepAt(K,K.e<1?E0:H0,tC); toEqd(tC[0],tC[1],tC[2],tD); pOrb.begin(tD[0]*KM,tD[2]*KM,-tD[1]*KM);
+    for(let i=0;i<nF;i++){ const g=ORB_F[i], an=K.e<1?E0+TAU*g:H0+(g<0?(H0-Ha):(Hb-H0))*2*g;
+      kepAt(K,an,tC); toEqd(tC[0],tC[1],tC[2],tD); pOrb.set(i,tD[0]*KM,tD[2]*KM,-tD[1]*KM,K.e<1?(g<0?1+g:g):(i/(nF-1))); }
+    pOrb.commit(nF); }
 }
 
 /* ================= camera ================= */
@@ -1129,7 +1186,7 @@ function stepCamera(dt){
   controls.rotateSpeed=(!follow&&!tween)?Math.max(0.07,Math.min(0.8,(cl-Rc)/(2.2*Rc))):0.7;
   controls.update();
   const dT=camera.position.distanceTo(controls.target), dE=Math.max(0.01,camera.position.length()-Rc);
-  camera.near=Math.max(1e-4,Math.min(50,Math.min(dT,dE)*0.04)); camera.updateProjectionMatrix();
+  camera.near=Math.max(1e-9,Math.min(50,Math.min(dT,dE)*0.04)); camera.updateProjectionMatrix();   // logarithmic depth: down to 1 mm, so nothing next to the vehicle is cut away
 }
 
 /* ================= picking, labels, scale ================= */
@@ -1139,11 +1196,11 @@ function behindCentre(v){ return hitsSphere(camera.position,v.x,v.y,v.z,BODY[cen
 let satsShown=true;
 function pick(cx,cy,rad){
   const w=view.clientWidth, h=view.clientHeight; let best=null, bd=rad*rad;
-  for(let i=0;i<probes.length;i++){ const p=probes[i]; if(p.lab.hidden&&!(sel&&sel.p===p)) continue; tmpV.set(pPos[3*i],pPos[3*i+1],pPos[3*i+2]); if(behindCentre(tmpV)) continue; tmpV.project(camera); if(tmpV.z>1) continue;
+  for(let i=0;i<probes.length;i++){ const p=probes[i]; if(p.lab.hidden&&!(sel&&sel.p===p)) continue; tmpV.set(pPos[3*i],pPos[3*i+1],pPos[3*i+2]).add(probePoints.position); if(behindCentre(tmpV)) continue; tmpV.project(camera); if(tmpV.z>1) continue;
     const d=((tmpV.x*0.5+0.5)*w-cx)**2+((0.5-tmpV.y*0.5)*h-cy)**2; if(d<bd){ bd=d; best={t:'probe',p}; } }
   if(best||!N||!satsShown) return best;
-  const m=vpE.elements;
-  for(let i=0;i<N;i++){ if(!sizes[i]) continue; const k=3*i, x=pos[k], y=pos[k+1], z=pos[k+2], cw=m[3]*x+m[7]*y+m[11]*z+m[15]; if(cw<=0) continue;
+  const m=vpE.elements, o=satPoints.position;
+  for(let i=0;i<N;i++){ if(!sizes[i]) continue; const k=3*i, x=pos[k]+o.x, y=pos[k+1]+o.y, z=pos[k+2]+o.z, cw=m[3]*x+m[7]*y+m[11]*z+m[15]; if(cw<=0) continue;
     const sx=((m[0]*x+m[4]*y+m[8]*z+m[12])/cw*0.5+0.5)*w, sy=(0.5-(m[1]*x+m[5]*y+m[9]*z+m[13])/cw*0.5)*h, d=(sx-cx)*(sx-cx)+(sy-cy)*(sy-cy);
     if(d<bd&&!hitsSphere(camE,x,y,z,R_E)){ bd=d; best={t:'sat',i}; } }
   return best;
@@ -1186,13 +1243,13 @@ function updateLabels(){
   const lagPx=1500*pxPerUnit(earthAnchor.position.distanceTo(camera.position)), far=camera.position.length()>3e4;
   for(let i=0;i<probes.length;i++){ const p=probes[i], nav=p.type==='L'?'earth':p.c, near=nav===centre||(centre==='moon'&&nav==='earth')||(centre==='earth'&&nav==='moon')||(nav==='sun'&&far);
     if(!(on&&near)||(sel&&sel.p===p)||(p.type==='L'&&lagPx<34)){ p.lab.hidden=true; continue; }
-    p.lab.hidden=false; tmpW.set(pPos[3*i],pPos[3*i+1],pPos[3*i+2]); const xy=place(p.lab,tmpW,7,-8,true); if(!xy) continue;
+    p.lab.hidden=false; tmpW.set(pPos[3*i],pPos[3*i+1],pPos[3*i+2]).add(probePoints.position); const xy=place(p.lab,tmpW,7,-8,true); if(!xy) continue;
     if(nav!==centre&&nav!=='sun'){ const q=projXY(bodyScene(nav,tmpW)); if(Math.hypot(q[0]-xy[0],q[1]-xy[1])<34){ p.lab.hidden=true; continue; } }
     if(clash(xy[0]+7,xy[1]-8,12+p.name.length*7.4)) p.lab.style.visibility='hidden'; }
 }
 function updateScale(){
   const d=camera.position.distanceTo(controls.target), kmPerPx=1000/pxPerUnit(d), target=kmPerPx*110, p=Math.pow(10,Math.floor(Math.log10(target))), f=target/p, nice=(f>=5?5:f>=2?2:1)*p;
-  $('scaleBar').style.width=(nice/kmPerPx).toFixed(0)+'px'; set('scaleTxt',nice>=1e7?fmt(nice/1e6,0)+' Mkm = '+fmt(nice/AU,nice/AU<1?3:nice/AU<10?2:1)+' AU':fmt(nice,nice<1?1:0)+' km');
+  $('scaleBar').style.width=(nice/kmPerPx).toFixed(0)+'px'; set('scaleTxt',nice>=1e7?fmt(nice/1e6,0)+' Mkm = '+fmt(nice/AU,nice/AU<1?3:nice/AU<10?2:1)+' AU':nice<1?fmt(nice*1000,nice<1e-3?Math.ceil(-Math.log10(nice*1000)-1e-9):0)+' m':fmt(nice,0)+' km');   // metres when zoomed on a vehicle
 }
 
 
@@ -1262,12 +1319,13 @@ function renderInset(){
   renderer.setScissorTest(false); renderer.setViewport(0,0,view.clientWidth,view.clientHeight); renderer.autoClear=true;
 }
 // LVLH triad at the selected object, constant length on screen
-const triG=new THREE.Group(); scene.add(triG); triG.visible=false;
+const triScene=new THREE.Scene(), triG=new THREE.Group(); triScene.add(triG); triG.visible=false;   // drawn last, over the close-up model too
 const triL=[0xff5d52,0x58e07f,0x35d4f2].map(c=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3)); const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:c,depthTest:false,transparent:true})); l.frustumCulled=false; l.renderOrder=15; triG.add(l); return l; });
 const triTip=[V3(),V3(),V3()];
 function updateTriad(){
   const on=!!sel&&att.ready&&$('chkLvlh').checked; triG.visible=on; if(!on) return; const len=64/pxPerUnit(selPos.distanceTo(camera.position)), L=att.L;
-  for(let i=0;i<3;i++){ toS(L[3*i],L[3*i+1],L[3*i+2],vS); triTip[i].copy(selPos).addScaledVector(vS,len); const a=triL[i].geometry.attributes.position.array; a[0]=selPos.x; a[1]=selPos.y; a[2]=selPos.z; a[3]=triTip[i].x; a[4]=triTip[i].y; a[5]=triTip[i].z; triL[i].geometry.attributes.position.needsUpdate=true; }
+  triG.position.copy(selPos);   // vertices relative to the object: a few metres long when zoomed in, they would be lost in single precision
+  for(let i=0;i<3;i++){ toS(L[3*i],L[3*i+1],L[3*i+2],vS); triTip[i].copy(selPos).addScaledVector(vS,len); const a=triL[i].geometry.attributes.position.array; a[0]=a[1]=a[2]=0; a[3]=vS.x*len; a[4]=vS.y*len; a[5]=vS.z*len; triL[i].geometry.attributes.position.needsUpdate=true; }
 }
 // Relative geometry between the selected object and any other object
 let relT=null; const relGeo=new THREE.BufferGeometry(); relGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
@@ -1292,7 +1350,7 @@ function updateRel(){
   const d=[rP2[0]-rP1[0],rP2[1]-rP1[1],rP2[2]-rP1[2]], dv=[rV2[0]-rV1[0],rV2[1]-rV1[1],rV2[2]-rV1[2]], rng=Math.hypot(d[0],d[1],d[2]), L=att.L;
   let block=''; for(const k of [selC(),'earth','moon','sun']){ if(relT.t==='body'&&relT.k===k) continue; if(segHits(rP1,rP2,helio[k],BODY[k].R)){ block=BODY[k].name; break; } }
   relNow={rng,rr:(d[0]*dv[0]+d[1]*dv[1]+d[2]*dv[2])/rng,dv:Math.hypot(dv[0],dv[1],dv[2]),l:[L[0]*d[0]+L[1]*d[1]+L[2]*d[2],L[3]*d[0]+L[4]*d[1]+L[5]*d[2],L[6]*d[0]+L[7]*d[1]+L[8]*d[2]],block};
-  const c=helio[centre], a=relGeo.attributes.position.array; a[0]=selPos.x; a[1]=selPos.y; a[2]=selPos.z; a[3]=(rP2[0]-c[0])*KM; a[4]=(rP2[2]-c[2])*KM; a[5]=-(rP2[1]-c[1])*KM; relGeo.attributes.position.needsUpdate=true; relLine.visible=true;
+  const c=helio[centre], a=relGeo.attributes.position.array; relLine.position.copy(selPos); a[0]=a[1]=a[2]=0; a[3]=(rP2[0]-c[0])*KM-selPos.x; a[4]=(rP2[2]-c[2])*KM-selPos.y; a[5]=-(rP2[1]-c[1])*KM-selPos.z; relGeo.attributes.position.needsUpdate=true; relLine.visible=true;
 }
 
 /* ================= disturbance chart: torque along one revolution, log scale ================= */
@@ -1435,12 +1493,7 @@ const MISSIONS={
   astro:['Astronomia, puntamento inerziale','inerziale',0.005,90,600],planet:['Esplorazione planetaria, orbiter','nadir',0.05,30,120],tech:['Dimostratore tecnologico','nadir',2,0,0]};
 const CLS={cube:['CubeSat 3U, 5 kg',{m:5,bus:[0.1,0.1,0.34],pw:0.1,pl:0.3}],micro:['Microsatellite, 100 kg',{m:100,bus:[0.6,0.7,0.6],pw:0.6,pl:1}],mini:['Minisatellite, 500 kg',{m:500,bus:[1.2,1.5,1.2],pw:1.2,pl:2.5}],med:['Medio, 1 500 kg',{m:1500,bus:[1.8,2.5,1.8],pw:1.8,pl:5}],big:['Grande, 4 000 kg',{m:4000,bus:[2.5,3,3.5],pw:2.4,pl:12}]};
 let designs=[], desSeq=0, baseProbes=[];
-// Design orbit: Kepler motion with the secular J2 drift of node, pericentre and mean anomaly, in the central body's equatorial frame (ecliptic for the Sun).
-function desRel(p,jt,out){
-  const b=BODY[p.c], dt=(jt-p.t0)*86400, a=p.a, e=p.e, n=Math.sqrt(b.gm/(a*a*a)), pp=a*(1-e*e), k=1.5*J2[p.c]*(b.R/pp)*(b.R/pp)*n, si=Math.sin(p.i), ci=Math.cos(p.i);
-  perifocal(a*(1-e),e,p.M0+(n+k*Math.sqrt(1-e*e)*(1-1.5*si*si))*dt,xy); rotOrb(xy[0],xy[1],p.i,p.Om-k*ci*dt,p.w+k*(2-2.5*si*si)*dt,tB);
-  if(p.c==='earth') return toEqj(tB[0],tB[1],tB[2],out);
-  const B=p.c==='sun'?ECL_BASIS:b.basis; out[0]=B[0][0]*tB[0]+B[1][0]*tB[1]+B[2][0]*tB[2]; out[1]=B[0][1]*tB[0]+B[1][1]*tB[1]+B[2][1]*tB[2]; out[2]=B[0][2]*tB[0]+B[1][2]*tB[1]+B[2][2]*tB[2]; return out; }
+// Design orbit: Kepler motion with the secular J2 drift of node, pericentre and mean anomaly, in the central body's equatorial frame (ecliptic for the Sun): see probeOsc.
 function ssoInc(a,c){ const b=BODY[c], n=Math.sqrt(b.gm/(a*a*a)), x=-(TAU/(365.2422*86400))/(1.5*n*J2[c]*(b.R/a)*(b.R/a)); return Math.abs(x)<=1?Math.acos(x)*R2D:98; }
 function nuToM(nu,e){ const E=2*Math.atan2(Math.sqrt(1-e)*Math.sin(nu/2),Math.sqrt(1+e)*Math.cos(nu/2)); return E-e*Math.sin(E); }
 function desInfo(p){ PINFO[p.id]=[p.name,'Progetto','—',MISSIONS[p.mis][0]]; p.upper=p.name.toUpperCase(); }
@@ -1874,9 +1927,9 @@ function frame(now){
     satPoints.visible=satsShown; if(satsShown) extrapolate(); }
   if(probes.length) updateProbes(jd);
   if(sel){ computeSel(); ring.position.copy(selPos);
-    if(nadLine.visible){ const n=nadGeo.attributes.position.array, rel=tmpV.copy(selPos).sub(selBody), f=BODY[selC()].R*KM/rel.length(); n[0]=selPos.x;n[1]=selPos.y;n[2]=selPos.z;n[3]=selBody.x+rel.x*f;n[4]=selBody.y+rel.y*f;n[5]=selBody.z+rel.z*f; nadGeo.attributes.position.needsUpdate=true; }
+    if(nadLine.visible){ const n=nadGeo.attributes.position.array, rel=tmpV.copy(selPos).sub(selBody), f=BODY[selC()].R*KM/rel.length(); nadLine.position.copy(selPos); n[0]=n[1]=n[2]=0; n[3]=rel.x*(f-1); n[4]=rel.y*(f-1); n[5]=rel.z*(f-1); nadGeo.attributes.position.needsUpdate=true; }
     if(sel.t==='probe') pOrbAnchor.position.copy(selBody);
-    if(now-lastOrb>250){ lastOrb=now; updateOrbit(); updateTransfer(); }
+    if(now-lastOrb>(camera.position.distanceTo(selPos)<0.05?0:250)){ lastOrb=now; updateOrbit(); updateTransfer(); }
     stepAtt(); }
   stepCamera(dt);
   updateTriad(); updateRel();
@@ -1886,6 +1939,7 @@ function frame(now){
   satMat.uniforms.uAlpha.value=sel?0.42:0.95; satMat.uniforms.uBoost.value=follow?1.25:Math.max(1,Math.min(1.5,30/Math.max(camera.position.distanceTo(controls.target),1)));
   renderer.render(scene,camera);
   renderNear(); ring.visible=!!sel&&!nearOn;
+  if(triG.visible){ renderer.autoClear=false; renderer.render(triScene,camera); renderer.autoClear=true; }
   renderInset();
   vp.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse); mT.makeTranslation(earthAnchor.position.x,earthAnchor.position.y,earthAnchor.position.z); vpE.multiplyMatrices(vp,mT); camE.copy(camera.position).sub(earthAnchor.position);
   if(sel){ place($('tagSel'),selPos,18,-8,false); if(nearOn) $('tagSel').style.visibility='hidden'; }
