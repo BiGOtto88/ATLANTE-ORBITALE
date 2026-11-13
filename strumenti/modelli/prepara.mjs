@@ -17,6 +17,7 @@ for (const [chiave, v] of Object.entries(voci)) {
   try {
     const doc = await io.read(`${DA}/${v.file}.glb`), root = doc.getRoot();
     for (const e of root.listExtensionsUsed()) if (e.extensionName === 'KHR_draco_mesh_compression') e.dispose();
+    if (v.togli) for (const nd of root.listNodes()) if (v.togli.includes(nd.getName())) nd.dispose();   // pezzi staccati dal veicolo nel file originale (ISS: 7 dischi a ~80 m dalla stazione)
     const scena = root.getDefaultScene() || root.listScenes()[0], b = getBounds(scena), dim = b.max.map((x, i) => x - b.min[i]), c = b.min.map((x, i) => (x + b.max[i]) / 2);
     const ord = [0, 1, 2].sort((i, j) => dim[i] - dim[j]), s = v.max ? v.max / Math.max(...dim) : 1;        // ord = [minore, intermedia, maggiore]
     const P = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]; P[0][ord[0]] = 1; P[1][ord[1]] = 1; P[2][ord[2]] = 1;

@@ -3,6 +3,7 @@ MODELLI 3D DEI VEICOLI: FONTI E CREDITI
 Credito: NASA 3D Resources, NASA (https://github.com/nasa/NASA-3D-Resources). Materiale NASA, di norma non soggetto a diritto d'autore
 negli Stati Uniti (linee guida: https://www.nasa.gov/nasa-brand-center/images-and-media/). Nessun sostegno da parte della NASA o di altri enti.
 Modifiche: compressione Draco rimossa, scala in metri, assi dell'app, geometria alleggerita, texture in WebP (strumenti/modelli/prepara.mjs).
+Nel modello della ISS sono stati tolti 7 elementi staccati dalla stazione (dischi di circa 13 m a circa 80 m dal corpo, nodi bendedtru1-3, bendedtrus, pCylinder1, 2, 8), che non fanno parte del veicolo.
 Condizioni complete e avvertenze su insegne e parti di terzi: LICENZE.txt, sezione 5.
 
 File del sito | cartella e file originale nella raccolta NASA 3D Resources

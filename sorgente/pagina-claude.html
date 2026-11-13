@@ -159,6 +159,11 @@ button{cursor:pointer}
 .inset .it{top:4px}
 .inset .il{bottom:4px;display:flex;gap:8px;flex-wrap:wrap}
 .inset b{font-weight:400}
+.map2{position:absolute;left:10px;bottom:44px;width:360px;height:180px;border:1px solid var(--ln2);background:#000;pointer-events:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--tx2)}
+.map2 canvas{position:absolute;inset:0;width:100%;height:100%}
+.map2 span{position:absolute;left:6px;right:6px;text-shadow:0 0 3px #000,0 0 2px #000}
+.map2 .it{top:4px}
+.map2 .il{bottom:4px;text-transform:none}
 .kv{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:3px 12px;margin:0}
 .kv dt{color:var(--tx2)}
 .kv dt i{font-style:normal;font-family:var(--mono);color:var(--tx3);margin-left:5px}
@@ -205,6 +210,7 @@ button{cursor:pointer}
   .bottom{grid-row:5}
   .bottom .lbl,.hint,.stamp,.inset .il{display:none}
   .inset{width:132px;height:132px}
+  .map2{width:220px;height:110px;bottom:38px}
 }
 </style>
 
@@ -228,7 +234,7 @@ button{cursor:pointer}
         <p id="popInfo"></p>
         <p id="popProbes"></p>
         <p><b>Forme reali:</b> modelli 3D della raccolta pubblica NASA 3D Resources, per i veicoli che ne hanno uno; gli altri hanno una forma schematica.</p>
-        <p class="credits" id="credits"><b>Crediti.</b> Elementi orbitali e lanci: CelesTrak. Sonde: NASA/JPL Horizons. Stelle: ESA, catalogo Hipparcos. Campo magnetico: IGRF-14 (IAGA). Modelli 3D dei veicoli: NASA 3D Resources. Texture: Solar System Scope, CC BY 4.0. Caratteri: B612 (SIL OFL). Librerie: three.js, satellite.js, Astronomy Engine (MIT). Progetto indipendente, non affiliato né approvato da NASA, ESA o altri enti; strumento didattico, non per operazioni di volo. <a id="licLink" href="LICENZE.txt" target="_blank" rel="noopener" hidden>Licenze complete</a></p>
+        <p class="credits" id="credits"><b>Crediti.</b> Elementi orbitali e lanci: CelesTrak. Sonde: NASA/JPL Horizons. Stelle: ESA, catalogo Hipparcos. Campi magnetici: IGRF-14 (IAGA), JRM33 e CON2020 (Juno), Cassini 11, AH5 e O8 (Voyager 2), MESSENGER, Langlais et al. 2019 (Marte). Atmosfere: VIRA, COSPAR Mars Reference Atmosphere, sonde e Voyager per i giganti. Modelli 3D dei veicoli: NASA 3D Resources. Texture: Solar System Scope, CC BY 4.0. Caratteri: B612 (SIL OFL). Librerie: three.js, satellite.js, Astronomy Engine (MIT). Progetto indipendente, non affiliato né approvato da NASA, ESA o altri enti; strumento didattico, non per operazioni di volo. <a id="licLink" href="LICENZE.txt" target="_blank" rel="noopener" hidden>Licenze complete</a></p>
         <p>I TLE si aggiornano da soli una volta al giorno. Se serve, puoi caricare a mano un file TLE (formato a tre righe) o trascinarlo sulla vista.</p>
         <input type="file" id="file" accept=".tle,.txt,text/plain" aria-label="Carica un file TLE">
         <button class="sk" id="btnRestore" hidden>Torna al catalogo automatico</button>
@@ -275,7 +281,8 @@ button{cursor:pointer}
         <label><input type="checkbox" id="chkLabels" checked> Etichette</label>
         <label><input type="checkbox" id="chkLvlh" checked> Terna LVLH dell'oggetto scelto</label>
         <label><input type="checkbox" id="chkInset" checked> Riquadro dell'assetto</label>
-        <label><input type="checkbox" id="chkTrack"> Traccia a terra del satellite scelto</label>
+        <label><input type="checkbox" id="chkTrack"> Traccia a terra dell'oggetto scelto</label>
+        <label><input type="checkbox" id="chkMap"> Traccia a terra in 2D (mappa)</label>
         <label><input type="checkbox" id="chkAxes"> Assi inerziali equatoriali</label>
       </div>
       <p class="fine">Scala reale: dimensioni e distanze non sono ingrandite. Solo punti, etichette e linee hanno spessore fisso sullo schermo.</p>
@@ -290,6 +297,7 @@ button{cursor:pointer}
     <div class="tag ax" id="tagY" hidden>Y</div>
     <div class="tag ax" id="tagZ" hidden>Z · polo nord celeste</div>
     <div class="tag ax" id="tagLx" hidden>xL</div><div class="tag ax" id="tagLy" hidden>yL</div><div class="tag ax" id="tagLz" hidden>zL</div>
+    <div class="map2" id="map2" hidden><canvas id="mapCv"></canvas><span class="it" id="mapCap">Traccia a terra</span><span class="il" id="mapLeg"></span></div>
     <div class="inset" id="inset" hidden><span class="it">Assetto del veicolo</span><span class="il"><b style="color:#ff5d52">x</b><b style="color:#58e07f">y</b><b style="color:#35d4f2">z</b><b>corpo</b><b style="color:#e6eaee">LVLH</b><b style="color:#ffb224">Sole</b><b style="color:#ff62d4">B</b></span></div>
     <div class="tip" id="tip" hidden></div>
     <div class="scale" title="Scala alla distanza del punto inquadrato"><span id="scaleTxt">1 000 km</span><div class="bar" id="scaleBar"></div></div>
@@ -603,7 +611,7 @@ const ORB_F=(function(){ const pos=[0]; let s=1e-7, x=0; const hU=1/360;
   const out=[]; for(let i=pos.length-1;i>0;i--) out.push(-pos[i]); return Float64Array.from(out.concat(pos)); })();
 const ORB_MID=(ORB_F.length-1)/2;
 const MG=[1.0,0.384,0.831];
-const orb=fatLine(2.2,true,earthAnchor,MG), trk=fatLine(1.6,false,earthGroup,MG);
+const orb=fatLine(2.2,true,earthAnchor,MG), trk=fatLine(1.6,false,earthGroup,MG), pTrk=fatLine(1.6,false,earthGroup,MG);   // pTrk: ground track of a probe, child of its body
 const pOrbAnchor=new THREE.Group(); scene.add(pOrbAnchor); const pOrb=fatLine(2.2,true,pOrbAnchor,MG);
 const AMB=[1.0,0.698,0.141], trPark=fatLine(1.3,false,earthAnchor,AMB), trArc=fatLine(2.2,false,earthAnchor,AMB);   // parking orbit and transfer arc
 const nadGeo=new THREE.BufferGeometry(); nadGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
@@ -810,22 +818,172 @@ const ATM_H=[0,25,30,40,50,60,70,80,90,100,110,120,130,140,150,180,200,250,300,3
   ATM_R=[1.225,3.899e-2,1.774e-2,3.972e-3,1.057e-3,3.206e-4,8.770e-5,1.905e-5,3.396e-6,5.297e-7,9.661e-8,2.438e-8,8.484e-9,3.845e-9,2.070e-9,5.464e-10,2.789e-10,7.248e-11,2.418e-11,9.518e-12,3.725e-12,1.585e-12,6.967e-13,1.454e-13,3.614e-14,1.170e-14,5.245e-15,3.019e-15],
   ATM_S=[7.249,6.349,6.682,7.554,8.382,7.714,6.549,5.799,5.382,5.877,7.263,9.473,12.636,16.149,22.523,29.740,37.105,45.546,53.628,53.298,58.515,60.828,63.822,71.835,88.667,124.64,181.05,268.00];
 function density(h){ if(h<0) h=0; let i=ATM_H.length-1; while(i>0&&h<ATM_H[i]) i--; return ATM_R[i]*Math.exp(-(h-ATM_H[i])/ATM_S[i]); }
-const env={c:'earth',mu:MU_E,r:[0,0,0],v:[0,0,0],sun:[1,0,0],dSun:AU,P:0,ecl:false,B:[0,0,0],hasB:false,rho:0,vr:[0,0,0],alt:0,lit:1,Pir:0,Pal:0,nad:[0,0,-1]};
+const env={c:'earth',mu:MU_E,r:[0,0,0],v:[0,0,0],sun:[1,0,0],dSun:AU,P:0,ecl:false,B:[0,0,0],hasB:false,bsrc:'',rho:0,vr:[0,0,0],alt:0,lit:1,Pir:0,Pal:0,nad:[0,0,-1],G:new Float64Array(9)};
 const R_SUN=695700, E_IR=237/299792458, ALBEDO=0.30;   // Sun radius km; Earth's infrared emission 237 W/m² as a pressure; mean Earth albedo
 // Fraction of the solar disc seen from the spacecraft: 1 in full sunlight, 0 in the umbra, in between in the penumbra (overlap of two discs).
 // rm: distance from the body centre; dd: component of the position along the Sun direction; d: distance to the Sun; Rb: body radius. All in km.
 function sunFraction(rm,dd,d,Rb){ const a=Math.asin(Math.min(1,R_SUN/d)), b=Math.asin(Math.min(1,Rb/rm)), c=Math.acos(Math.max(-1,Math.min(1,-dd/rm)));
   if(c>=a+b) return 1; if(c<=b-a) return 0; if(c<=a-b) return 1-b*b/(a*a);
   const x=(c*c+a*a-b*b)/(2*c), y=Math.sqrt(Math.max(0,a*a-x*x)); return 1-(a*a*Math.acos(Math.max(-1,Math.min(1,x/a)))+b*b*Math.acos(Math.max(-1,Math.min(1,(c-x)/b)))-c*y)/(Math.PI*a*a); }
+/* ================= environment around every central body =================
+   Magnetic field, upper atmosphere, light and heat from the body, gravity gradient with J2 and third bodies.
+   Everything in equator-of-date axes (the frame of env.r), km, tesla, kg/m³. Sources: «Formule usate» and LICENZE.txt. */
+// Gauss coefficients, Schmidt quasi-normalised, nT: for n = 1..N and m = 0..n, g(n,m) then h(n,m) when m > 0.
+const MAGC={jupiter:[410993.4,-71305.9,20958.4,11796.7,-56972.4,-42549,48250.2,20221.5,2799.3,-37488.4,-32890.6,15396.8,42518.4,-1489.8,-27397.7,-34402,-8080.8,32452.4,-2440.5,27438.6,-10848.3,-501.4,-17919.1,-1325.1,-18265.7,4221.8,45363.1,16599.5,-826.2,-17345.8,6000.6,-2544.5,10568.8,-4987.7,10091.5,-20968,9887.6,14016.9,12192.4,-10119.1,-12548.7,-294.9,2742.2,13948.3,1557.6,-3686.9,8018.2,4783.1,59.9,5366.1,-7654.8,-7099.5,-11398.6,-1533.4,2171,-7055.7,5301.6,3060.6,-6618.1,-2488.3,-1933.8,3700.8,-5802.9,10849.5,1323.8,-2297.4,-6952.2,-12833.5,-95,10019.6,-4746.6,-1725.6,-1301.7,2387.1,-4284.6,-3237.1,-1436.7,906.1,-3024.6,-3178.3,8914.4,-3506.7,-7899.6,288.1,-1328.3,773.6,6566.5,3592.7,-1275.3,-3170.8,3617.1,1406.3,-194.8,-1526.6,1960.3,1313.3,956.9,-2314.6,1831.7,-2516.5,1883.2,-5689.8,2836.1,5570.3,4259.4,-2541.6,3776.7,-1795.2,764.4,-217.8,2112.3,-628.3,724.8,-1619.6,2496.3,454.6,840.1,-840,1179.4,1581.4,1311.6,3056.9,549.1,-2060.6,4527.6,3550.1,-4223,589.7,-2761.9,194.8,-476,-1073.3,-2714.4,-521.7,-1349.2,685.3,-1649,350.2,-1471.5,-326.6,-583,1088.8,-499.8,2300.5,1688.4,4204.2,-291.7,2228,483.2,-1901.1,-581.9,-1271.2,-818.4,1073.4,-1095.6,-1111.9,-1987.8,872.9,484.5,-837.9,-1473.1,-462.8,-666.5,-22,-755.4,110.3,-220.8,-712.7,751.5,-456.4,4125.6,1160.4,-44,-2307.8,-455.4,-77.1,2160.6,-16.9,255.4,594.8,1105.1,-950.7,1214.2,1042.3,196.1,-641.8,-207.7,41.6,1195.7,-229.1,472.4,-40.3,721.6,-287.8,51.3],
+saturn:[21140.2,0,0,1581.1,0,0,0,0,2260.1,0,0,0,0,0,0,91.1,0,0,0,0,0,0,0,0,12.6,0,0,0,0,0,0,0,0,0,0,17.2,0,0,0,0,0,0,0,0,0,0,0,0,-59.6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-10.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-12.9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18.2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+uranus:[11278,10928,-16049,-9648,-12284,6405,1453,4220,-1265,2778,-1548,-4535,-2165,-6297,-3036,3388,-29,-2036,955,-3437,5588,-1154,8136,-2920],
+neptune:[9732,3220,-9889,7448,664,11230,4499,-70,-6592,4098,-3669,-3581,1791,484,-770]};
+const MAGM={
+  mercury:{off:true,g10:-190,z0:479,a:2440,name:'dipolo spostato verso nord di 479 km, g₁⁰ = −190 nT (Anderson et al. 2012, MESSENGER)'},
+  mars:{a:3393.5,N:134,c:null,name:'campo crostale, armoniche sferiche fino al grado 134 (Langlais et al. 2019, MGS e MAVEN)'},
+  jupiter:{a:71492,N:13,c:MAGC.jupiter,disc:{mui2:139.6,ir:16.7,r0:7.8,r1:51.4,d:3.6,xt:9.3,xp:155.8},name:'JRM33 fino al grado 13 (Connerney et al. 2022, Juno) più il disco di corrente CON2020 (Connerney et al. 2020)'},
+  saturn:{a:60268,N:11,c:MAGC.saturn,disc:{mui2:30.2,ir:0,r0:8,r1:15.5,d:3,xt:0,xp:0},name:'Cassini 11 fino al grado 11 (Dougherty et al. 2018) più l\'anello di corrente di Connerney et al. (1983)'},
+  uranus:{a:25559,N:4,c:MAGC.uranus,uls:true,name:'AH5 fino al grado 4 (Herbert 2009, Voyager 2), longitudini dal periodo di rotazione di Lamy et al. (2025)'},
+  neptune:{a:24765,N:3,c:MAGC.neptune,name:'O8 fino al grado 3 (Connerney et al. 1991, Voyager 2)'}
+};
+let marsMag=null;
+function needMars(){ if(MAGM.mars.c||marsMag) return; marsMag=fetch('data/campo_marte.json').then(r=>{ if(!r.ok) throw new Error('campo marte'); return r.json(); }).then(d=>{ MAGM.mars.c=d.c; prof=null; adcsAt=0; }).catch(()=>{ setTimeout(()=>{ marsMag=null; },20000); }); }
+// Rotation of the bodies (IAU, deg/day): the atmosphere turns with the body; Uranus uses the period of Lamy et al. (2025).
+const SPIN={sun:14.1844,mercury:6.1385108,venus:-1.4813688,moon:13.17635815,mars:350.89198226,jupiter:870.536,saturn:810.7939024,uranus:-360/(17.247864/24),neptune:541.1397757};
+const URANUS_CA=2446455.2493;   // Voyager 2 closest approach, 1986-01-24 17:59 UTC: the longitude system of the magnetic models is anchored here
+const BFX={};
+// Body-fixed axes of body k at Julian date jd (UTC): X towards the prime meridian, Z the north pole (IAU), in equator-of-date components.
+function bodyAxes(k,jd){ let e=BFX[k]; if(e&&e.jd===jd) return e; if(!e) e=BFX[k]={jd:NaN,X:[0,0,0],Y:[0,0,0],Z:[0,0,0]};
+  const ax=A.RotationAxis(A.Body[BODY[k].ab],A.MakeTime(new Date(msOfJd(jd)))), n=ax.north, l=Math.hypot(n.x,n.y), Qx=-n.y/l, Qy=n.x/l, Yx=-n.z*Qy, Yy=n.z*Qx, Yz=n.x*Qy-n.y*Qx;
+  let W=ax.spin; if(k==='uranus'){ const a0=A.RotationAxis(A.Body.Uranus,A.MakeTime(new Date(msOfJd(URANUS_CA)))); W=a0.spin+SPIN.uranus*(jd-URANUS_CA); }
+  W*=D2R; const c=Math.cos(W), s=Math.sin(W), px=Qx*c+Yx*s, py=Qy*c+Yy*s, pz=Yz*s;
+  toEqd(px,py,pz,e.X); toEqd(n.x,n.y,n.z,e.Z); const X=e.X, Z=e.Z; e.Y[0]=Z[1]*X[2]-Z[2]*X[1]; e.Y[1]=Z[2]*X[0]-Z[0]*X[2]; e.Y[2]=Z[0]*X[1]-Z[1]*X[0]; e.jd=jd; return e; }
+// Internal field of a spherical-harmonic model at body-fixed x, y, z (km): result in body-fixed axes, nT. B = −∇V.
+let shP=new Float64Array(120), shD=new Float64Array(120), shC=new Float64Array(140), shS=new Float64Array(140);
+function shField(M,x,y,z,out){
+  const rho=Math.hypot(x,y), rm=Math.hypot(rho,z), ct=z/rm, st=Math.max(rho/rm,1e-12), ar=M.a/rm, cp=rho>0?x/rho:1, sp=rho>0?y/rho:0, C=M.c;
+  let N=M.N; if(N>20&&ar<1){ N=Math.min(N,Math.max(20,Math.ceil(Math.log(1e-5)/Math.log(ar))-2)); }   // degrees whose (a/r)^(n+2) is below 10⁻⁵ add less than 0,1 nT
+  const need=(N+1)*(N+2)/2; if(shP.length<need){ shP=new Float64Array(need); shD=new Float64Array(need); } if(shC.length<N+1){ shC=new Float64Array(N+1); shS=new Float64Array(N+1); }
+  const P=shP, D=shD, CM=shC, SM=shS; CM[0]=1; SM[0]=0; for(let m=1;m<=N;m++){ CM[m]=CM[m-1]*cp-SM[m-1]*sp; SM[m]=SM[m-1]*cp+CM[m-1]*sp; }
+  let br=0, bt=0, bp=0, rn=ar*ar, k=0; P[0]=1; D[0]=0;
+  for(let n=1;n<=N;n++){ rn*=ar; const i0=n*(n+1)/2, i1=(n-1)*n/2, i2=(n-2)*(n-1)/2;
+    for(let m=0;m<=n;m++){ let p, d;
+      if(m===n){ const f=n===1?1:Math.sqrt(1-1/(2*n)); p=f*st*P[i1+n-1]; d=f*(st*D[i1+n-1]+ct*P[i1+n-1]); }
+      else { const q=Math.sqrt(n*n-m*m), two=m<=n-2, r2=two?Math.sqrt((n-1)*(n-1)-m*m):0; p=((2*n-1)*ct*P[i1+m]-(two?r2*P[i2+m]:0))/q; d=((2*n-1)*(ct*D[i1+m]-st*P[i1+m])-(two?r2*D[i2+m]:0))/q; }
+      P[i0+m]=p; D[i0+m]=d; const g=C[k++], h=m>0?C[k++]:0, a=g*CM[m]+h*SM[m];
+      br+=(n+1)*rn*a*p; bt-=rn*a*d; bp+=rn*m*(g*SM[m]-h*CM[m])*p; } }
+  bp/=st; out[0]=br*st*cp+bt*ct*cp-bp*sp; out[1]=br*st*sp+bt*ct*sp+bp*cp; out[2]=br*ct-bt*st; return out; }
+// Current sheet of Connerney et al. (1981), analytic forms of Edwards et al. (2001) as in the CON2020 code (Wilson et al. 2023):
+// semi-infinite annulus from a inwards subtracted at the outer edge. ρ, z in planetary radii, result nT.
+function canEdw(rho,z,D,a,mui2,o){ const zp=z+D, zm=z-D, a2=a*a, zm2=zm*zm, zp2=zp*zp;
+  let f1=Math.sqrt(zm2+a2), f2=Math.sqrt(zp2+a2); const bS=mui2*(rho/2*(1/f1-1/f2)+rho*rho*rho/16*((a2-2*zm2)/(f1*f1*f1*f1*f1)-(a2-2*zp2)/(f2*f2*f2*f2*f2))),
+    zS=mui2*(Math.log((zp+f2)/(zm+f1))+rho*rho/4*(zp/(f2*f2*f2)-zm/(f1*f1*f1)));
+  const r2=rho*rho; f1=Math.sqrt(zm2+r2); f2=Math.sqrt(zp2+r2); const zc=Math.max(-D,Math.min(D,z)), lg=zm+f1===0?0:Math.log((zp+f2)/(zm+f1)),
+    bL=mui2*((f1-f2)/rho+rho*a2/4*(1/(f2*f2*f2)-1/(f1*f1*f1))+2*zc/rho), zL=mui2*(lg+a2/4*(zp/(f2*f2*f2)-zm/(f1*f1*f1)));
+  const t=Math.tanh(rho-a); o[0]=bS*(1-t)/2+bL*(1+t)/2; o[1]=zS*(1-t)/2+zL*(1+t)/2; return o; }
+const cw1=[0,0], cw2=[0,0];
+function discField(q,x,y,z,out){ // x, y, z body-fixed in planetary radii → body-fixed nT
+  const sh=(q.xp-180)*D2R, cxp=Math.cos(sh), sxp=Math.sin(sh),   /* xp: System III longitude of the sheet tilt, shifted by 180° as in CON2020 */ cxt=Math.cos(q.xt*D2R), sxt=Math.sin(q.xt*D2R);
+  const xa=x*cxp+y*sxp, y1=y*cxp-x*sxp, x1=xa*cxt+z*sxt, z1=z*cxt-xa*sxt, r1=Math.max(Math.hypot(x1,y1),1e-6), az=Math.abs(z1);
+  canEdw(r1,z1,q.d,q.r0,q.mui2,cw1); canEdw(r1,z1,q.d,q.r1,q.mui2,cw2); const Br=cw1[0]-cw2[0], Bz=cw1[1]-cw2[1];
+  let Bp=q.ir?2.7975*q.ir/r1*(az<q.d?az/q.d:1):0; if(z1>0) Bp=-Bp;
+  const c1=x1/r1, s1=y1/r1, bx1=Br*c1-Bp*s1, by1=Br*s1+Bp*c1, bx=bx1*cxt-Bz*sxt;
+  out[0]=bx*cxp-by1*sxp; out[1]=by1*cxp+bx*sxp; out[2]=bx1*sxt+Bz*cxt; return out; }
+// Interplanetary field: Parker spiral, radial component 3 nT at 1 AU (Ulysses: independent of latitude), solar wind 400 km/s,
+// sidereal Carrington rotation. Polarity of solar cycle 25 after the 2024 reversal: inwards north of the current sheet.
+const SUN_POLE=[Math.cos(63.87*D2R)*Math.cos(286.13*D2R),Math.cos(63.87*D2R)*Math.sin(286.13*D2R),Math.sin(63.87*D2R)], B_R1=3e-9, V_SW=400, W_SUN=TAU/(25.38*86400), tE=[0,0,0];
+// Beyond the heliopause (Voyager 1 crossed it at 121,6 AU, Voyager 2 at 119 AU) the interstellar field: 0,48 nT (Voyager 1, Burlaga & Ness 2014)
+// towards ecliptic longitude 227,3°, latitude 34,6° (Zirnstein et al. 2016). Between the termination shock (about 90 AU) and the heliopause the spiral
+// field is compressed about three times (Voyager, Burlaga et al.).
+const ISM_DIR=(()=>{ const l=227.28*D2R, b=34.62*D2R, e=EPS0, x=Math.cos(b)*Math.cos(l), y=Math.cos(b)*Math.sin(l), z=Math.sin(b); return [x,y*Math.cos(e)-z*Math.sin(e),y*Math.sin(e)+z*Math.cos(e)]; })();
+function imfField(h,out){ const r=Math.hypot(h[0],h[1],h[2]);
+  if(r>120*AU){ const q=toEqd(ISM_DIR[0],ISM_DIR[1],ISM_DIR[2],tE); out[0]=0.48e-9*q[0]; out[1]=0.48e-9*q[1]; out[2]=0.48e-9*q[2]; return out; }
+  const p=toEqd(SUN_POLE[0],SUN_POLE[1],SUN_POLE[2],tE), ux=h[0]/r, uy=h[1]/r, uz=h[2]/r, sb=ux*p[0]+uy*p[1]+uz*p[2], cb=Math.sqrt(Math.max(1e-12,1-sb*sb));
+  const Br=(sb>0?-1:1)*B_R1*(AU/r)*(AU/r)*(r>90*AU?3:1), Bp=-Br*W_SUN*r*cb/V_SW, fx=(p[1]*uz-p[2]*uy)/cb, fy=(p[2]*ux-p[0]*uz)/cb, fz=(p[0]*uy-p[1]*ux)/cb;
+  out[0]=Br*ux+Bp*fx; out[1]=Br*uy+Bp*fy; out[2]=Br*uz+Bp*fz; return out; }
+// Magnetopause, shape of Shue et al. (1998) r = r₀ (2/(1 + cos θ))^α, θ from the Sun direction; r₀ in planetary radii (typical values, Kivelson & Bagenal 2007;
+// Earth: Shue et al. 1998 for 2 nPa and Bz = 0; Mercury: Winslow et al. 2013; Saturn: Arridge et al. 2006).
+const MPAUSE={mercury:[1.45,0.5],earth:[10.25,0.59],jupiter:[75,0.5],saturn:[20,0.77],uranus:[18,0.5],neptune:[25,0.5]};
+function insideMP(k,r){ const m=MPAUSE[k]; if(!m) return false; const h=helio[k], d=Math.hypot(h[0],h[1],h[2]), rm=Math.hypot(r[0],r[1],r[2]); if(rm<1e-9||d<1e-9) return true;
+  const c=-(r[0]*h[0]+r[1]*h[1]+r[2]*h[2])/(rm*d); return c<=-1+1e-12||rm<m[0]*BODY[k].R*Math.pow(2/(1+c),m[1]); }
+// Lobes of Earth's magnetotail, beyond 15 Earth radii on the night side: about 10 nT at 50–60 RE (ARTEMIS, Artemyev et al. 2017),
+// two to three times stronger closer in; the northern lobe points towards the Earth, the southern lobe away.
+const gD=[0,0,0];
+function lobeField(rE,jd,out){ const h=helio.earth, d=Math.hypot(h[0],h[1],h[2]), sx=-h[0]/d, sy=-h[1]/d, sz=-h[2]/d, x=rE[0]*sx+rE[1]*sy+rE[2]*sz; if(x>-15*RE) return false;
+  const year=2000+(jd-2451545)/365.25; if(Math.abs(year-igYear)>0.02) igrfSet(year);
+  const gm=satellite.gstime(jd), c=Math.cos(gm), s=Math.sin(gm), ex=-igG[1][1], ey=-igH[1][1], ez=-igG[1][0]; gD[0]=c*ex-s*ey; gD[1]=s*ex+c*ey; gD[2]=ez;   // geomagnetic north, TEME
+  const k=gD[0]*sx+gD[1]*sy+gD[2]*sz, zx=gD[0]-k*sx, zy=gD[1]-k*sy, zz=gD[2]-k*sz, side=(rE[0]*zx+rE[1]*zy+rE[2]*zz)>=0?1:-1, B=10e-9*Math.max(1,Math.min(2.5,Math.pow(55*RE/(-x),0.7)));
+  out[0]=side*B*sx; out[1]=side*B*sy; out[2]=side*B*sz; return true; }
+// Upper atmospheres. Tables (altitude km, density kg/m³) from Justus & Braun (2007, NASA): VIRA for Venus, COSPAR reference atmosphere for Mars;
+// above the top of the table each gas follows its own diffusive equilibrium at the exospheric temperature (CO₂ and O).
+const ATMO={
+  venus:{h:[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150],r:[64.8,37.7,20.4,10.2,4.4,1.59,0.469,8.39e-2,1.19e-2,1.15e-3,7.99e-5,5.81e-6,3.2e-7,1.85e-8,1.39e-9,1.61e-10],sp:[[44.01,0.5],[16,0.5]],T:250},
+  mars:{h:[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150],r:[1.55e-2,6.47e-3,2.63e-3,9.8e-4,3.4e-4,1.08e-4,3.18e-5,8.73e-6,2.29e-6,6.01e-7,1.59e-7,4.14e-8,1.19e-8,3.76e-9,1.09e-9,4.73e-10],sp:[[44.01,0.92],[16,0.08]],T:270}
+};
+// Giant planets: hydrostatic profile from 1 bar with a mean temperature profile (Jupiter: Galileo probe, Seiff et al. 1998; Saturn: up to 750 km the
+// temperatures of Justus & Braun 2007, above them Cassini, Koskinen & Guerlet 2018; Uranus and Neptune: Voyager 2, Lindal et al. 1987, 1992, Herbert et al. 1987, Broadfoot et al. 1989).
+// [mean molar mass below the homopause g/mol, homopause km, [altitude km, temperature K]...]
+const GIANT={jupiter:[2.22,400,[[0,166],[50,110],[150,160],[350,170],[1000,900],[1e9,940]]],saturn:[2.16,750,[[0,134.8],[20,117],[40,100.5],[60,91.1],[80,84.6],[100,82.1],[120,84.1],[140,92.7],[160,104.2],[180,117.6],[200,128.3],[220,136.2],[240,138.6],[260,142.5],[300,142.6],[750,142],[1000,170],[1600,390],[1e9,400]]],
+  uranus:[2.64,600,[[0,76],[50,53],[200,90],[600,140],[1500,800],[1e9,800]]],neptune:[2.53,600,[[0,72],[50,52],[300,160],[600,170],[1500,750],[1e9,750]]]};
+const KB=1.380649e-23, AMU=1.66053907e-27, RGAS=8.314462618;
+function giantTable(k){ const G=GIANT[k], b=BODY[k], T=z=>{ const p=G[2]; let i=0; while(i<p.length-2&&z>p[i+1][0]) i++; const a=p[i], c=p[i+1]; return a[1]+(c[1]-a[1])*Math.min(1,(z-a[0])/(c[0]-a[0])); },
+    mu=z=>{ const f=Math.min(1,Math.max(0,(z-G[1])/300)); return (G[0]+(2.016-G[0])*f)*1e-3; }, dz=5, n=4001, h=new Float64Array(n), r=new Float64Array(n);
+  let lp=Math.log(1e5); for(let i=0;i<n;i++){ const z=i*dz, t=T(z), m=mu(z), g=b.gm*1e9/Math.pow((b.R+z)*1e3,2); h[i]=z; r[i]=Math.exp(lp)*m/(RGAS*t); const z2=z+dz, g2=b.gm*1e9/Math.pow((b.R+z2)*1e3,2);
+    lp-=0.5*(m*g/(RGAS*t)+mu(z2)*g2/(RGAS*T(z2)))*dz*1e3; }
+  return {h,r,sp:[[2.016,1]],T:T(1e8),log:true}; }
+function atmDensity(k,alt){ let a=ATMO[k]; if(!a){ if(!GIANT[k]) return 0; a=ATMO[k]=giantTable(k); } const H=a.h, R=a.r, n=H.length;
+  if(alt<=H[0]) return R[0];
+  if(alt<=H[n-1]){ let lo=0, hi=n-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(H[m]<=alt) lo=m; else hi=m; } const f=(alt-H[lo])/(H[hi]-H[lo]); return Math.exp(Math.log(R[lo])+f*(Math.log(R[hi])-Math.log(R[lo]))); }
+  const b=BODY[k], rt=(b.R+H[n-1])*1e3, r=(b.R+alt)*1e3, mu=b.gm*1e9; let mbar=0; for(const s of a.sp) mbar+=s[0]*s[1]; const nt=R[n-1]/(mbar*AMU); let rho=0;
+  for(const s of a.sp){ const m=s[0]*AMU; rho+=nt*s[1]*m*Math.exp(-m*mu/(KB*a.T)*(1/rt-1/r)); } return rho; }
+// Light and heat from the central body: Bond albedo; emitted flux either uniform (planets with atmospheres or internal heat) or in local
+// radiative equilibrium under the spacecraft (airless or thin-aired slow rotators: (1 − A) S cos ψ, with a night floor σT⁴).
+// Mercury: Mallama (2017); Venus, Moon, Mars: NASA fact sheets; Jupiter: Li et al. (2018), emitted 14,10 W/m²; Saturn: Hanel et al. (1983), emitted
+// 4,95 W/m² (Li et al. 2010); Uranus, Neptune: Pearl et al. (1990, 1991), Tₑ 59,1 and 59,3 K.
+const SIGMA=5.670374e-8, CLIGHT=299792458;
+const RAD={mercury:{A:0.088,night:100},venus:{A:0.76,eq:true},earth:{A:ALBEDO,F:237},moon:{A:0.11,night:95},mars:{A:0.25,night:180},jupiter:{A:0.503,F:14.10},saturn:{A:0.342,F:4.952},uranus:{A:0.300,F:SIGMA*Math.pow(59.1,4)},neptune:{A:0.290,F:SIGMA*Math.pow(59.3,4)}};
+// Gravity gradient tensor Γ = ∂a/∂r (1/s²): central body as a point mass plus its J₂, plus the Sun, the Moon or the Earth and, for heliocentric orbits, the planets.
+const J2R={saturn:60330,neptune:25225,moon:1738,mars:3396,mercury:2440};
+function addPoint(G,mu,dx,dy,dz){ const d2=dx*dx+dy*dy+dz*dz, d=Math.sqrt(d2), k=mu/(d2*d), ux=dx/d, uy=dy/d, uz=dz/d;
+  G[0]+=k*(3*ux*ux-1); G[1]+=k*3*ux*uy; G[2]+=k*3*ux*uz; G[4]+=k*(3*uy*uy-1); G[5]+=k*3*uy*uz; G[8]+=k*(3*uz*uz-1); }
+function gravGrad(c,r,jd,G){ for(let i=0;i<9;i++) G[i]=0; const b=BODY[c]; addPoint(G,b.gm,r[0],r[1],r[2]);
+  const j2=J2[c]||0; if(j2){ let p; if(c==='earth') p=[0,0,1]; else p=bodyAxes(c,jd).Z; const R=J2R[c]||b.R, k=1.5*j2*b.gm*R*R, x=r[0], y=r[1], z=r[2], r2=x*x+y*y+z*z, rr=Math.sqrt(r2),
+      i5=1/(r2*r2*rr), i7=i5/r2, i9=i7/r2, s=x*p[0]+y*p[1]+z*p[2], f=i5-5*s*s*i7, a=-5*i7+35*s*s*i9, q=-10*s*i7, v=[x,y,z];
+    for(let i=0;i<3;i++) for(let j=i;j<3;j++) G[3*i+j]+=-k*((i===j?f:0)+a*v[i]*v[j]+q*(v[i]*p[j]+p[i]*v[j])+2*i5*p[i]*p[j]); }
+  const h=helio[c], hx=h[0]+r[0], hy=h[1]+r[1], hz=h[2]+r[2], list=c==='sun'?PLANETS.concat(['moon']):c==='earth'?['sun','moon']:c==='moon'?['sun','earth']:['sun'];
+  for(const k of list){ if(k===c) continue; const q=helio[k]; addPoint(G,BODY[k].gm,hx-q[0],hy-q[1],hz-q[2]); }
+  G[3]=G[1]; G[6]=G[2]; G[7]=G[5]; return G; }
+const bB=[0,0,0], bR=[0,0,0], bO=[0,0,0], hS=[0,0,0], MAG_OWN={earth:1,mercury:1,mars:1,jupiter:1,saturn:1,uranus:1,neptune:1};   // bodies with a field of their own (B-dot makes sense there)
+function magEnv(c,r,jd,out){ // field at r (relative to body c) → tesla; returns a short description of the source in use
+  out[0]=out[1]=out[2]=0; const h=helio[c]; hS[0]=h[0]+r[0]; hS[1]=h[1]+r[1]; hS[2]=h[2]+r[2];
+  if(c==='earth'){ if(insideMP('earth',r)){ bField(r,satellite.gstime(jd),jd,out); if(lobeField(r,jd,bO)){ out[0]+=bO[0]; out[1]+=bO[1]; out[2]+=bO[2]; return 'IGRF-14 e lobo della coda magnetica'; } return 'IGRF-14'; }
+    imfField(hS,out); return 'campo interplanetario (fuori dalla magnetosfera)'; }
+  if(c==='moon'){ const e=helio.earth; bR[0]=hS[0]-e[0]; bR[1]=hS[1]-e[1]; bR[2]=hS[2]-e[2]; if(insideMP('earth',bR)&&lobeField(bR,jd,out)) return 'lobo della coda magnetica terrestre'; imfField(hS,out); return 'campo interplanetario'; }
+  const M=MAGM[c];
+  if(c==='sun'||c==='venus'||!M){ imfField(hS,out); const ra=Math.hypot(hS[0],hS[1],hS[2])/AU; return ra>120?'campo interstellare (oltre l\'eliopausa)':ra>90?'campo interplanetario compresso dell\'elioguaina':'campo interplanetario (spirale di Parker)'; }
+  if(c==='mars'){ imfField(hS,out); needMars(); if(!M.c) return 'campo interplanetario (campo crostale in caricamento)'; }
+  else if(!insideMP(c,r)){ imfField(hS,out); return 'campo interplanetario (fuori dalla magnetosfera)'; }
+  const F=bodyAxes(c,jd), X=F.X, Y=F.Y, Z=F.Z; let x=X[0]*r[0]+X[1]*r[1]+X[2]*r[2], y=Y[0]*r[0]+Y[1]*r[1]+Y[2]*r[2], z=Z[0]*r[0]+Z[1]*r[1]+Z[2]*r[2];
+  if(M.uls){ y=-y; z=-z; }   // Uranus: models in the spin-aligned Voyager system (pole opposite to the IAU north, longitudes counted the same way)
+  if(M.off){ const zz=z-M.z0, d2=x*x+y*y+zz*zz, d=Math.sqrt(d2), m=M.g10*M.a*M.a*M.a, mr=m*zz; bB[0]=3*mr*x/(d2*d2*d); bB[1]=3*mr*y/(d2*d2*d); bB[2]=3*mr*zz/(d2*d2*d)-m/(d2*d); }
+  else shField(M,x,y,z,bB);
+  if(M.disc){ discField(M.disc,x/M.a,y/M.a,z/M.a,bO); bB[0]+=bO[0]; bB[1]+=bO[1]; bB[2]+=bO[2]; }
+  if(M.uls){ bB[1]=-bB[1]; bB[2]=-bB[2]; }
+  for(let i=0;i<3;i++) out[i]+=(X[i]*bB[0]+Y[i]*bB[1]+Z[i]*bB[2])*1e-9;
+  return c==='mars'?'campo crostale e campo interplanetario':'campo interno'+(M.disc?' e corrente equatoriale':''); }
+
 function fillEnv(c,r,v,jd){   // r, v relative to body c, equator-of-date axes, km and km/s
   env.c=c; env.mu=BODY[c].gm; env.r[0]=r[0]; env.r[1]=r[1]; env.r[2]=r[2]; env.v[0]=v[0]; env.v[1]=v[1]; env.v[2]=v[2];
   const h=helio[c], sx=-(h[0]+r[0]), sy=-(h[1]+r[1]), sz=-(h[2]+r[2]), d=Math.hypot(sx,sy,sz), rm=Math.hypot(r[0],r[1],r[2]);
   env.sun[0]=sx/d; env.sun[1]=sy/d; env.sun[2]=sz/d; env.dSun=d; env.alt=rm-BODY[c].R;
   const dd=r[0]*env.sun[0]+r[1]*env.sun[1]+r[2]*env.sun[2]; env.lit=c==='sun'?1:sunFraction(rm,dd,d,BODY[c].R); env.ecl=env.lit<0.5;   // conical shadow: umbra and penumbra
   const ps=P_SUN*(AU/d)*(AU/d); env.P=ps*env.lit; env.nad[0]=-r[0]/rm; env.nad[1]=-r[1]/rm; env.nad[2]=-r[2]/rm;
-  if(c==='earth'){ const k=(RE/rm)*(RE/rm); env.Pir=E_IR*k; env.Pal=ALBEDO*ps*k*Math.max(0,dd/rm);   // Earth infrared and reflected sunlight, both arriving from the nadir
-    env.hasB=true; bField(r,satellite.gstime(jd),jd,env.B); env.rho=density(env.alt); env.vr[0]=(v[0]+WE*r[1])*1000; env.vr[1]=(v[1]-WE*r[0])*1000; env.vr[2]=v[2]*1000; }
-  else { env.Pir=env.Pal=0; env.hasB=false; env.B[0]=env.B[1]=env.B[2]=0; env.rho=0; env.vr[0]=v[0]*1000; env.vr[1]=v[1]*1000; env.vr[2]=v[2]*1000; }
+  // reflected sunlight and thermal emission of the central body, both arriving from the nadir, scaled by (R/r)²
+  const rad=RAD[c]; if(rad){ const k=(BODY[c].R/rm)*(BODY[c].R/rm), cz=Math.max(0,dd/rm), S=ps*CLIGHT;
+    env.Pal=rad.A*ps*k*cz; env.Pir=k/CLIGHT*(rad.F!=null?rad.F:rad.eq?(1-rad.A)*S/4:Math.max(SIGMA*Math.pow(rad.night,4),(1-rad.A)*S*cz)); }
+  else env.Pir=env.Pal=0;
+  env.bsrc=magEnv(c,r,jd,env.B); env.hasB=true;
+  env.rho=c==='earth'?density(env.alt):atmDensity(c,env.alt);
+  if(c==='earth'){ env.vr[0]=(v[0]+WE*r[1])*1000; env.vr[1]=(v[1]-WE*r[0])*1000; env.vr[2]=v[2]*1000; }
+  else if(env.rho>0){ const Z=bodyAxes(c,jd).Z, w=SPIN[c]*D2R/86400, ox=w*Z[0], oy=w*Z[1], oz=w*Z[2];   // the atmosphere turns with the body
+    env.vr[0]=(v[0]-(oy*r[2]-oz*r[1]))*1000; env.vr[1]=(v[1]-(oz*r[0]-ox*r[2]))*1000; env.vr[2]=(v[2]-(ox*r[1]-oy*r[0]))*1000; }
+  else { env.vr[0]=v[0]*1000; env.vr[1]=v[1]*1000; env.vr[2]=v[2]*1000; }
+  gravGrad(c,r,jd,env.G);
 }
 
 /* ================= disturbance torques, body axes, N·m ================= */
@@ -841,10 +999,12 @@ const TQ=newTQ(), TQs=newTQ(), w1=[0,0,0], w2=[0,0,0], w3=[0,0,0], w4=[0,0,0];
 function radiate(sc,u,P,F,M){ const ux=u[0], uy=u[1], uz=u[2];
   for(const f of sc.faces){ const c=f.n[0]*ux+f.n[1]*uy+f.n[2]*uz; if(c<=0) continue; const k1=-P*f.A*c, k2=2*f.rs*c+2/3*f.rd, a=1-f.rs, fx=k1*(a*ux+k2*f.n[0]), fy=k1*(a*uy+k2*f.n[1]), fz=k1*(a*uz+k2*f.n[2]), r=f.r;
     F[0]+=fx; F[1]+=fy; F[2]+=fz; M[0]+=r[1]*fz-r[2]*fy; M[1]+=r[2]*fx-r[0]*fz; M[2]+=r[0]*fy-r[1]*fx; } }
+const gA=new Float64Array(9), gB=new Float64Array(9);
 function torques(sc,A,T){
-  // gravity gradient: M = (3μ/R³) ĉ × (J ĉ), ĉ = unit radius vector in body axes, J = full inertia tensor
-  const J=sc.J, rm=Math.hypot(env.r[0],env.r[1],env.r[2]); mulA(A,env.r,w1); const cx=w1[0]/rm, cy=w1[1]/rm, cz=w1[2]/rm, k=3*env.mu/(rm*rm*rm), jx=J[0]*cx+J[1]*cy+J[2]*cz, jy=J[3]*cx+J[4]*cy+J[5]*cz, jz=J[6]*cx+J[7]*cy+J[8]*cz;
-  T.gg[0]=k*(cy*jz-cz*jy); T.gg[1]=k*(cz*jx-cx*jz); T.gg[2]=k*(cx*jy-cy*jx);
+  // gravity gradient: M_i = ε_ijk (Γ J)_jk with Γ the gravity-gradient tensor in body axes (Γ_b = A Γ Aᵀ) and J the full inertia tensor;
+  // for a point mass Γ = (μ/R³)(3 ĉ ĉᵀ − 1) and this is the classical M = (3μ/R³) ĉ × (J ĉ)
+  mm(A,env.G,gA); mmT(gA,A,gB); mm(gB,sc.J,gA);
+  T.gg[0]=gA[5]-gA[7]; T.gg[1]=gA[6]-gA[2]; T.gg[2]=gA[1]-gA[3];
   for(let i=0;i<3;i++) T.drag[i]=T.srp[i]=T.srpE[i]=T.fDrag[i]=T.fRad[i]=0;
   // aerodynamic drag: F_i = −½ ρ C_D A_i (n_i·v̂) v² v̂ on the faces that meet the flow; v is relative to the co-rotating atmosphere
   if(env.rho>0){ mulA(A,env.vr,w2); const vm=Math.hypot(w2[0],w2[1],w2[2]), ux=w2[0]/vm, uy=w2[1]/vm, uz=w2[2]/vm, q=0.5*env.rho*sc.cd*vm*vm;
@@ -969,15 +1129,15 @@ window.addEventListener('hashchange',fromHash);
 function select(o,quiet){
   if(sel&&sel.t==='sat'&&sel.i<N){ const s=sats[sel.i], i=sel.i; sel=null; vis[i]=(regOn[s.regime]&&(grpSel==='all'||s.group===grpSel))?1:0; }
   sel=o; const has=!!o;
-  orb.line.visible=has&&o.t==='sat'; trk.line.visible=has&&o.t==='sat'&&$('chkTrack').checked; nadLine.visible=has&&(o.t==='sat'||o.p.c!=='sun'); pOrb.line.visible=has&&o.t==='probe'&&o.p.type!=='L';
+  orb.line.visible=has&&o.t==='sat'; trk.line.visible=has&&o.t==='sat'&&$('chkTrack').checked; pTrk.line.visible=has&&o.t==='probe'&&o.p.type!=='L'&&o.p.c!=='sun'&&$('chkTrack').checked; nadLine.visible=has&&(o.t==='sat'||o.p.c!=='sun'); pOrb.line.visible=has&&o.t==='probe'&&o.p.type!=='L';
   ring.visible=has; $('tagSel').hidden=!has; $('detail').hidden=!has; app.classList.toggle('has-sel',has);
-  if(!has){ if(follow) setFollow(false); if(!quiet) setHash(''); if(N) refreshSizes(); att.ready=false; triG.visible=false; relLine.visible=false; trPark.line.visible=trArc.line.visible=false; $('inset').hidden=true; ['tagLx','tagLy','tagLz'].forEach(i=>$(i).hidden=true); return; }
+  if(!has){ $('map2').hidden=true; if(follow) setFollow(false); if(!quiet) setHash(''); if(N) refreshSizes(); att.ready=false; triG.visible=false; relLine.visible=false; trPark.line.visible=trArc.line.visible=false; $('inset').hidden=true; ['tagLx','tagLy','tagLz'].forEach(i=>$(i).hidden=true); return; }
   $('hint').hidden=true; $('tagSel').textContent=selName(); lastOrb=0;
   if(o.t==='sat'){ vis[o.i]=1; refreshSizes(); propOne(o.i,jdOf(simMs),simMs); if(!quiet) setHash('sat-'+sats[o.i].norad); }
   else if(!quiet) setHash('sonda-'+o.p.id);
   const nav=o.t==='sat'?'earth':probeNav(o.p); let moved=false; if(nav!==centre){ setCentre(nav,true); moved=true; } else if(follow) setFollow(false);
   if(probes.length) updateProbes(jdOf(simMs));
-  prof=null; adcsAt=0; defaultRel(); if(o.t==='probe'&&o.p.type==='des') att.mode=o.p.mode==='inerziale'?'inert':'nadir'; if(att.mode==='bdot'&&selC()!=='earth') att.mode='free'; resetAtt(); if(att.ready){ fillEnv(cur.c,cur.r,cur.v,jdOf(simMs)); torques(scModel(sel),att.A,TQ); }
+  prof=null; adcsAt=0; defaultRel(); if(o.t==='probe'&&o.p.type==='des') att.mode=o.p.mode==='inerziale'?'inert':'nadir'; if(att.mode==='bdot'&&!MAG_OWN[selC()]) att.mode='free'; resetAtt(); if(att.ready){ fillEnv(cur.c,cur.r,cur.v,jdOf(simMs)); torques(scModel(sel),att.A,TQ); }
   renderDetail(); computeSel(); frameSelection(moved); updateRel(); updateSelState();
   $('left').classList.remove('open'); $('btnFilters').setAttribute('aria-expanded','false');
 }
@@ -1104,21 +1264,69 @@ function updateOrbit(){
     if(a===0&&b===nF-1){ const j=3*(nF-1), gx=orbS[0]-orbS[j], gy=orbS[1]-orbS[j+1], gz=orbS[2]-orbS[j+2];
       if(Math.hypot(gx,gy,gz)<0.2*Math.hypot(orbS[3*m],orbS[3*m+1],orbS[3*m+2])) for(let i=0;i<nF;i++){ const f=ORB_F[i], t=Math.min(1,Math.max(0,(Math.abs(f)-0.25)/0.25)), w=t*t*(3-2*t)*(f<0?-0.5:0.5);
         orbS[3*i]+=gx*w; orbS[3*i+1]+=gy*w; orbS[3*i+2]+=gz*w; } }
-    orb.begin(p0[k]*KM,p0[k+2]*KM,-p0[k+1]*KM);
+    orb.begin(p0[k]*KM,p0[k+2]*KM,-p0[k+1]*KM); const doMap=$('chkMap').checked;
     for(let i=a;i<=b;i++){ const x=orbS[3*i], y=orbS[3*i+1], z=orbS[3*i+2], f=ORB_F[i]<0?1+ORB_F[i]:ORB_F[i]; orb.set(i-a,x*KM,z*KM,-y*KM,f);
-      if(doTrk){ const th=satellite.gstime(jd0+orbDt[i]), c=Math.cos(th), sn=Math.sin(th), ex=c*x+sn*y, ey=-sn*x+c*y, g=R_E*1.004/Math.hypot(x,y,z); trk.set(i-a,ex*g,z*g,-ey*g); } }
-    orb.commit(b-a+1); if(doTrk) trk.commit(b-a+1);
-  } else { const p=sel.p; if(p.type==='L'){ pOrb.commit(0); return; } const seg=currentSeg(p,jd0), K=probeOsc(p,jd0+TDB_UTC,seg);
+      if(doTrk||doMap){ const th=satellite.gstime(jd0+orbDt[i]), c=Math.cos(th), sn=Math.sin(th), ex=c*x+sn*y, ey=-sn*x+c*y, rr=Math.hypot(x,y,z), g=R_E*1.004/rr; if(doTrk) trk.set(i-a,ex*g,z*g,-ey*g);
+        mapLon[i-a]=Math.atan2(ey,ex); mapLat[i-a]=Math.asin(z/rr); } }
+    let nT=b-a+1, mT=m-a;
+    if((doTrk||doMap)&&1/s.nRev>2){ nT=N_ORB+1; mT=N_ORB/2;   // slower than two revolutions a day: one day either side of now
+      for(let i=0;i<nT;i++){ const dt=(2*i/(nT-1)-1)*1440; let pv; try{ pv=satellite.sgp4(rec,t0+dt); }catch(e){ pv=null; } const q=pv&&pv.position; if(!q||!isFinite(q.x)){ nT=i; break; }
+        const th=satellite.gstime(jd0+dt/1440), c=Math.cos(th), sn=Math.sin(th), ex=c*q.x+sn*q.y, ey=-sn*q.x+c*q.y, rr=Math.hypot(q.x,q.y,q.z), g=R_E*1.004/rr; if(doTrk) trk.set(i,ex*g,q.z*g,-ey*g);
+        mapLon[i]=Math.atan2(ey,ex); mapLat[i]=Math.asin(q.z/rr); } if(mT>=nT) mT=Math.max(0,nT-1); }
+    orb.commit(b-a+1); if(doTrk) trk.commit(nT); mapN=nT; mapMid=mT; mapC='earth'; mapJd=jd0;
+  } else { const p=sel.p; if(p.type==='L'){ pOrb.commit(0); mapN=0; return; } const seg=currentSeg(p,jd0), K=probeOsc(p,jd0+TDB_UTC,seg);
     // The drawn path is the osculating conic of the model at this instant: closed by construction for ellipses and always
     // through the probe. Hyperbolas: eight years either side of now.
     let H0=0, Ha=0, Hb=0; if(K.e>=1){ const n=Math.sqrt(K.mu/Math.pow(K.q/(K.e-1),3))*86400, sp=2922; H0=keplerH(K.M,K.e); Ha=keplerH(K.M-n*sp,K.e); Hb=keplerH(K.M+n*sp,K.e); }
     const E0=K.e<1?keplerE(K.M,K.e):0;
     // origin on the probe, relative to its central body
     kepAt(K,K.e<1?E0:H0,tC); toEqd(tC[0],tC[1],tC[2],tD); pOrb.begin(tD[0]*KM,tD[2]*KM,-tD[1]*KM);
+    const c=K.c, doTrk=pTrk.line.visible, doMap=$('chkMap').checked, gt=(doTrk||doMap)&&c!=='sun', aK=K.q/Math.abs(1-K.e), nK=Math.sqrt(K.mu/(aK*aK*aK)), M0=K.e<1?E0-K.e*Math.sin(E0):K.e*Math.sinh(H0)-H0;
+    let F=null, wS=0, Rb=0; if(gt){ if(c!=='earth'){ F=iauAxes(c,jd0); if(pTrk.line.parent!==meshes[c]) meshes[c].add(pTrk.line); } else if(pTrk.line.parent!==earthGroup) earthGroup.add(pTrk.line); wS=(c==='earth'?0:SPIN_IAU[c]*D2R/86400); Rb=BODY[c].R*KM*1.004; }
+    // ground track: over the whole revolution when it lasts less than two turns of the body, otherwise one turn either side of now (a far orbiter
+    // like Juno sees the planet spin under it many times per revolution, and a whole revolution would only cover the map with lines)
+    const Trot=c==='earth'?86164.1:360/Math.abs(SPIN_IAU[c]||1)*86400, whole=K.e<1&&TAU/nK<=2*Trot;
+    const gp=(i,x,y,z,dt)=>{ const rr=Math.hypot(x,y,z); let bx, by, bz;   // body-fixed at the time of the sample
+      if(c==='earth'){ const th=satellite.gstime(jd0+dt/86400), cs=Math.cos(th), sn=Math.sin(th); bx=cs*x+sn*y; by=-sn*x+cs*y; bz=z; }
+      else { const X=F.X, Y=F.Y, Z=F.Z, ux=X[0]*x+X[1]*y+X[2]*z, uy=Y[0]*x+Y[1]*y+Y[2]*z, w=wS*dt, cw=Math.cos(w), sw=Math.sin(w); bx=ux*cw+uy*sw; by=-ux*sw+uy*cw; bz=Z[0]*x+Z[1]*y+Z[2]*z; }
+      if(doTrk){ if(i===0) pTrk.begin(0,0,0); pTrk.set(i,bx/rr*Rb,bz/rr*Rb,-by/rr*Rb); } mapLon[i]=Math.atan2(by,bx); mapLat[i]=Math.asin(bz/rr); };
     for(let i=0;i<nF;i++){ const g=ORB_F[i], an=K.e<1?E0+TAU*g:H0+(g<0?(H0-Ha):(Hb-H0))*2*g;
-      kepAt(K,an,tC); toEqd(tC[0],tC[1],tC[2],tD); pOrb.set(i,tD[0]*KM,tD[2]*KM,-tD[1]*KM,K.e<1?(g<0?1+g:g):(i/(nF-1))); }
-    pOrb.commit(nF); }
+      kepAt(K,an,tC); toEqd(tC[0],tC[1],tC[2],tD); pOrb.set(i,tD[0]*KM,tD[2]*KM,-tD[1]*KM,K.e<1?(g<0?1+g:g):(i/(nF-1)));
+      if(gt&&whole) gp(i,tD[0],tD[1],tD[2],((an-K.e*Math.sin(an))-M0)/nK); }
+    let nT=nF, mT=ORB_MID;
+    if(gt&&!whole){ nT=N_ORB+1; mT=N_ORB/2; for(let i=0;i<nT;i++){ const dt=(2*i/(nT-1)-1)*Trot, M=M0+nK*dt; kepAt(K,K.e<1?keplerE(M,K.e):keplerH(M,K.e),tC); toEqd(tC[0],tC[1],tC[2],tD); gp(i,tD[0],tD[1],tD[2],dt); } }
+    pOrb.commit(nF); if(gt&&doTrk) pTrk.commit(nT); if(gt){ mapN=nT; mapMid=mT; mapC=c; mapJd=jd0; } else mapN=0; }
 }
+
+/* ================= ground track on a flat map (equirectangular, east longitude −180°…180°, planetocentric latitude) ================= */
+const mapLon=new Float64Array(N_ORB+1), mapLat=new Float64Array(N_ORB+1); let mapN=0, mapMid=0, mapC='', mapJd=0;
+const SPIN_IAU=Object.assign({},SPIN,{uranus:-501.1600928});   // the drawn planets turn with the IAU rotation model
+function iauAxes(k,jd){ if(k!=='uranus') return bodyAxes(k,jd); const e=BFX._u||(BFX._u={X:[0,0,0],Y:[0,0,0],Z:[0,0,0]}), ax=A.RotationAxis(A.Body.Uranus,A.MakeTime(new Date(msOfJd(jd)))), n=ax.north, l=Math.hypot(n.x,n.y),
+  Qx=-n.y/l, Qy=n.x/l, Yx=-n.z*Qy, Yy=n.z*Qx, Yz=n.x*Qy-n.y*Qx, W=ax.spin*D2R, c=Math.cos(W), s=Math.sin(W); toEqd(Qx*c+Yx*s,Qy*c+Yy*s,Yz*s,e.X); toEqd(n.x,n.y,n.z,e.Z);
+  const X=e.X, Z=e.Z; e.Y[0]=Z[1]*X[2]-Z[2]*X[1]; e.Y[1]=Z[2]*X[0]-Z[0]*X[2]; e.Y[2]=Z[0]*X[1]-Z[1]*X[0]; return e; }
+const MAP_TEX={earth:'tex/day.jpg'}, mapImg={}, mapShade=document.createElement('canvas'); mapShade.width=180; mapShade.height=90;
+function drawMap(){ const box=$('map2'); if(!sel||!$('chkMap').checked||!mapN||!mapC){ box.hidden=true; return; } box.hidden=false;
+  const cv=$('mapCv'), d=window.devicePixelRatio||1, W=Math.round(box.clientWidth*d), H=Math.round(box.clientHeight*d); if(!W||!H) return; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  const x=cv.getContext('2d'), k=mapC, src=MAP_TEX[k]||('tex/'+k+'.jpg'); let im=mapImg[k]; if(!im){ im=mapImg[k]=new Image(); im.onload=()=>{ lastOrb=0; }; im.src=src; }
+  x.fillStyle='#000'; x.fillRect(0,0,W,H); if(im.complete&&im.naturalWidth) x.drawImage(im,0,0,W,H);
+  // night side: the subsolar point in body-fixed axes at the current time
+  const h=helio[k], hd=Math.hypot(h[0],h[1],h[2]), sx=-h[0]/hd, sy=-h[1]/hd, sz=-h[2]/hd; let bx, by, bz;
+  if(k==='earth'){ const th=satellite.gstime(mapJd), c=Math.cos(th), s=Math.sin(th); bx=c*sx+s*sy; by=-s*sx+c*sy; bz=sz; }
+  else { const F=iauAxes(k,mapJd); bx=F.X[0]*sx+F.X[1]*sy+F.X[2]*sz; by=F.Y[0]*sx+F.Y[1]*sy+F.Y[2]*sz; bz=F.Z[0]*sx+F.Z[1]*sy+F.Z[2]*sz; }
+  const ls=Math.atan2(by,bx), bs=Math.asin(Math.max(-1,Math.min(1,bz))), sg=mapShade.getContext('2d'), id=sg.createImageData(180,90), px=id.data, sbs=Math.sin(bs), cbs=Math.cos(bs);
+  for(let j=0;j<90;j++){ const la=(89.5-2*j)*D2R*0.5*2, sl=Math.sin((90-(j+0.5)*2)*D2R), cl=Math.cos((90-(j+0.5)*2)*D2R);
+    for(let i=0;i<180;i++){ const lo=(-180+(i+0.5)*2)*D2R, cz=sl*sbs+cl*cbs*Math.cos(lo-ls), a=Math.min(1,Math.max(0,(0.05-cz)/0.15)), o=4*(j*180+i); px[o]=2; px[o+1]=4; px[o+2]=10; px[o+3]=Math.round(150*a); } }
+  sg.putImageData(id,0,0); x.imageSmoothingEnabled=true; x.drawImage(mapShade,0,0,W,H);
+  // graticule every 30°
+  x.strokeStyle='rgba(154,165,177,0.22)'; x.lineWidth=d; x.beginPath(); for(let l=-150;l<180;l+=30){ const X=(l+180)/360*W; x.moveTo(X,0); x.lineTo(X,H); } for(let b=-60;b<=60;b+=30){ const Y=(90-b)/180*H; x.moveTo(0,Y); x.lineTo(W,Y); } x.stroke();
+  // the track: the half revolution ahead in full colour, the half behind dimmed; a jump across ±180° breaks the line
+  const P=i=>[(mapLon[i]*R2D+180)/360*W,(90-mapLat[i]*R2D)/180*H];
+  for(const [a,b,col] of [[0,mapMid,'rgba(255,98,212,0.45)'],[mapMid,mapN-1,'#ff62d4']]){ x.strokeStyle=col; x.lineWidth=1.6*d; x.beginPath(); let q=P(a); x.moveTo(q[0],q[1]);
+    for(let i=a+1;i<=b;i++){ const r=P(i); if(Math.abs(r[0]-q[0])>W/2) x.moveTo(r[0],r[1]); else x.lineTo(r[0],r[1]); q=r; } x.stroke(); }
+  const c0=P(mapMid); x.fillStyle='#fff'; x.strokeStyle='#ff62d4'; x.lineWidth=2*d; x.beginPath(); x.arc(c0[0],c0[1],4*d,0,TAU); x.fill(); x.stroke();
+  const s0=[(ls*R2D+180)/360*W,(90-bs*R2D)/180*H]; x.fillStyle='#ffb224'; x.beginPath(); x.arc(s0[0],s0[1],3*d,0,TAU); x.fill();
+  const cap='Traccia a terra su '+BODY[k].name, lg='lat '+fmt(mapLat[mapMid]*R2D,2)+'° · lon '+fmt(mapLon[mapMid]*R2D,2)+'° E · ● punto subsolare';
+  if($('mapCap').textContent!==cap) $('mapCap').textContent=cap; if($('mapLeg').textContent!==lg) $('mapLeg').textContent=lg; }
 
 /* ================= camera ================= */
 function defaultDist(k){ return k==='sun'?7.5e5:BODY[k].R*KM*5.65; }
@@ -1352,7 +1560,7 @@ const SC_FIELDS=[['m','Massa, kg'],['a','Corpo, lato x, m'],['b','Corpo, lato y,
 const SER_CODE=['Drag','GG','SRP','Mag'];
 function htmlAssetto(){
   const v3=(lab,i)=>'<span class="rl">'+lab+'</span><span id="l'+i+'"></span><span id="l'+(i+1)+'"></span><span id="l'+(i+2)+'"></span>';
-  return '<p class="hd" style="border:0;padding:0">Modo<span class="seg" role="group" aria-label="Modo di assetto"><button class="sk" id="amN" aria-pressed="'+(att.mode==='nadir')+'">nadir</button><button class="sk" id="amI" aria-pressed="'+(att.mode==='inert')+'">inerziale</button><button class="sk" id="amF" aria-pressed="'+(att.mode==='free')+'">libero</button><button class="sk" id="amP" aria-pressed="'+(att.mode==='pd')+'" title="Controllo proporzionale-derivativo con ruote di reazione">PD</button>'+(selC()==='earth'?'<button class="sk" id="amB" aria-pressed="'+(att.mode==='bdot')+'" title="Smorzamento magnetico della rotazione">B-dot</button>':'')+'</span></p><p class="note" id="aNote"></p>'+
+  return '<p class="hd" style="border:0;padding:0">Modo<span class="seg" role="group" aria-label="Modo di assetto"><button class="sk" id="amN" aria-pressed="'+(att.mode==='nadir')+'">nadir</button><button class="sk" id="amI" aria-pressed="'+(att.mode==='inert')+'">inerziale</button><button class="sk" id="amF" aria-pressed="'+(att.mode==='free')+'">libero</button><button class="sk" id="amP" aria-pressed="'+(att.mode==='pd')+'" title="Controllo proporzionale-derivativo con ruote di reazione">PD</button>'+(MAG_OWN[selC()]?'<button class="sk" id="amB" aria-pressed="'+(att.mode==='bdot')+'" title="Smorzamento magnetico della rotazione">B-dot</button>':'')+'</span></p><p class="note" id="aNote"></p>'+
   '<dl class="kv">'+row('Errore rispetto a LVLH','','aErr','°')+row('Errore su x, y, z','','aErr3','°')+row('Velocità angolare','|ω|','aW','°/s')+row('ω corpo x, y, z','','aW3','°/s')+row('Velocità angolare orbitale','θ̇','aN','°/s')+row('Momento accumulato','|∫M dt|','aH','N·m·s')+row('Coppia di controllo','|Mc|','aTc','N·m')+row('Momento assorbito dalle ruote','','aHw','N·m·s')+'</dl>'+
   '<p class="hd">Quaternione corpo ← inerziale</p><div class="vec v4"><span class="h">q1</span><span class="h">q2</span><span class="h">q3</span><span class="h">q4</span><span id="aq0"></span><span id="aq1"></span><span id="aq2"></span><span id="aq3"></span></div>'+
   '<p class="hd">Terna LVLH in assi inerziali</p><div class="vec"><span class="rl"></span><span class="h">x</span><span class="h">y</span><span class="h">z</span>'+v3('xL radiale',0)+v3('yL trasversale',3)+v3('zL normale',6)+'</div>'+
@@ -1364,13 +1572,23 @@ function htmlDisturbi(){
   let s='<p class="note" id="dEnv"></p><div class="tq"><span></span><span class="h">Coppia</span><span class="h">Adesso</span><span class="h">Max orbita</span>';
   SER.forEach((x,k)=>{ s+='<i class="key" style="--c:'+x[1]+'"></i><span title="'+x[0]+'"><b>'+SER_CODE[k]+'</b> '+x[2]+'</span><span class="num" id="dN'+k+'">—</span><span class="num" id="dM'+k+'">—</span>'; });
   return s+'<span></span><span>Totale</span><span class="num" id="dNT">—</span><span></span></div>'+
-    '<dl class="kv">'+row('Forza di resistenza','','dF0','N')+row('Forza di radiazione','','dF1','N')+row('Coppia da albedo e infrarosso terrestri','','dF2','N·m')+row('Gradiente di gravità, massimo a 45°','','dF3','N·m')+'</dl>'+
+    '<dl class="kv">'+row('Forza di resistenza','','dF0','N')+row('Forza di radiazione','','dF1','N')+row('Coppia da albedo e infrarosso del corpo centrale','','dF2','N·m')+row('Gradiente di gravità, massimo a 45°','','dF3','N·m')+'</dl>'+
     '<p class="note" id="dGG"></p><div class="chart" id="dChart"></div><p class="note" id="dNote"></p><p class="hd">Formule usate</p><div class="sheet">'+
-    '<p><b>Gradiente di gravità</b> M = (3μ/R³) ĉ × (J ĉ), con ĉ il versore del raggio in assi corpo e J il tensore d\'inerzia completo.</p>'+
-    '<p><b>Resistenza atmosferica</b> F<sub>i</sub> = −½ ρ C<sub>D</sub> A<sub>i</sub> (n̂<sub>i</sub>·v̂) v² v̂ sulle facce con n̂<sub>i</sub>·v̂ &gt; 0, M = Σ r<sub>i</sub> × F<sub>i</sub>. La velocità v è relativa all\'atmosfera, che ruota con la Terra; ρ viene dal modello esponenziale a strati.</p>'+
-    '<p><b>Radiazione</b> F<sub>i</sub> = −P A<sub>i</sub> cos θ [(1 − ρ<sub>s</sub>) ŝ + (2ρ<sub>s</sub> cos θ + ⅔ρ<sub>d</sub>) n̂<sub>i</sub>], M = Σ r<sub>i</sub> × F<sub>i</sub>. Tre sorgenti: il Sole, P = (1361 W/m²)/c · (1 AU/d)² per la frazione di disco solare visibile, con ombra e penombra; l\'infrarosso terrestre, 237 W/m² · (R⊕/r)²/c; l\'albedo terrestre, 0,30 della radiazione solare · (R⊕/r)² · cos ψ, con ψ l\'angolo fra veicolo e Sole visti dal centro della Terra.</p>'+
-    '<p><b>Coppia magnetica</b> M = m × B, con m il dipolo residuo e B il campo IGRF-14 in armoniche sferiche fino al grado 13, con la variazione secolare.</p></div>';
+    envSheet(selC())+'</div>';
 }
+// The models in use around body c, for the «Formule usate» sheet.
+function envSheet(c){ const b=BODY[c], M=MAGM[c], R=RAD[c], j2=J2[c], third=c==='sun'?'dei pianeti e della Luna':c==='earth'?'del Sole e della Luna':c==='moon'?'del Sole e della Terra':'del Sole';
+  let s='<p><b>Gradiente di gravità</b> M<sub>i</sub> = ε<sub>ijk</sub> (Γ J)<sub>jk</sub>, con J il tensore d\'inerzia completo e Γ = ∂a/∂r il tensore del gradiente di gravità in assi corpo. Per una massa puntiforme Γ = (μ/R³)(3 ĉ ĉᵀ − 1) e si ritrova M = (3μ/R³) ĉ × (J ĉ). Qui Γ comprende '+b.name+(j2?' con lo schiacciamento (J₂ = '+sci(j2,3)+')':'')+' e le maree '+third+'.</p>';
+  s+='<p><b>Resistenza atmosferica</b> F<sub>i</sub> = −½ ρ C<sub>D</sub> A<sub>i</sub> (n̂<sub>i</sub>·v̂) v² v̂ sulle facce con n̂<sub>i</sub>·v̂ &gt; 0, M = Σ r<sub>i</sub> × F<sub>i</sub>, con v relativa all\'atmosfera che ruota con il corpo. '+
+    (c==='earth'?'ρ dal modello esponenziale a strati (Vallado).':c==='mars'?'ρ dalla COSPAR Mars Reference Atmosphere fino a 150 km; più in alto CO₂ e ossigeno atomico in equilibrio diffusivo a 270 K (MAVEN: la densità cambia di un fattore 10 tra giorno e notte e con il ciclo solare).':c==='venus'?'ρ dalla Venus International Reference Atmosphere (VIRA) fino a 150 km; più in alto CO₂ e ossigeno atomico in equilibrio diffusivo a 250 K (media tra il giorno, circa 300 K, e la notte, circa 120 K).':GIANT[c]?'ρ da un profilo idrostatico medio dal livello di 1 bar (quota zero), con la temperatura misurata dalle sonde e la termosfera calda in alto: valori indicativi.':c==='sun'?'Nessuna atmosfera: la pressione dinamica del vento solare (circa 1 nPa a 1 AU) è circa diecimila volte più debole della radiazione ed è trascurata.':'Esosfera con densità sotto 10⁻¹⁴ kg/m³: resistenza trascurabile, posta a zero.')+'</p>';
+  s+='<p><b>Radiazione</b> F<sub>i</sub> = −P A<sub>i</sub> cos θ [(1 − ρ<sub>s</sub>) ŝ + (2ρ<sub>s</sub> cos θ + ⅔ρ<sub>d</sub>) n̂<sub>i</sub>], M = Σ r<sub>i</sub> × F<sub>i</sub>. Il Sole: P = (1361 W/m²)/c · (1 AU/d)² per la frazione di disco solare visibile, con ombra e penombra.'+
+    (R?' Dal nadir arrivano la luce riflessa, albedo di Bond '+fmt(R.A,R.A<0.1?3:2).replace('.',',')+' · S · (R/r)² · cos ψ, e il calore emesso, '+(R.F!=null?fmt(R.F,R.F<1?3:R.F<10?2:0)+' W/m² · (R/r)²':R.eq?'(1 − A) S/4 · (R/r)² (equilibrio radiativo dell\'intero pianeta)':'(1 − A) S cos ψ · (R/r)² sotto il veicolo, con un minimo notturno pari a σT⁴ a '+R.night+' K')+', diviso per c; ψ è l\'angolo fra veicolo e Sole visti dal centro del corpo.':'')+'</p>';
+  s+='<p><b>Coppia magnetica</b> M = m × B, con m il dipolo residuo. B: '+(c==='earth'?'IGRF-14 in armoniche sferiche fino al grado 13 con la variazione secolare dentro la magnetopausa (forma di Shue et al. 1998); oltre 15 raggi terrestri sul lato notte i lobi della coda (circa 10 nT a 60 raggi, ARTEMIS); fuori dalla magnetosfera il campo interplanetario.':
+    c==='moon'?'la Luna non ha un campo globale (le anomalie crostali, pochi nT in orbita, sono trascurate): campo interplanetario, oppure i lobi della coda magnetica terrestre quando la Luna ci passa dentro, circa 4–6 giorni al mese.':
+    c==='venus'?'Venere non ha un campo proprio: campo interplanetario (sotto la ionopausa, a circa 250 km di giorno, il campo reale è schermato e indotto).':
+    c==='sun'?'spirale di Parker, componente radiale di 3 nT a 1 AU, vento solare a 400 km/s, polarità del ciclo 25 dopo l\'inversione del 2024 (verso il Sole a nord dello strato di corrente); dopo lo shock di terminazione campo compresso, oltre l\'eliopausa il campo interstellare misurato dai Voyager.':
+    M.name+(c==='mars'?'; in più il campo interplanetario (la magnetosfera indotta non è modellata in dettaglio).':'; dentro la magnetopausa (forma di Shue con distanza tipica '+fmt(MPAUSE[c][0],MPAUSE[c][0]<2?2:0)+' raggi verso il Sole), fuori il campo interplanetario.'+(c==='uranus'||c==='neptune'?' Attenzione: '+(c==='uranus'?'la longitudine del campo è ricostruita con il periodo di Lamy et al. (2025) a partire dal passaggio del Voyager 2':'il periodo di rotazione di Voyager 2 ha un\'incertezza di decine di secondi, quindi oggi la longitudine del campo non è nota: l\'intensità è giusta, l\'orientamento attorno all\'asse no')+'.':'')))+' Le correnti esterne alle magnetosfere (magnetopausa, coda, magnetoguaina) non sono modellate se non dove indicato.</p>';
+  return s; }
 function htmlVeicolo(){ const sc=scModel(sel), JL=['Ixx','Iyy','Izz','Ixy','Ixz','Iyz'], j=sc.man?sc.J6:[sc.Ig[0],sc.Ig[1],sc.Ig[2],0,0,0];
   return '<p class="note" id="vSrc"></p><div class="form">'+SC_FIELDS.map(f=>'<label for="v_'+f[0]+'">'+f[1]+'</label><input id="v_'+f[0]+'" data-k="'+f[0]+'" type="number" step="any" value="'+(+sc[f[0]].toPrecision(6))+'">').join('')+'</div>'+
   '<p class="hd">Matrice d\'inerzia, kg·m²<span class="seg" role="group" aria-label="Origine della matrice d\'inerzia"><button class="sk" id="vIg" aria-pressed="'+!sc.man+'">dalla geometria</button><button class="sk" id="vIm" aria-pressed="'+sc.man+'">a mano</button></span></p>'+
@@ -1437,7 +1655,7 @@ function fillPages(){
       set('cNote','Valori in uso: coppia massima '+sci(c.tmax,2)+' N·m'+(c.uT?'':' (automatica: 0,2 rad · ωn² · momento d\'inerzia massimo)')+'; dipolo massimo '+fmt(c.mmax,2)+' A·m²'+(c.uM?'':' (automatico: 0,1 A·m² per kg di massa)')+(env.hasB?'; guadagno B-dot k = '+sci(c.kb,2)+' A·m²·s/T, da 2n(1 + sin i)·I minimo / B².':'.')); }
     for(let i=0;i<4;i++) set('aq'+i,fmt(q[i],5)); for(let i=0;i<9;i++) set('l'+i,fmt(L[i],5)); }
   else if(tab==='disturbi'){ const b=BODY[env.c];
-    set('dEnv',env.c==='earth'?'Quota '+fmt(env.alt,0)+' km · densità '+sci(env.rho,2)+' kg/m³ · |B| '+fmt(tqMag(env.B)*1e9,0)+' nT · '+(env.lit<1e-3?'in ombra: pressione solare nulla':(env.lit<0.999?'in penombra, ':'')+'pressione solare '+sci(env.P,2)+' N/m²')+' · radiazione dalla Terra '+sci(env.Pir+env.Pal,2)+' N/m²':'Attorno a '+b.name+': gradiente di gravità e pressione solare ('+(env.ecl?'ora in eclisse':sci(env.P,2)+' N/m²')+'). Drag e coppia magnetica non sono modellati fuori dalla Terra.');
+    set('dEnv',(env.c==='sun'?'Distanza dal Sole '+fmtDist(tqMag(env.r)):'Quota '+fmt(env.alt,0)+' km')+' · densità '+(env.rho>1e-30?sci(env.rho,2)+' kg/m³':env.rho>0?'trascurabile':'nulla')+' · |B| '+(tqMag(env.B)*1e9<10?fmt(tqMag(env.B)*1e9,2):fmt(tqMag(env.B)*1e9,0))+' nT ('+env.bsrc+') · '+(env.lit<1e-3?'in ombra: pressione solare nulla':(env.lit<0.999?'in penombra, ':'')+'pressione solare '+sci(env.P,2)+' N/m²')+(env.c==='sun'?'':' · radiazione da '+BODY[env.c].name+' '+sci(env.Pir+env.Pal,2)+' N/m²'));
     const tot=tqMag(TQ.tot), now=[tqMag(TQ.drag),tqMag(TQ.gg),tqMag(TQ.srp),tqMag(TQ.mag)].map(x=>x<tot*1e-9?0:x), sc=scModel(sel), rm=tqMag(env.r);
     set('dGG','Il gradiente di gravità dipende dall\'assetto: vale zero solo con gli assi principali esattamente sulla terna LVLH e arriva al massimo con il corpo inclinato di 45°.'+(att.mode==='nadir'||att.mode==='inert'?' Qui è calcolato con l\'errore di puntamento di '+fmt(pErr(),pErr()<0.1?3:2)+'° impostato nella pagina Assetto.':''));
     set('dF0',tqFmt(tqMag(TQ.fDrag))); set('dF1',tqFmt(tqMag(TQ.fRad))); set('dF2',tqFmt(tqMag(TQ.srpE))); set('dF3',tqFmt(1.5*env.mu/(rm*rm*rm)*(sc.Ip[2]-sc.Ip[0])));
@@ -1562,7 +1780,7 @@ const YEAR=3.15576e7, G0=9.80665, ISP=220;
 function eng(x){ if(!(x>0)) return '0'; if(x>=0.01&&x<1e5){ const d=x>=100?0:x>=10?1:x>=1?2:3; return fmt(x,d); } return sci(x,1); }
 // Rules of thumb for a first ADCS sizing (after Wertz, SMAD): margin 2 on disturbances; slews as bang-bang manoeuvres.
 function recommend(p,o,sc){
-  const mg=p.marg>=1?p.marg:2, isp=p.ispA>0?p.ispA:ISP, mgT=mg===2?'il doppio del':fmt(mg,mg%1?1:0)+' volte il', Imax=sc.Ip[2], earth=o.c==='earth', mag=earth&&o.bMin>5e-6, geo=earth&&Math.abs(o.T-86164)<900, altM=(o.altMin+o.altMax)/2, acc=p.acc, nadir=p.mode==='nadir';
+  const mg=p.marg>=1?p.marg:2, isp=p.ispA>0?p.ispA:ISP, mgT=mg===2?'il doppio del':fmt(mg,mg%1?1:0)+' volte il', Imax=sc.Ip[2], earth=o.c==='earth', mag=!!MAG_OWN[o.c]&&o.bMin>5e-6, geo=earth&&Math.abs(o.T-86164)<900, altM=(o.altMin+o.altMax)/2, acc=p.acc, nadir=p.mode==='nadir';
   const slew=p.slewA>0&&p.slewT>0, th=p.slewA*D2R, tSlew=slew?4*th*Imax/(p.slewT*p.slewT):0, hSlew=slew?2*th*Imax/p.slewT:0;
   const kOrb=mag?1:Math.max(1,86400/o.T), hCap=mg*(o.hCyc+o.hSec*kOrb), wT=Math.max(mg*o.tTot,tSlew), wH=Math.max(hCap,hSlew), dvDrag=o.aDrag*YEAR;
   const lever=0.5*Math.max(sc.a,sc.b,sc.c), impYr=o.hSec*(YEAR/o.T)/lever, propYr=impYr/(isp*G0), dipCtl=mag?mg*o.tTot/o.bMin:0, dip=mag?Math.max(mg*(o.hSec/o.T)/o.bMin,dipCtl):0;
@@ -1574,8 +1792,8 @@ function recommend(p,o,sc){
   else if(mag) act.push(['Controllo magnetico a tre assi','dipolo ≥ '+N(dipCtl)+' A·m² per asse','Precisione richiesta larga e campo magnetico forte: bastano i magnetotorquer'+(nadir&&sc.I[1]>sc.I[0]?', aiutati dal gradiente di gravità (configurazione stabile in beccheggio).':'.')]);
   else act.push(['Stabilizzazione a spin o propulsori','coppia ≥ '+N(mg*o.tTot)+' N·m','Precisione richiesta larga e nessun campo magnetico utile: spin attorno all\'asse di massimo momento d\'inerzia, corretto con i propulsori.']);
   if(acc<=5||!mag){ if(mag) act.push(['3 magnetotorquer per lo scarico delle ruote','dipolo ≥ '+N(dip)+' A·m² per asse','Campo fra '+fmt(o.bMin*1e9,0)+' e '+fmt(o.bMax*1e9,0)+' nT: lo scarico magnetico è continuo e non consuma propellente. Il dipolo vale '+mgT+' disturbo massimo diviso per il campo minimo; accumulo secolare '+N(o.hSec)+' N·m·s per orbita.']);
-    else act.push(['Propulsori di assetto per lo scarico delle ruote','impulso ≈ '+N(impYr)+' N·s all\'anno, ≈ '+N(propYr*p.life)+' kg di idrazina in '+fmt(p.life,p.life<10?1:0)+' anni',(earth?'A questa quota il campo magnetico è troppo debole ('+fmt(o.bMin*1e9,0)+' nT)':'Attorno a '+BODY[o.c].name+' non c\'è un campo magnetico utilizzabile')+': il momento secolare ('+N(o.hSec)+' N·m·s per orbita) va scaricato con i propulsori. Braccio assunto '+fmt(lever,2)+' m, impulso specifico '+fmt(isp,0)+' s.']); }
-  if(earth&&dvDrag>0.5) act.push(['Propulsione per mantenere la quota','Δv ≈ '+fmt(dvDrag,dvDrag<10?1:0)+' m/s all\'anno','La resistenza atmosferica media vale '+N(o.aDrag)+' m/s²: senza correzioni l\'orbita decade.']);
+    else act.push(['Propulsori di assetto per lo scarico delle ruote','impulso ≈ '+N(impYr)+' N·s all\'anno, ≈ '+N(propYr*p.life)+' kg di idrazina in '+fmt(p.life,p.life<10?1:0)+' anni',(MAG_OWN[o.c]?'A questa quota il campo magnetico è troppo debole ('+fmt(o.bMin*1e9,0)+' nT)':'Attorno a '+BODY[o.c].name+' non c\'è un campo magnetico utilizzabile')+': il momento secolare ('+N(o.hSec)+' N·m·s per orbita) va scaricato con i propulsori. Braccio assunto '+fmt(lever,2)+' m, impulso specifico '+fmt(isp,0)+' s.']); }
+  if(dvDrag>0.5) act.push(['Propulsione per mantenere la quota','Δv ≈ '+fmt(dvDrag,dvDrag<10?1:0)+' m/s all\'anno','La resistenza atmosferica media vale '+N(o.aDrag)+' m/s²: senza correzioni l\'orbita decade.']);
   if(geo) act.push(['Propulsione per il mantenimento di stazione','Δv ≈ 50 m/s all\'anno (regola pratica)','In orbita geostazionaria Luna e Sole inclinano il piano orbitale: la correzione nord-sud domina il bilancio di propellente.']);
   if(acc<=0.1) sen.push(['Sensore stellare, 2 teste ottiche','precisione tipica 1–10″',(acc<0.05?'Unico sensore che garantisce ':'Dà il margine più ampio sul requisito di ')+fmt(acc,acc<0.01?3:2)+'°. Due teste evitano l\'abbagliamento da Sole'+(o.c==='sun'?'.':' e dal corpo centrale.')]);
   if(acc<=1||slew||o.ecl>0) sen.push(['Giroscopi (unità inerziale)','deriva tipica 0,01–1 °/h','Misurano la velocità angolare fra un aggiornamento e l\'altro'+(slew?', durante le manovre':'')+(o.ecl>0?' e in eclisse ('+fmt(o.ecl*100,0)+'% dell\'orbita, fino a '+fmt(o.eclMax/60,0)+' min)':'')+'.']);
@@ -1806,7 +2024,8 @@ $('q').addEventListener('focus',()=>{ if($('q').value.trim()) runSearch(); });
 $('q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const b=$('results').querySelector('button'); if(b) b.click(); } else if(e.key==='Escape'){ $('results').hidden=true; } });
 $('btnNewDes').onclick=()=>newDesign(null);
 $('btnFilters').onclick=()=>{ const o=$('left').classList.toggle('open'); $('btnFilters').setAttribute('aria-expanded',String(o)); };
-$('chkTrack').onchange=()=>{ trk.line.visible=!!sel&&sel.t==='sat'&&$('chkTrack').checked; lastOrb=0; };
+$('chkTrack').onchange=()=>{ trk.line.visible=!!sel&&sel.t==='sat'&&$('chkTrack').checked; pTrk.line.visible=!!sel&&sel.t==='probe'&&sel.p.type!=='L'&&sel.p.c!=='sun'&&$('chkTrack').checked; lastOrb=0; };
+$('chkMap').onchange=()=>{ lastOrb=0; if(!$('chkMap').checked) $('map2').hidden=true; };
 $('chkAxes').onchange=()=>{ axes.visible=$('chkAxes').checked; ['tagX','tagY','tagZ'].forEach(i=>$(i).hidden=!axes.visible); };
 $('btnData').onclick=()=>{ const p=$('pop'); p.hidden=!p.hidden; $('btnData').setAttribute('aria-expanded',String(!p.hidden)); };
 document.addEventListener('keydown',e=>{ const tag=(e.target.tagName||''); if(tag==='INPUT'||tag==='TEXTAREA') return;
@@ -1869,7 +2088,7 @@ async function boot(){
 let ssaa=1.5, perfN=0, perfSum=0;
 function resize(){ const w=view.clientWidth, h=view.clientHeight; if(!w||!h) return; const d=window.devicePixelRatio||1;
   const pr=Math.max(1,Math.min(d*ssaa,3,Math.sqrt(7.5e6/(w*h)))); renderer.setPixelRatio(pr); renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
-  satMat.uniforms.uPR.value=probeMat.uniforms.uPR.value=starMat.uniforms.uPR.value=pr; orb.mat.resolution.set(w,h); trk.mat.resolution.set(w,h); pOrb.mat.resolution.set(w,h); trPark.mat.resolution.set(w,h); trArc.mat.resolution.set(w,h); }
+  satMat.uniforms.uPR.value=probeMat.uniforms.uPR.value=starMat.uniforms.uPR.value=pr; orb.mat.resolution.set(w,h); trk.mat.resolution.set(w,h); pOrb.mat.resolution.set(w,h); pTrk.mat.resolution.set(w,h); trPark.mat.resolution.set(w,h); trArc.mat.resolution.set(w,h); }
 if(window.ResizeObserver) new ResizeObserver(resize).observe(view); else window.addEventListener('resize',resize);
 updateEphem(simMs); buildOrbitLines(simMs); buildBodyLabels(); resize(); refreshNavCounts();
 (function initCamera(){ const s=helio.sun, e=helio.earth, d=new THREE.Vector3(s[0]-e[0],s[2]-e[2],-(s[1]-e[1])); d.y=0; d.normalize().applyAxisAngle(new THREE.Vector3(0,1,0),-52*D2R); d.y=0.38; d.normalize();
@@ -1899,7 +2118,7 @@ function frame(now){
   if(sel){ computeSel(); ring.position.copy(selPos);
     if(nadLine.visible){ const n=nadGeo.attributes.position.array, rel=tmpV.copy(selPos).sub(selBody), f=BODY[selC()].R*KM/rel.length(); nadLine.position.copy(selPos); n[0]=n[1]=n[2]=0; n[3]=rel.x*(f-1); n[4]=rel.y*(f-1); n[5]=rel.z*(f-1); nadGeo.attributes.position.needsUpdate=true; }
     if(sel.t==='probe') pOrbAnchor.position.copy(selBody);
-    if(now-lastOrb>(camera.position.distanceTo(selPos)<0.05?0:250)){ lastOrb=now; updateOrbit(); updateTransfer(); }
+    if(now-lastOrb>(camera.position.distanceTo(selPos)<0.05?0:250)){ lastOrb=now; updateOrbit(); updateTransfer(); drawMap(); }
     stepAtt(); }
   stepCamera(dt);
   updateTriad(); updateRel();

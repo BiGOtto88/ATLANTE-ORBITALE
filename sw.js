@@ -23,7 +23,7 @@ const FISSI = [
   'icone/icona.svg', 'icone/icona-32.png', 'icone/icona-180.png', 'icone/icona-192.png', 'icone/icona-512.png', 'icone/icona-maschera-512.png',
   'tex/day.jpg', 'tex/night.jpg', 'tex/spec.jpg', 'tex/clouds.jpg', 'tex/sun.jpg', 'tex/mercury.jpg', 'tex/venus.jpg', 'tex/moon.jpg',
   'tex/mars.jpg', 'tex/jupiter.jpg', 'tex/saturn.jpg', 'tex/ring.png', 'tex/uranus.jpg', 'tex/neptune.jpg',
-  'data/stars.json',
+  'data/stars.json', 'data/campo_marte.json',
 ];
 const VARIABILI = ['data/meta.json', 'data/active.txt', 'data/probes.json', 'data/lanci.json'];
 const eVariabile = rel => VARIABILI.includes(rel);

@@ -3,7 +3,16 @@
   "file": "iss_b",
   "max": 109,
   "tri": 70000,
-  "err": 0.03
+  "err": 0.03,
+  "togli": [
+   "bendedtru1",
+   "bendedtru2",
+   "bendedtru3",
+   "bendedtrus",
+   "pCylinder1",
+   "pCylinder2",
+   "pCylinder8"
+  ]
  },
  "hubble": {
   "file": "hubble",

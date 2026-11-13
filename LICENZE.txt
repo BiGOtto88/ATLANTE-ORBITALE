@@ -71,7 +71,7 @@ e chiedono di citare la NASA come fonte. Condizioni che restano valide:
  - Parti di terzi: dove un veicolo include elementi di altri enti (per esempio ESA, JAXA, CSA, Roscosmos, NOAA, USGS, EUMETSAT) la NASA
    avverte che i diritti su quel materiale non sono suoi; chi riusa i modelli fuori da questo sito deve verificarlo con il titolare.
 Modifiche rispetto agli originali: compressione Draco rimossa, scala in metri, assi dell'app, geometria alleggerita, texture in WebP
-(strumenti/modelli/prepara.mjs). Questi file sono opere derivate di materiale NASA e non sono coperti dalla licenza MIT del codice.
+(strumenti/modelli/prepara.mjs); nella ISS tolti 7 elementi staccati dal veicolo. Questi file sono opere derivate di materiale NASA e non sono coperti dalla licenza MIT del codice.
 
 ========================================================================
 6. DATI
@@ -89,6 +89,18 @@ Modifiche rispetto agli originali: compressione Draco rimossa, scala in metri, a
    International Association of Geomagnetism and Aeronomy, gruppo di lavoro V-MOD, https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html.
    Sono inclusi nella pagina fino al grado 13 (epoche 2025 e 2030, interpolate): sono dati scientifici pubblicati liberamente,
    la cui fonte va citata.
+ - Campi magnetici degli altri corpi (coefficienti di Gauss nella pagina e, per Marte, nel file data/campo_marte.json):
+   Giove JRM33 (Connerney et al. 2022, J. Geophys. Res. Planets 127, e2021JE007055); Saturno Cassini 11 (Dougherty et al. 2018,
+   Science 362, eaat5434); Urano AH5 (Herbert 2009, J. Geophys. Res. 114, A11206); Nettuno O8 (Connerney et al. 1991, J. Geophys. Res. 96,
+   19023); Mercurio, dipolo spostato (Anderson et al. 2012, J. Geophys. Res. 117, E00L12); Marte, campo crostale (Langlais et al. 2019,
+   J. Geophys. Res. Planets 124, 1542, doi:10.1029/2018JE005854, materiale supplementare). Valori numerici pubblicati, ripresi dai file di
+   dati della libreria libinternalfield (M. K. James, licenza MIT, testo alla sezione 11, https://github.com/mattkjames7/libinternalfield)
+   e confrontati con le pubblicazioni.
+ - Atmosfere di Venere e Marte fino a 150 km: tabelle VIRA (Kliore, Moroz e Keating 1985) e COSPAR Mars Reference Atmosphere, come riportate
+   da Justus e Braun 2007, «Atmospheric Environments for Entry, Descent and Landing», NASA (NTRS 20070032693), opera del governo degli
+   Stati Uniti. Saturno: temperature della stessa fonte fino a 750 km.
+ - Albedo di Bond e calore emesso dai pianeti: Mallama 2017 (Mercurio), schede NASA (Venere, Luna, Marte), Li et al. 2018 (Giove),
+   Hanel et al. 1983 e Li et al. 2010 (Saturno), Pearl et al. 1990 e 1991 (Urano, Nettuno).
  - Pianeti e lune: posizioni calcolate da Astronomy Engine (sezione 2); raggi e masse da valori pubblicati di NASA/JPL.
  - Schede dei veicoli (data nelle tabelle della pagina: missione, operatore, lancio, massa): testi scritti per questo progetto a partire
    da fonti pubbliche degli enti che gestiscono le missioni; sono fatti, non testi copiati.
@@ -101,6 +113,13 @@ esponenziale, trasferimenti di Hohmann e coniche raccordate, regole di dimension
 letteratura: non sono protetti da diritto d'autore. Sono state implementate da zero. Riferimenti: Vallado, «Fundamentals of Astrodynamics
 and Applications»; Wertz (a cura di), «Space Mission Analysis and Design» e «Spacecraft Attitude Determination and Control»;
 Hoots e Roehrich, «Spacetrack Report No. 3» (SGP4); Vallado, Crawford, Hujsak e Kelso 2006, «Revisiting Spacetrack Report #3».
+Disturbi attorno agli altri corpi: disco di corrente di Connerney et al. (1981, 1983, 2020) con le forme analitiche di Edwards et al. (2001,
+Planet. Space Sci. 49, 1115), scritto seguendo il codice CON2020 (Wilson et al. 2023, Space Sci. Rev. 219, 15; licenza MIT, testo alla
+sezione 11); spirale di Parker con il campo radiale misurato da Ulysses (Smith e Balogh 1995); campo interstellare dai Voyager (Burlaga e Ness
+2014) e Zirnstein et al. 2016 (direzione); magnetopausa nella forma di Shue et al. (1998), distanze tipiche da Kivelson e Bagenal (2007),
+Winslow et al. (2013), Arridge et al. (2006); lobi della coda terrestre dalle misure ARTEMIS; periodo di rotazione di Urano da Lamy et al.
+(2025, Nature Astronomy 9, 658); profili termici dei pianeti giganti da Seiff et al. (1998), Koskinen e Guerlet (2018), Lindal et al.
+(1987, 1992), Herbert et al. (1987), Broadfoot et al. (1989).
 
 ========================================================================
 8. NOMI, MARCHI E INSEGNE
@@ -202,6 +221,56 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+con2020 (modello del disco di corrente di Giove; le equazioni analitiche sono state riscritte in JavaScript nella pagina)
+https://github.com/gabbyprovan/con2020 — G. Provan, R. J. Wilson, M. F. Vogt, M. K. James e coautori (licenza MIT dichiarata nel pacchetto)
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+libinternalfield (file dei coefficienti dei campi magnetici planetari da cui sono ripresi i valori numerici)
+https://github.com/mattkjames7/libinternalfield
+
+MIT License
+
+Copyright (c) 2022 Dr Matt James
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
