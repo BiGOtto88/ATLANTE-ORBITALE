@@ -1,0 +1,38 @@
+# Verifica dei modelli fisici di Atlante Orbitale.
+# A ogni modifica caricata (e ogni lunedì) rifà da capo il riferimento indipendente in Python (SHTOOLS, ERFA,
+# effemeridi JPL DE421, SciPy) e lo confronta con il motore della pagina; poi esegue tutte le prove automatiche.
+# Un risultato fuori tolleranza fa fallire il flusso: GitHub lo segnala con una croce rossa e una mail al proprietario.
+name: Verifica dei modelli
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '41 5 * * 1'          # ogni lunedì alle 05:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verifica:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Scarica il repository
+        uses: actions/checkout@v7
+
+      - name: Prove automatiche del motore (Node)
+        run: node strumenti/prove/prova_motore.js
+
+      - name: Installa le librerie del riferimento indipendente
+        run: python3 -m pip install --quiet numpy scipy pyshtools pyerfa jplephem pymsis
+
+      - name: Scarica le effemeridi JPL DE421
+        run: curl -sSfL -o /tmp/de421.bsp https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
+
+      - name: Ricalcola il riferimento indipendente e confronta
+        run: |
+          python3 strumenti/validazione/rif_propagatore.py strumenti/validazione/propagatore/casi.json /tmp/rif.json --bsp /tmp/de421.bsp
+          node strumenti/prove/prova_motore.js --rif /tmp/rif.json
