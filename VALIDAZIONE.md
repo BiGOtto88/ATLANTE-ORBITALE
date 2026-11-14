@@ -171,3 +171,25 @@ Tutti i calcoli lunghi (propagazione, vita orbitale, simulazione ADCS, congiunzi
 - Le atmosfere di Venere, Marte e dei giganti sono profili medi senza dipendenza dall'ora e dal ciclo solare.
 - La magnitudine dei passaggi è una stima da sfera diffusa, utile per confronti relativi.
 - Atlante Orbitale è uno strumento didattico: non va usato per operazioni di volo.
+
+## 14. Elementi orbitali della pagina Orbita (14 nov 2026)
+
+Prova: `strumenti/prove/prova_elementi.py` (pagina vera in Chromium, istante fisso, confronto con python-sgp4 2.27).
+
+| Satellite | Orbita | Osculanti: scarto massimo | Medi SGP4: scarto massimo |
+|---|---|---|---|
+| ISS (25544) | bassa | a 0,05 km, angoli 1·10⁻⁴° | a 0,005 km, angoli 2·10⁻⁴° |
+| GOES 16 (41866) | geostazionaria, risonanza a 1 giorno | a 0,02 km | a 0,04 km, angoli 2·10⁻⁴° |
+| POLAR (23802) | molto ellittica, spazio profondo | a 0,015 km | a 0,007 km, e 5·10⁻⁷ |
+| MERIDIAN 7 (40296) | Molniya, risonanza a 12 ore | a 0,02 km | a 0,05 km, angoli 5·10⁻⁴° |
+| YAOGAN-29 (41038) | eliosincrona quasi circolare | a 0,002 km | a 0,04 km |
+
+Gli scarti sono quelli dell'arrotondamento a video. Errori trovati e corretti:
+
+- **Elementi medi fermi all'epoca del TLE.** Prima si mostravano Ω, ω, M, a ed e del TLE senza portarli all'istante simulato: con un TLE di un giorno e mezzo il nodo della ISS era sbagliato di 13,8°, l'argomento del pericentro di 10°, l'anomalia di 47°; per POLAR le quote di 22 km. Ora sono gli elementi medi di SGP4 all'istante simulato (`sgp4Mean`: parte secolare e resistenza di SGP4, termini secolari e risonanze dello spazio profondo, come in satellite.js).
+- **Punti di Lagrange.** La velocità era calcolata per differenze finite con tempi arrotondati al millisecondo: gli elementi oscillavano di decine di migliaia di km fra un fotogramma e l'altro e il propagatore numerico partiva con un errore di velocità fino a 1,5 m/s. Ora posizione e velocità sono analitiche, sulla retta Sole–baricentro Terra-Luna. Anche lo stato usato da assetto e disturbi delle sonde usa la velocità analitica del modello, non più le differenze finite.
+- **Stato → elementi nel progetto di missione.** Con orbite equatoriali o circolari nodo e pericentro non sono definiti e venivano posti a 0, perdendo la posizione lungo l'orbita. Ora l'angolo va nell'argomento di latitudine o nella longitudine vera: andata e ritorno stato → elementi → stato con scarto relativo massimo 1,4·10⁻¹⁰ su 2 000 stati a caso.
+- **Angoli a 360°.** Un angolo di 359,9999° appariva come 360,000; ora è 0,000.
+- **Missione dall'orbita di un satellite.** Prima usava gli elementi osculanti, con un periodo sbagliato fino a qualche decimo di minuto per le orbite basse; ora usa gli elementi medi SGP4 dell'istante simulato, coerenti con il modello del progetto (kepleriano con J2 secolare).
+
+Pagina Stato (quota geodetica, latitudine, longitudine, velocità, raggio, angolo di volo): uguale a un calcolo indipendente (python-sgp4, GMST IAU 1982, WGS84) a tutte le cifre mostrate per gli stessi quattro tipi di orbita.

@@ -15,15 +15,33 @@ La pagina di Claude può essere sia il file sorgente pubblicato, sia la pagina s
 visualizzatore con la sua prima riga di testata: lo strumento riconosce entrambi i casi.
 Serve solo Python 3, senza librerie aggiuntive.
 """
-import pathlib, re, sys
+import datetime, json, pathlib, re, sys
 
 RADICE = pathlib.Path(__file__).resolve().parent.parent
 RANGE_LATINO = ('U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,'
                 'U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD')
 CARATTERI = [('B612', 400, 'b612-latin-400-normal.woff2'), ('B612', 700, 'b612-latin-700-normal.woff2'),
              ('B612 Mono', 400, 'b612-mono-latin-400-normal.woff2'), ('B612 Mono', 700, 'b612-mono-latin-700-normal.woff2')]
-DESCRIZIONE = ('Il sistema solare in scala reale, i satelliti attivi attorno alla Terra e le sonde in viaggio: '
-               'orbita, assetto, disturbi e progetto di missione.')
+DESCRIZIONE = ('Satelliti in orbita e sonde del sistema solare in scala reale, in tempo reale: orbite, assetto, disturbi, '
+               'propagatore numerico, finestre di lancio e progetto di missione. Gratis, da computer e da telefono.')
+# indirizzo pubblico del sito (GitHub Pages): serve ai motori di ricerca e alle anteprime dei link; cambialo se il sito si sposta
+SITO = 'https://bigotto88.github.io/ATLANTE-ORBITALE/'
+SOTTOTITOLO = 'satelliti e sonde in tempo reale'
+
+
+def dati_strutturati(titolo):
+    # schema.org WebApplication: dice ai motori di ricerca che cos'è il sito (nome, descrizione, gratuito, lingue)
+    d = {'@context': 'https://schema.org', '@type': 'WebApplication', 'name': titolo, 'alternateName': 'Atlante', 'url': SITO,
+         'description': DESCRIZIONE, 'applicationCategory': 'EducationalApplication', 'operatingSystem': 'Qualsiasi (browser)',
+         'inLanguage': ['it', 'en'], 'isAccessibleForFree': True, 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'EUR'},
+         'image': SITO + 'icone/anteprima.jpg', 'author': {'@type': 'Person', 'name': 'Davide Ottoninuoto'}}
+    return json.dumps(d, ensure_ascii=False).replace('</', '<\\/')
+
+
+def scrivi_sitemap(oggi):
+    # sitemap.xml: l'elenco delle pagine da indicizzare (qui una sola), da indicare in Google Search Console e Bing Webmaster Tools
+    (RADICE / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                                        '  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>daily</changefreq></url>\n</urlset>\n' % (SITO, oggi), encoding='utf-8')
 
 
 def converti(pagina):
@@ -64,9 +82,22 @@ def converti(pagina):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>%s</title>
+<title>%s · %s</title>
 <!-- File generato da strumenti/da_claude_a_sito.py: le modifiche fatte qui a mano si perdono alla prossima conversione. -->
 <meta name="description" content="%s">
+<link rel="canonical" href="%s">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="%s">
+<meta property="og:title" content="%s · %s">
+<meta property="og:description" content="%s">
+<meta property="og:url" content="%s">
+<meta property="og:image" content="%sicone/anteprima.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">%s</script>
 <meta name="theme-color" content="#080a0d">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone/icona.svg" type="image/svg+xml">
@@ -85,7 +116,7 @@ img{max-width:100%%}
 [hidden]:not([hidden=until-found i]){display:none!important}
 /* Carattere B612, incluso nel sito (SIL Open Font License) */
 %s</style>
-''' % (titolo, DESCRIZIONE, facce)
+''' % (titolo, SOTTOTITOLO, DESCRIZIONE, SITO, titolo, titolo, SOTTOTITOLO, DESCRIZIONE, SITO, SITO, dati_strutturati(titolo), facce)
     return testata + stile + '\n</head>\n<body>\n' + corpo.rstrip() + '\n</body>\n</html>\n', n, avvisi
 
 
@@ -96,6 +127,7 @@ def main():
     pagina = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8')
     sito, n, avvisi = converti(pagina)
     (RADICE / 'index.html').write_text(sito, encoding='utf-8')
+    scrivi_sitemap(datetime.date.today().isoformat())
     print('Scritto index.html (%d kB), %d librerie puntate a vendor/.' % (len(sito.encode()) // 1024, n))
     for a in avvisi:
         print('ATTENZIONE:', a)

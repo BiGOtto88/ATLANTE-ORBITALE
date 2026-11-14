@@ -26,6 +26,28 @@ il browser blocca la lettura dei file di dati se la pagina non arriva da un serv
 
 Da quel momento il flusso riparte da solo ogni giorno alle 04:23 UTC e a ogni modifica che carichi.
 
+## Farlo trovare su Google e Bing
+
+Un sito nuovo non compare subito nelle ricerche: i motori lo trovano seguendo i link da altri siti, e senza
+nessun link possono passare settimane. Per accelerare (gratis, una volta sola):
+
+1. **Google Search Console** (https://search.google.com/search-console): «Aggiungi proprietà» → tipo **Prefisso URL** →
+   `https://bigotto88.github.io/ATLANTE-ORBITALE/`. Come verifica scegli **File HTML**: scarica il file che ti dà
+   (si chiama `google` seguito da lettere e numeri, `.html`), caricalo nella cartella principale del repository e aspetta
+   che il flusso «Aggiorna i dati e pubblica il sito» finisca (scheda Actions); poi torna su Search Console e premi **Verifica**.
+   Verificato il sito, apri **Sitemap** e invia `sitemap.xml`; poi in **Controllo URL** incolla l'indirizzo del sito
+   e premi **Richiedi indicizzazione**.
+2. **Bing Webmaster Tools** (https://www.bing.com/webmasters): «Importa da Google Search Console», così non serve rifare la verifica.
+   Bing fornisce i risultati anche a DuckDuckGo, Yahoo ed Ecosia.
+3. Metti il link al sito dove capita: profilo GitHub (campo «Website» del repository), LinkedIn, forum, pagina del corso.
+   Ogni link da un sito già noto aiuta.
+
+Il sito ha già quello che serve ai motori: titolo e descrizione, indirizzo canonico, `sitemap.xml`, dati strutturati
+schema.org (WebApplication) e un'immagine di anteprima (`icone/anteprima.jpg`) per i link condivisi.
+L'indirizzo del sito è scritto in `strumenti/da_claude_a_sito.py` (variabile `SITO`): se cambia, aggiornalo lì e riconverti.
+Un dominio tutto tuo (per esempio `atlanteorbitale.it`, una decina di euro all'anno) si collega a GitHub Pages da
+**Settings → Pages → Custom domain** e rende il nome più facile da ricordare, ma non è necessario per comparire nelle ricerche.
+
 ## Installarlo come applicazione
 
 Il sito pubblicato (o `localhost`) si installa come un'app, con la sua icona e la sua finestra:
@@ -145,6 +167,7 @@ fonts/                  carattere B612
 icone/                  icona dell'app
 LICENSE                 licenza MIT del codice dell'app
 sorgente/               la pagina sviluppata in Claude
+sitemap.xml             l'elenco delle pagine per i motori di ricerca (generato dalla conversione)
 strumenti/              aggiornamento dei dati, conversione della pagina, prove
 .github/workflows/      aggiornamento giornaliero e pubblicazione su GitHub Pages
 LICENZE.txt             fonti, crediti e licenze di tutto ciò che il sito contiene (librerie, carattere, texture, modelli, dati)

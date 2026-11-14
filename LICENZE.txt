@@ -25,6 +25,9 @@ Copyright (c) 2026 Davide Ottoninuoto. Licenza MIT (testo alla sezione 10 e nel 
 Vale per: index.html e la pagina sorgente (sorgente/pagina-claude.html), sw.js, manifest.webmanifest, icone/ (icona originale
 del progetto), strumenti/ (script di aggiornamento, conversione, preparazione dei modelli e prove), il flusso .github/workflows/,
 strumenti/genera_anelli.py e la texture tex/ring.png che ne risulta (opera originale del progetto, stessa licenza).
+Fa eccezione icone/anteprima.jpg (l'immagine che compare quando si condivide un link al sito): è una schermata dell'app e
+contiene la texture della Terra di Solar System Scope (CC BY 4.0, sezione 4) e il modello 3D della ISS della NASA (sezione 5),
+che restano alle loro condizioni; il resto dell'immagine è sotto licenza MIT come l'app.
 La licenza MIT NON si estende ai materiali di terzi elencati nelle sezioni seguenti: ciascuno resta alle sue condizioni.
 Il codice è stato scritto con l'assistenza di Claude (Anthropic); il titolare dei diritti sul risultato è l'autore indicato sopra.
 
