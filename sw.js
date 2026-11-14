@@ -2,7 +2,7 @@
    Tiene una copia del sito sul dispositivo, così l'app si apre anche senza rete.
 
    - Pagina (index.html): prima la rete, la copia locale se la rete manca.
-   - Dati che cambiano (data/active.txt, meta.json, probes.json, lanci.json): prima la rete, la copia locale se la rete manca.
+   - Dati che cambiano (data/active.txt, meta.json, probes.json, lanci.json, meteo_spaziale.json): prima la rete, la copia locale se la rete manca.
    - Tutto il resto (librerie, caratteri, texture, stelle, icone): subito la copia locale,
      che viene poi rinfrescata in sottofondo per l'apertura successiva. I modelli 3D (modelli/) si copiano
      al primo uso: senza rete si vedono quelli già aperti almeno una volta.
@@ -25,7 +25,7 @@ const FISSI = [
   'tex/mars.jpg', 'tex/jupiter.jpg', 'tex/saturn.jpg', 'tex/ring.png', 'tex/uranus.jpg', 'tex/neptune.jpg',
   'data/stars.json', 'data/campo_marte.json',
 ];
-const VARIABILI = ['data/meta.json', 'data/active.txt', 'data/probes.json', 'data/lanci.json'];
+const VARIABILI = ['data/meta.json', 'data/active.txt', 'data/probes.json', 'data/lanci.json', 'data/meteo_spaziale.json'];
 const eVariabile = rel => VARIABILI.includes(rel);
 
 const chiave = url => { const u = new URL(url); return u.origin + u.pathname; };   // senza ?query e #frammento

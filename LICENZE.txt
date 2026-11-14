@@ -72,6 +72,8 @@ e chiedono di citare la NASA come fonte. Condizioni che restano valide:
    avverte che i diritti su quel materiale non sono suoi; chi riusa i modelli fuori da questo sito deve verificarlo con il titolare.
 Modifiche rispetto agli originali: compressione Draco rimossa, scala in metri, assi dell'app, geometria alleggerita, texture in WebP
 (strumenti/modelli/prepara.mjs); nella ISS tolti 7 elementi staccati dal veicolo. Questi file sono opere derivate di materiale NASA e non sono coperti dalla licenza MIT del codice.
+I file modelli/<veicolo>_sup.json sono dati ricavati dai modelli (strumenti/modelli/superfici.mjs): aree e momenti delle superfici esposte
+per 25 × 48 direzioni, usati per resistenza atmosferica e pressione di radiazione con le ombre fra le parti.
 
 ========================================================================
 6. DATI
@@ -101,6 +103,9 @@ Modifiche rispetto agli originali: compressione Draco rimossa, scala in metri, a
    Stati Uniti. Saturno: temperature della stessa fonte fino a 750 km.
  - Albedo di Bond e calore emesso dai pianeti: Mallama 2017 (Mercurio), schede NASA (Venere, Luna, Marte), Li et al. 2018 (Giove),
    Hanel et al. 1983 e Li et al. 2010 (Saturno), Pearl et al. 1990 e 1991 (Urano, Nettuno).
+ - Attività solare e geomagnetica (data/meteo_spaziale.json): flusso solare F10.7, sua media su 81 giorni e indice Ap giornaliero dai
+   file «Space Weather Data» di CelesTrak (https://celestrak.org/SpaceData/, T.S. Kelso), che raccolgono misure di NRCan (F10.7),
+   GFZ Potsdam (Kp e Ap, licenza CC BY 4.0) e previsioni di NOAA/SWPC. Ridotti agli indici che servono, con la fonte indicata nel file.
  - Pianeti e lune: posizioni calcolate da Astronomy Engine (sezione 2); raggi e masse da valori pubblicati di NASA/JPL.
  - Schede dei veicoli (data nelle tabelle della pagina: missione, operatore, lancio, massa): testi scritti per questo progetto a partire
    da fonti pubbliche degli enti che gestiscono le missioni; sono fatti, non testi copiati.
@@ -109,7 +114,7 @@ Quando un dato esterno cambia le sue condizioni, valgono quelle della fonte: i c
 ========================================================================
 7. FORMULE, MODELLI FISICI E RIFERIMENTI
 Le equazioni usate (moto kepleriano e J2, equazioni di Eulero, gradiente di gravità, pressione di radiazione, resistenza con atmosfera
-esponenziale, trasferimenti di Hohmann e coniche raccordate, regole di dimensionamento ADCS) sono leggi fisiche e metodi della
+NRLMSISE-00, trasferimenti di Hohmann e coniche raccordate, regole di dimensionamento ADCS) sono leggi fisiche e metodi della
 letteratura: non sono protetti da diritto d'autore. Sono state implementate da zero. Riferimenti: Vallado, «Fundamentals of Astrodynamics
 and Applications»; Wertz (a cura di), «Space Mission Analysis and Design» e «Spacecraft Attitude Determination and Control»;
 Hoots e Roehrich, «Spacetrack Report No. 3» (SGP4); Vallado, Crawford, Hujsak e Kelso 2006, «Revisiting Spacetrack Report #3».
@@ -120,6 +125,9 @@ sezione 11); spirale di Parker con il campo radiale misurato da Ulysses (Smith e
 Winslow et al. (2013), Arridge et al. (2006); lobi della coda terrestre dalle misure ARTEMIS; periodo di rotazione di Urano da Lamy et al.
 (2025, Nature Astronomy 9, 658); profili termici dei pianeti giganti da Seiff et al. (1998), Koskinen e Guerlet (2018), Lindal et al.
 (1987, 1992), Herbert et al. (1987), Broadfoot et al. (1989).
+Atmosfera terrestre: NRLMSISE-00 (Picone, Hedin, Drob e Aikin 2002, J. Geophys. Res. 107(A12), 1468), U.S. Naval Research Laboratory,
+opera del governo degli Stati Uniti di pubblico dominio; il codice nella pagina è una traduzione in JavaScript della versione in C di
+Dominik Brodowski (pubblico dominio, https://www.brodo.de/space/nrlmsise/), verificata con pymsis.
 
 ========================================================================
 8. NOMI, MARCHI E INSEGNE

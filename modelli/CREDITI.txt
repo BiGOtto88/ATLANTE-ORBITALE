@@ -41,3 +41,6 @@ terra.glb | Terra/Terra.glb
 tess.glb | Transiting Exoplanet Survey Satellite (TESS) (A)/Transiting Exoplanet Survey Satellite (TESS) (A).glb
 themis.glb | Time History of Events and Macroscale Interactions During Substorms (THEMIS)/Time History of Events and Macroscale Interactions During Substorms (THEMIS).glb
 voyager.glb | Voyager Probe (A)/Voyager Probe (A).glb
+
+Tabelle delle superfici (<chiave>_sup.json): ricavate da ciascun .glb con strumenti/modelli/superfici.mjs (rasterizzazione con buffer di profondità
+per 25 × 48 direzioni, 768 × 768 punti per direzione). Comando: NPIX=768 node superfici.mjs modelli
