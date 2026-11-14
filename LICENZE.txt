@@ -106,6 +106,18 @@ per 25 × 48 direzioni, usati per resistenza atmosferica e pressione di radiazio
  - Attività solare e geomagnetica (data/meteo_spaziale.json): flusso solare F10.7, sua media su 81 giorni e indice Ap giornaliero dai
    file «Space Weather Data» di CelesTrak (https://celestrak.org/SpaceData/, T.S. Kelso), che raccolgono misure di NRCan (F10.7),
    GFZ Potsdam (Kp e Ap, licenza CC BY 4.0) e previsioni di NOAA/SWPC. Ridotti agli indici che servono, con la fonte indicata nel file.
+ - Campi di gravità (data/gravita_terra.json, gravita_luna.json, gravita_marte.json, gravita_venere.json), coefficienti normalizzati troncati:
+   Terra EGM2008 (National Geospatial-Intelligence Agency; Pavlis, Holmes, Kenyon e Factor 2012, J. Geophys. Res. 117, B04406),
+   pubblicato da NGA per uso libero e senza restrizioni di distribuzione, sistema tide-free, grado 120 (copia tratta dalla distribuzione
+   della libreria brahe, licenza MIT); Luna GRGM900C (missione GRAIL, NASA Goddard; Lemoine et al. 2014, Geophys. Res. Lett. 41, 3382),
+   Marte GMM-2B (NASA Goddard; Lemoine et al. 2001, J. Geophys. Res. 106, 23359), Venere MGNP180U (NASA JPL; Konopliv, Banerdt e Sjogren
+   1999, Icarus 139, 3): prodotti del Planetary Data System della NASA, opere del governo degli Stati Uniti, nelle copie distribuite con
+   GMAT (NASA Goddard, https://github.com/nasa/GMAT). Conversione: strumenti/gravita/converti_campi.py.
+ - Stazioni di terra (pagina Collegamenti): coordinate arrotondate a circa 100 m dalle descrizioni pubbliche delle reti ESA ESTRACK,
+   NASA Deep Space Network e Near Earth Network, Telespazio (Fucino) e Agenzia Spaziale Italiana (Matera, Malindi).
+ - Riferimenti per le prove (cartella strumenti/validazione/): effemeridi JPL DE421 (Folkner, Williams e Boggs 2008, IPN Progress
+   Report 42-178), scaricate dal flusso di verifica da https://naif.jpl.nasa.gov e non ridistribuite; calcoli di SHTOOLS (BSD 3-Clause),
+   ERFA (BSD 3-Clause), SciPy (BSD 3-Clause), pymsis (MIT), jplephem (MIT). Sono usati solo dagli script di verifica, non dalla pagina.
  - Pianeti e lune: posizioni calcolate da Astronomy Engine (sezione 2); raggi e masse da valori pubblicati di NASA/JPL.
  - Schede dei veicoli (data nelle tabelle della pagina: missione, operatore, lancio, massa): testi scritti per questo progetto a partire
    da fonti pubbliche degli enti che gestiscono le missioni; sono fatti, non testi copiati.
@@ -125,6 +137,14 @@ sezione 11); spirale di Parker con il campo radiale misurato da Ulysses (Smith e
 Winslow et al. (2013), Arridge et al. (2006); lobi della coda terrestre dalle misure ARTEMIS; periodo di rotazione di Urano da Lamy et al.
 (2025, Nature Astronomy 9, 658); profili termici dei pianeti giganti da Seiff et al. (1998), Koskinen e Guerlet (2018), Lindal et al.
 (1987, 1992), Herbert et al. (1987), Broadfoot et al. (1989).
+Strumenti di ingegneria: integratore di Dormand e Prince 8(5,3) (Hairer, Nørsett e Wanner, «Solving Ordinary Differential Equations I»;
+coefficienti come pubblicati e come in SciPy); armoniche sferiche normalizzate (Holmes e Featherstone 2002, J. Geodesy 76, 279); maree solide
+e relatività dalle IERS Conventions 2010 (Petit e Luzum, IERS Technical Note 36, eq. 6.6 e 10.12); metodo a inviluppo (Petzold 1981, SIAM
+J. Sci. Stat. Comput. 2, 128); problema di Lambert con l'algoritmo di Izzo (2015, Celest. Mech. Dyn. Astron. 121, 1); variabili universali
+con l'iterazione di Laguerre–Conway (Conway 1986); filtro di Kalman esteso moltiplicativo (Lefferts, Markley e Shuster 1982, J. Guid.
+Control Dyn. 5, 417; Markley e Crassidis 2014, «Fundamentals of Spacecraft Attitude Determination and Control»); bilancio di potenza e
+fattori di vista da Wertz e Larson, «Space Mission Analysis and Design»; orbita cimitero dalle linee guida IADC (IADC-02-01); formati dei
+messaggi CCSDS 502.0-B-3 (OEM, OPM) e 504.0-B-1 (AEM).
 Atmosfera terrestre: NRLMSISE-00 (Picone, Hedin, Drob e Aikin 2002, J. Geophys. Res. 107(A12), 1468), U.S. Naval Research Laboratory,
 opera del governo degli Stati Uniti di pubblico dominio; il codice nella pagina è una traduzione in JavaScript della versione in C di
 Dominik Brodowski (pubblico dominio, https://www.brodo.de/space/nrlmsise/), verificata con pymsis.

@@ -24,6 +24,7 @@ const FISSI = [
   'tex/day.jpg', 'tex/night.jpg', 'tex/spec.jpg', 'tex/clouds.jpg', 'tex/sun.jpg', 'tex/mercury.jpg', 'tex/venus.jpg', 'tex/moon.jpg',
   'tex/mars.jpg', 'tex/jupiter.jpg', 'tex/saturn.jpg', 'tex/ring.png', 'tex/uranus.jpg', 'tex/neptune.jpg',
   'data/stars.json', 'data/campo_marte.json',
+  'data/gravita_terra.json', 'data/gravita_luna.json', 'data/gravita_marte.json', 'data/gravita_venere.json',
 ];
 const VARIABILI = ['data/meta.json', 'data/active.txt', 'data/probes.json', 'data/lanci.json', 'data/meteo_spaziale.json'];
 const eVariabile = rel => VARIABILI.includes(rel);

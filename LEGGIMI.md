@@ -106,7 +106,30 @@ python3 strumenti/prove/prova_sito.py . /tmp/schermate # il sito in un browser, 
 python3 strumenti/prove/prova_migliorie.py . /tmp/schermate # pagina Percorso, controllo PD e B-dot, margini ADCS (serve Playwright)
 python3 strumenti/prove/prova_disturbi.py . /tmp/schermate  # disturbi ricalcolati a parte, IGRF, ombra, lancio reale (servono anche numpy e ppigrf)
 python3 strumenti/prove/prova_forme.py . /tmp/schermate     # forme reali: camera vicina a più veicoli (serve Playwright)
+node strumenti/prove/prova_motore.js                        # motore di calcolo: gravità, orbite, vita orbitale, Lambert, ADCS (serve solo Node)
 ```
+
+Il flusso **Verifica dei modelli** (`.github/workflows/verifica.yml`) esegue `prova_motore.js` a ogni modifica e ogni lunedì,
+e in più ricalcola il riferimento indipendente in Python (SHTOOLS, ERFA, effemeridi JPL DE421, SciPy) per confrontarlo con
+il motore della pagina. Anche il flusso di pubblicazione esegue `prova_motore.js`: se una prova non passa, il sito non viene
+ripubblicato e resta in linea l'ultima versione verificata. I risultati dei confronti sono in `VALIDAZIONE.md`.
+
+## Strumenti di ingegneria
+
+La scheda **Ingegneria** di ogni satellite, sonda o progetto raccoglie:
+
+- **Propagatore**: integrazione numerica dell'orbita (Dormand–Prince 8(5,3)) con gravità in armoniche sferiche (EGM2008 fino a 120×120,
+  GRGM900C per la Luna, GMM-2B per Marte, MGNP180U per Venere), terzi corpi, radiazione solare sulla forma vera, luce e calore del pianeta,
+  resistenza NRLMSISE-00, relatività e maree solide; risultati in CSV e nei formati CCSDS OEM e OPM.
+- **Manovre**: trasferimenti di Lambert verso un altro oggetto, finestre interplanetarie (C₃), mantenimento dell'orbita (resistenza,
+  geostazionaria nord-sud ed est-ovest), fine vita (abbassamento del pericentro con la vita residua numerica, orbita cimitero IADC).
+- **ADCS**: simulazione ad anello chiuso con quattro ruote di reazione, magnetotorquer, sensori con rumore e filtro MEKF; quaternioni in AEM.
+- **Potenza**, **Termica**, **Collegamenti** (stazioni ESTRACK, DSN, NEN e italiane, bilancio di collegamento e Doppler) e, per i satelliti,
+  **Congiunzioni** con il resto del catalogo.
+
+I calcoli lunghi girano in un Web Worker, così la vista resta fluida anche sul telefono. Il motore è un blocco a sé nella pagina
+(`<script id="motore">`): non tocca il DOM e si prova anche fuori dal browser. La pagina Evoluzione usa per la vita orbitale lo stesso
+motore (metodo numerico a inviluppo); il vecchio metodo a elementi medi resta come opzione rapida.
 
 ## Cosa c'è nella cartella
 
@@ -114,7 +137,7 @@ python3 strumenti/prove/prova_forme.py . /tmp/schermate     # forme reali: camer
 index.html              la pagina del sito (generata)
 manifest.webmanifest    nome, icone e colori dell'app installata
 sw.js                   tiene una copia del sito sul dispositivo per l'uso senza rete
-data/                   satelliti, lanci, sonde, stelle
+data/                   satelliti, lanci, sonde, stelle, attività solare, campi di gravità e campo crostale di Marte
 tex/                    texture di Terra, Luna, Sole e pianeti (Solar System Scope, CC BY 4.0); CREDITI.txt
 modelli/                forme reali: modelli 3D dei veicoli (NASA 3D Resources), già in metri e negli assi dell'app; CREDITI.txt
 vendor/                 three.js r128, satellite.js 5.0.0, Astronomy Engine 2.1.19

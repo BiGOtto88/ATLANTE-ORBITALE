@@ -1,0 +1,42 @@
+{
+ "descrizione": "Data di rientro (120 km) con il metodo a inviluppo della pagina Evoluzione (dp 0,004, rtol 1e-10) e con l'integrazione diretta di Cowell (DOP853, rtol 1e-11) dello stesso modello: EGM2008 8x0, Sole, Luna, radiazione solare, NRLMSISE-00 con data/meteo_spaziale.json. Partenza 14 nov 2026, orbita circolare a 51,6 gradi. Calcolati con le funzioni newEnv/runEnv (inviluppo) e newProp/runProp (Cowell) del motore della pagina; il caso a 260 km è ripetuto da strumenti/prove/prova_motore.js a ogni modifica.",
+ "casi": [
+  {
+   "quota_km": 260,
+   "CdA_m_m2kg": 0.022,
+   "cowell_giorni": 7.072,
+   "inviluppo_giorni": 7.083,
+   "scarto_percento": 0.155,
+   "tempo_cowell_s": 4.5,
+   "tempo_inviluppo_s": 0.7
+  },
+  {
+   "quota_km": 330,
+   "CdA_m_m2kg": 0.022,
+   "cowell_giorni": 44.427,
+   "inviluppo_giorni": 44.456,
+   "scarto_percento": 0.064,
+   "tempo_cowell_s": 25.0,
+   "tempo_inviluppo_s": 2.3
+  },
+  {
+   "quota_km": 400,
+   "CdA_m_m2kg": 0.04,
+   "cowell_giorni": 117.639,
+   "inviluppo_giorni": 117.679,
+   "scarto_percento": 0.034,
+   "tempo_cowell_s": 59.1,
+   "tempo_inviluppo_s": 4.9
+  },
+  {
+   "quota_km": 415,
+   "CdA_m_m2kg": 0.0084,
+   "nota": "come la ISS senza manovre",
+   "cowell_giorni": 1125.945,
+   "inviluppo_giorni": 1128.367,
+   "scarto_percento": 0.215,
+   "tempo_cowell_s": 541.2,
+   "tempo_inviluppo_s": 43.4
+  }
+ ]
+}

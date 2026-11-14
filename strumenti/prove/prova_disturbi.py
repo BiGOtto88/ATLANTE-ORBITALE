@@ -82,14 +82,22 @@ try:
             for modo in ('amN', 'amI', 'amF'):
                 ev('atlante.setTab("assetto")'); pg.click('#' + modo); ev('atlante.setTab("disturbi")'); time.sleep(0.7)
                 d = ev(LEGGI + '(%d)' % norad); mio = ricalcola(d)
-                for k, val in mio.items():
-                    pag = np.array(d['T'][k]); scala = max(np.linalg.norm(val), np.linalg.norm(pag))
-                    if scala > 0: peggio = max(peggio, np.linalg.norm(val - pag) / scala)
+                # Il ricalcolo usa le facce piane: vale per i satelliti senza forma reale. Per quelli con il modello 3D (ISS, Hubble, GOES)
+                # la pagina usa le tabelle delle superfici, verificate a parte con il tracciamento di raggi (strumenti/validazione/raggi_superfici.py).
+                # Il gradiente di gravità della pagina comprende J2 e le maree (fase 10, verificato contro le differenze finite): qui il ricalcolo
+                # è quello della sola massa puntiforme, quindi la coppia gg resta fuori dal confronto.
+                if norad in (40697, 39634):
+                    for k, val in mio.items():
+                        if k == 'gg': continue
+                        pag = np.array(d['T'][k]); scala = max(np.linalg.norm(val), np.linalg.norm(pag))
+                        if scala > 0: peggio = max(peggio, np.linalg.norm(val - pag) / scala)
                 amb = ambiente(d); e = d['env']
                 sB = np.linalg.norm(amb['B'] - np.array(e['B'])) / np.linalg.norm(amb['B']); sV = np.linalg.norm(amb['vr'] - np.array(e['vr'])) / np.linalg.norm(amb['vr'])
                 sP = [abs(amb[k] - e[k]) / max(amb[k], 1e-30) for k in ('P', 'Pir', 'Pal') if amb[k] > 0]
                 sR = abs(amb['rho'] - e['rho']) / amb['rho'] if amb['rho'] else 0
-                assert sB < 1e-4 and sV < 1e-9 and all(q < 1e-3 for q in sP) and sR < 1e-9, (norad, modo, sB, sV, sP, sR)
+                # La densità della pagina è NRLMSISE-00 (dalla fase 11) e si verifica a parte contro pymsis (strumenti/validazione/msis_pymsis.py):
+                # il profilo esponenziale qui sopra serve solo da ordine di grandezza.
+                assert sB < 1e-4 and sV < 1e-9 and all(q < 1e-3 for q in sP) and (sR < 1.0 or not amb['rho']), (norad, modo, sB, sV, sP, sR)
                 if modo == 'amN':
                     T = d['T']; n3 = lambda q: float(np.linalg.norm(q)); rm = n3(e['r'])
                     assert n3(T['gg']) > 0 and n3(np.array(T['fDrag'])) >= 0
@@ -99,7 +107,7 @@ try:
                     # gradiente con il corpo fuori asse dell'errore di puntamento: confronto con la formula ai piccoli angoli
                     th = math.radians(d['perr']); A = np.array(d['A']).reshape(3, 3); L = np.array(d['L']).reshape(3, 3)
                     ang = math.degrees(math.acos(max(-1, min(1, (np.trace(A @ L.T) - 1) / 2)))); assert abs(ang - d['perr']) < 1e-6, ang
-        R['coppie: scarto massimo fra pagina e ricalcolo'] = '%.1e' % peggio; assert peggio < 1e-9
+        R['coppie: scarto massimo fra pagina e ricalcolo'] = '%.1e' % peggio; print('scarto coppie', peggio); assert peggio < 1e-9
         R['valori in assetto nadir con 1° di errore'] = tabella
         ev('atlante.setTab("assetto")'); pg.click('#amN')
         # ---- 2. profilo lungo l'orbita: il gradiente non è più nullo
@@ -107,9 +115,12 @@ try:
         R['massimi sull\'orbita (drag, GG, radiazione, magnetica)'] = ['%.2e' % x for x in ev('atlante.prof.max')]; assert ev('atlante.prof.max[1]') > 0
         R['testo ambiente'] = ev('document.getElementById("dEnv").textContent'); R['righe'] = ev('["dF0","dF1","dF2","dF3"].map(i=>document.getElementById(i).textContent)')
         pg.screenshot(path=str(OUT / '1-disturbi.png'))
-        # con errore di puntamento nullo e tensore diagonale il gradiente torna a zero: è la fisica, non un difetto
+        # con errore di puntamento nullo e tensore diagonale il gradiente della massa puntiforme si annulla: resta solo la piccola parte
+        # dovuta a J2 e alle maree (fase 10), che sugli assi LVLH di un'orbita inclinata ha termini fuori diagonale
         ev('atlante.setTab("assetto")'); pg.fill('#aPe', '0'); pg.dispatch_event('#aPe', 'change'); ev('atlante.setTab("disturbi")'); time.sleep(0.8)
-        R['GG con errore di puntamento 0°'] = ev('Math.hypot(...atlante.TQ.gg)'); assert R['GG con errore di puntamento 0°'] < 1e-15
+        g0 = ev('Math.hypot(...atlante.TQ.gg)')
+        ev('atlante.setTab("assetto")'); pg.fill('#aPe', '1'); pg.dispatch_event('#aPe', 'change'); ev('atlante.setTab("disturbi")'); time.sleep(0.8)
+        g1 = ev('Math.hypot(...atlante.TQ.gg)'); R['GG con errore di puntamento 0° (rispetto a 1°)'] = g0 / g1; assert g0 < 0.5 * g1   # con J2 resta circa un sesto del valore a 1° (Sentinel-2A); il tensore è verificato in VALIDAZIONE.md
         ev('atlante.setTab("assetto")'); pg.fill('#aPe', '1'); pg.dispatch_event('#aPe', 'change')
         # ---- 3. ombra e penombra contro l'integrazione numerica
         casi = []
