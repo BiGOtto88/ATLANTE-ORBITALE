@@ -193,3 +193,9 @@ Gli scarti sono quelli dell'arrotondamento a video. Errori trovati e corretti:
 - **Missione dall'orbita di un satellite.** Prima usava gli elementi osculanti, con un periodo sbagliato fino a qualche decimo di minuto per le orbite basse; ora usa gli elementi medi SGP4 dell'istante simulato, coerenti con il modello del progetto (kepleriano con J2 secolare).
 
 Pagina Stato (quota geodetica, latitudine, longitudine, velocità, raggio, angolo di volo): uguale a un calcolo indipendente (python-sgp4, GMST IAU 1982, WGS84) a tutte le cifre mostrate per gli stessi quattro tipi di orbita.
+
+## 15. Simulazione animata del percorso (14 nov 2026)
+
+- **Finestre di lancio** (Strumenti): il viaggio della casella scelta (all'inizio il minimo di C₃; tocca un'altra casella per cambiarlo) visto dal polo nord dell'eclittica. Pianeti sulle orbite vere delle effemeridi, sonda sull'arco di Lambert propagato con il problema dei due corpi (stesse posizione e velocità iniziali dei numeri mostrati: l'arco parte dal pianeta di partenza e arriva su quello di arrivo).
+- **Percorso** (satelliti, sonde e missioni): ogni tratto (parcheggio, trasferimento, orbita finale) è una conica percorsa con la legge oraria di Keplero, con le stesse ipotesi dei numeri della pagina (manovre impulsive; per la Luna Hohmann fino alla sua distanza; per i pianeti orbite circolari e complanari e partenza alla prossima finestra). Per i satelliti il percorso parte dall'orbita media SGP4.
+- Etichette delle date nella mappa delle finestre: giorno e mese se le partenze coprono fino a 200 giorni, mese e anno intero altrimenti (prima «nov 26» voleva dire novembre 2026 ma si leggeva come 26 novembre).
