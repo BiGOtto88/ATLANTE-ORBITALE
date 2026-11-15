@@ -1,6 +1,6 @@
 # Keplario: sito autonomo e app installabile
 
-Keplario, il planetario delle orbite (in inglese *the orbit planetarium*): il nome unisce Keplero e «planetario».
+Keplario, il planetario delle orbite: il nome unisce Keplero e «planetario».
 Fino al 15 novembre 2026 il progetto si chiamava Atlante Orbitale.
 
 Questa cartella è il sito completo. Non dipende da Claude né da altri servizi per funzionare:
