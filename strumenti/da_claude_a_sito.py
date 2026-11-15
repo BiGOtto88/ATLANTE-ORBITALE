@@ -27,7 +27,7 @@ DESCRIZIONE = ('Keplario, il planetario delle orbite: satelliti in orbita e sond
 DESCRIZIONE_EN = ('Keplario, the orbit planetarium: satellites and solar-system probes at true scale and in real time, with orbits, '
                   'attitude, disturbances, a numerical propagator, launch windows and mission design. Free, on computer and phone.')
 # indirizzo pubblico del sito (GitHub Pages): serve ai motori di ricerca e alle anteprime dei link; cambialo se il sito si sposta
-SITO = 'https://bigotto88.github.io/keplario/'
+SITO = 'https://ottonspace.github.io/keplario/'
 SOTTOTITOLO = 'il planetario delle orbite'
 SOTTOTITOLO_EN = 'the orbit planetarium'
 
