@@ -1,4 +1,4 @@
-"""Confronto di Atlante Orbitale con Basilisk (AVS Lab, University of Colorado; licenza ISC).
+"""Confronto di Keplario con Basilisk (AVS Lab, University of Colorado; licenza ISC).
 
 Calcola con Basilisk 2.12 gli stessi casi che la pagina calcola nel browser e scrive basilisk.json:
   A. orbita bassa per un giorno con gravità della Terra fino a J4 (armoniche zonali EGM2008), integratore RK4 a 1 s;

@@ -1,4 +1,7 @@
-# Atlante Orbitale: sito autonomo e app installabile
+# Keplario: sito autonomo e app installabile
+
+Keplario, il planetario delle orbite (in inglese *the orbit planetarium*): il nome unisce Keplero e «planetario».
+Fino al 15 novembre 2026 il progetto si chiamava Atlante Orbitale.
 
 Questa cartella è il sito completo. Non dipende da Claude né da altri servizi per funzionare:
 librerie, caratteri, texture e dati sono tutti qui dentro. È un sito statico, quindi va bene
@@ -18,13 +21,28 @@ il browser blocca la lettura dei file di dati se la pagina non arriva da un serv
 
 ## Pubblicarlo su GitHub Pages
 
-1. Crea un repository su GitHub (per esempio `atlante-orbitale`). Con un account gratuito deve essere pubblico.
+1. Crea un repository su GitHub (per esempio `keplario`). Con un account gratuito deve essere pubblico.
 2. Carica **il contenuto** di questa cartella nel ramo `main`, compresa la cartella nascosta `.github`.
 3. Nel repository apri **Settings → Pages** e alla voce **Source** scegli **GitHub Actions**.
 4. Apri la scheda **Actions**, scegli «Aggiorna i dati e pubblica il sito» e premi **Run workflow**.
-5. Dopo un paio di minuti il sito è all'indirizzo `https://TUO-NOME.github.io/atlante-orbitale/`.
+5. Dopo un paio di minuti il sito è all'indirizzo `https://TUO-NOME.github.io/keplario/` (in inglese `…/keplario/en/`).
 
 Da quel momento il flusso riparte da solo ogni giorno alle 04:23 UTC e a ogni modifica che carichi.
+
+## Cambiare nome al repository (da ATLANTE-ORBITALE a keplario)
+
+Il repository esistente si rinomina senza perdere nulla: **Settings → General → Repository name** → `keplario` → **Rename**.
+GitHub reindirizza da solo il vecchio indirizzo del repository, ma **non** quello del sito: dopo il cambio il sito è a
+`https://bigotto88.github.io/keplario/` e il vecchio `…/ATLANTE-ORBITALE/` smette di funzionare. Poiché il sito non era ancora
+nei motori di ricerca, conviene farlo adesso. Poi riavvia il flusso (Actions → «Aggiorna i dati e pubblica il sito» → Run workflow).
+Se preferisci tenere il vecchio nome del repository, rimetti il vecchio indirizzo nella variabile `SITO` di `strumenti/da_claude_a_sito.py`.
+
+## Italiano e inglese
+
+La pagina si apre in inglese per chi ha il browser in un'altra lingua e in italiano per chi lo ha in italiano; il pulsante EN/IT
+in alto cambia lingua e la ricorda. Per i motori di ricerca ci sono due indirizzi, `…/keplario/` (italiano) e `…/keplario/en/`
+(inglese, stessa pagina con titolo e descrizione in inglese), collegati fra loro e tutti e due nella `sitemap.xml`; anche
+`?lang=en` alla fine dell'indirizzo apre la versione inglese.
 
 ## Farlo trovare su Google e Bing
 
@@ -32,7 +50,7 @@ Un sito nuovo non compare subito nelle ricerche: i motori lo trovano seguendo i 
 nessun link possono passare settimane. Per accelerare (gratis, una volta sola):
 
 1. **Google Search Console** (https://search.google.com/search-console): «Aggiungi proprietà» → tipo **Prefisso URL** →
-   `https://bigotto88.github.io/ATLANTE-ORBITALE/`. Come verifica scegli **File HTML**: scarica il file che ti dà
+   `https://bigotto88.github.io/keplario/`. Come verifica scegli **File HTML**: scarica il file che ti dà
    (si chiama `google` seguito da lettere e numeri, `.html`), caricalo nella cartella principale del repository e aspetta
    che il flusso «Aggiorna i dati e pubblica il sito» finisca (scheda Actions); poi torna su Search Console e premi **Verifica**.
    Verificato il sito, apri **Sitemap** e invia `sitemap.xml`; poi in **Controllo URL** incolla l'indirizzo del sito
@@ -45,7 +63,7 @@ nessun link possono passare settimane. Per accelerare (gratis, una volta sola):
 Il sito ha già quello che serve ai motori: titolo e descrizione, indirizzo canonico, `sitemap.xml`, dati strutturati
 schema.org (WebApplication) e un'immagine di anteprima (`icone/anteprima.jpg`) per i link condivisi.
 L'indirizzo del sito è scritto in `strumenti/da_claude_a_sito.py` (variabile `SITO`): se cambia, aggiornalo lì e riconverti.
-Un dominio tutto tuo (per esempio `atlanteorbitale.it`, una decina di euro all'anno) si collega a GitHub Pages da
+Un dominio tutto tuo (per esempio `keplario.com` o `keplario.it`, una decina di euro all'anno; controlla che sia libero) si collega a GitHub Pages da
 **Settings → Pages → Custom domain** e rende il nome più facile da ricordare, ma non è necessario per comparire nelle ricerche.
 
 ## Installarlo come applicazione
@@ -138,6 +156,9 @@ ripubblicato e resta in linea l'ultima versione verificata. I risultati dei conf
 
 ## Strumenti di ingegneria
 
+Nella scheda Ingegneria ci sono anche **Progetto orbita** (angolo β per un anno, traccia a terra che si ripete con J₂, orbita congelata con J₂ e J₃), **Sensori** (accecamento di star tracker e sensori d'orizzonte da Sole, Terra e Luna, con mappa del cielo in assi corpo) e, nella pagina ADCS, **saturazione delle ruote e scarico magnetico** su un giorno; nella pagina Termica i casi caldo e freddo dell'anno.
+
+
 La scheda **Ingegneria** di ogni satellite, sonda o progetto raccoglie:
 
 - **Propagatore**: integrazione numerica dell'orbita (Dormand–Prince 8(5,3)) con gravità in armoniche sferiche (EGM2008 fino a 120×120,
@@ -153,18 +174,30 @@ I calcoli lunghi girano in un Web Worker, così la vista resta fluida anche sul 
 (`<script id="motore">`): non tocca il DOM e si prova anche fuori dal browser. La pagina Evoluzione usa per la vita orbitale lo stesso
 motore (metodo numerico a inviluppo); il vecchio metodo a elementi medi resta come opzione rapida.
 
+## File CCSDS
+
+Trascina un file sulla vista 3D (o caricalo dal pannello Dati):
+
+- **OEM** (effemeride, KVN o XML): diventa un oggetto da guardare, con l'orbita disegnata dai suoi stati; terne EME2000, ICRF, GCRF, TEME, TOD, ITRF (per la Terra), tempi UTC, TAI, TT, TDB, GPS; interpolazione di Hermite o di Lagrange come indicato nel file. Se è un satellite del catalogo (stesso designatore, numero o nome), la pagina Fonte mostra la differenza con SGP4.
+- **AEM** (assetto, versione 1 e 2, quaternioni o angoli di Eulero della versione 2): si applica all'oggetto scelto; pulsante «AEM» nella pagina Assetto.
+- **OPM** (uno stato): diventa una missione del progettista.
+- **OMM** (elementi medi, KVN, XML, JSON o CSV come li dà CelesTrak): sostituisce il catalogo, anche con numeri oltre 99 999.
+
+Gli oggetti importati restano finché la pagina è aperta.
+
 ## Cosa c'è nella cartella
 
 ```
 index.html              la pagina del sito (generata)
+en/index.html           la stessa pagina in inglese, per i motori di ricerca (generata)
 manifest.webmanifest    nome, icone e colori dell'app installata
 sw.js                   tiene una copia del sito sul dispositivo per l'uso senza rete
-data/                   satelliti, lanci, sonde, stelle, attività solare, campi di gravità e campo crostale di Marte
+data/                   satelliti, lanci, sonde, stelle, attività solare, campi di gravità, campo crostale di Marte, luoghi (citta.txt)
 tex/                    texture di Terra, Luna, Sole e pianeti (Solar System Scope, CC BY 4.0); CREDITI.txt
 modelli/                forme reali: modelli 3D dei veicoli (NASA 3D Resources), già in metri e negli assi dell'app; CREDITI.txt
 vendor/                 three.js r128, satellite.js 5.0.0, Astronomy Engine 2.1.19
 fonts/                  carattere B612
-icone/                  icona dell'app
+icone/                  marchio, icone dell'app e immagine di copertina (copertina.svg → anteprima.jpg)
 LICENSE                 licenza MIT del codice dell'app
 sorgente/               la pagina sviluppata in Claude
 sitemap.xml             l'elenco delle pagine per i motori di ricerca (generato dalla conversione)
@@ -179,12 +212,13 @@ Il sito è pronto da pubblicare sul piano legale: ogni componente ha la sua font
 
 | Cosa | Licenza | Dove |
 | --- | --- | --- |
-| Codice dell'app (pagina, service worker, strumenti, icona, anelli di Saturno) | MIT, Copyright (c) 2026 Davide Ottoninuoto | `LICENSE` |
+| Codice dell'app (pagina, service worker, strumenti, icone e copertina, anelli di Saturno) | MIT, Copyright (c) 2026 Davide Ottoninuoto | `LICENSE` |
 | three.js, satellite.js, Astronomy Engine | MIT | `LICENZE.txt` sezioni 2 e 11, intestazioni dentro `vendor/` |
 | Carattere B612 | SIL Open Font License 1.1 | `fonts/OFL.txt`, `LICENZE.txt` sezioni 3 e 12 |
 | Texture dei pianeti | CC BY 4.0, Solar System Scope (attribuzione obbligatoria) | `tex/CREDITI.txt`, `LICENZE.txt` sezioni 4 e 13 |
 | Modelli 3D dei veicoli | NASA 3D Resources: di norma senza diritto d'autore negli USA; insegne NASA escluse | `modelli/CREDITI.txt`, `LICENZE.txt` sezione 5 |
-| TLE e lanci, effemeridi, stelle, campo IGRF | dati pubblici, con la fonte da citare | `LICENZE.txt` sezione 6 |
+| TLE e lanci, effemeridi, stelle, campo IGRF, campi di gravità | dati pubblici, con la fonte da citare | `LICENZE.txt` sezione 6 |
+| Luoghi della pagina Passaggi (`data/citta.txt`) | GeoNames, CC BY 4.0 (attribuzione obbligatoria) | `LICENZE.txt` sezioni 6 e 13 |
 
 La pagina cita le fonti nel pannello **Dati** e rimanda a `LICENZE.txt`; il flusso di pubblicazione copia `LICENSE` e
 `LICENZE.txt` nel sito, perché le licenze devono accompagnare i file distribuiti. Se cambi il tuo nome come titolare o la licenza del
@@ -193,7 +227,8 @@ codice, correggi `LICENSE`, la sezione 1 e la sezione 10 di `LICENZE.txt` e la r
 Quando aggiungi qualcosa (un modello, una texture, una libreria, una nuova fonte dati): annota fonte, autore, licenza e modifiche
 in `LICENZE.txt` e nel `CREDITI.txt` della cartella, **prima** di pubblicare. Non aggiungere materiale di cui non conosci la licenza.
 Le texture si rigenerano o si sostituiscono solo con file la cui licenza permette la ridistribuzione; gli anelli di Saturno si
-ricreano con `python3 strumenti/genera_anelli.py tex/ring.png`.
+ricreano con `python3 strumenti/genera_anelli.py tex/ring.png`, il marchio, le icone e la copertina con
+`python3 strumenti/grafica/disegna_marchio.py`, l'elenco dei luoghi con `python3 strumenti/citta/genera_citta.py`.
 
 Il sito è uno strumento didattico: posizioni e orbite non vanno usate per operazioni di volo (avviso in `LICENZE.txt`, sezione 9).
 Ricorda che con un account GitHub gratuito il repository di GitHub Pages è pubblico: il codice sarà visibile a tutti, con la licenza MIT.

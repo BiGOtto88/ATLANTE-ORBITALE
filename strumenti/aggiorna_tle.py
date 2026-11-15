@@ -18,8 +18,11 @@ presenti in active.txt; se il SATCAT non si scarica, il file resta com'è.
 import argparse, csv, datetime, io, json, pathlib, re, sys, time, urllib.request
 
 RADICE = pathlib.Path(__file__).resolve().parent.parent
-AGENTE = 'atlante-orbitale/1.0 (aggiornamento giornaliero del catalogo)'
+AGENTE = 'keplario/1.0 (aggiornamento giornaliero del catalogo)'
 FONTI = [
+    # OMM in JSON per primo: contiene anche gli oggetti con numero di catalogo oltre 99 999, che nel formato TLE classico non entrano;
+    # qui diventano righe TLE con il numero in forma Alpha-5 (fino a 339 999), che la pagina e SGP4 leggono come le altre
+    ('CelesTrak (OMM in JSON)', 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json'),
     ('CelesTrak', 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle'),
     ('CelesTrak (copia caelo-works/tle-mirror)', 'https://raw.githubusercontent.com/caelo-works/tle-mirror/main/tle/active.tle'),
 ]
@@ -41,6 +44,50 @@ def scarica(url, tentativi=3):
             ultimo = e
             time.sleep(5 * (n + 1))
     raise ultimo
+
+
+def _esp(x):
+    """Campo TLE a mantissa implicita (es. ' 12345-3' = 0,12345·10⁻³)."""
+    if not x:
+        return ' 00000+0'
+    import math
+    e = math.floor(math.log10(abs(x))) + 1
+    m = round(abs(x) / 10 ** e * 1e5)
+    if m >= 100000:
+        m, e = round(m / 10), e + 1
+    return ('-' if x < 0 else ' ') + '%05d' % m + ('-' if e < 0 else '+') + str(min(9, abs(e)))
+
+
+def _con_cifra(riga):
+    return riga + str(sum(int(c) if c.isdigit() else (1 if c == '-' else 0) for c in riga) % 10)
+
+
+def omm_a_tle(testo):
+    """OMM in JSON (CelesTrak) → testo TLE a tre righe. Scarta gli elementi non SGP4 e i numeri oltre 339 999."""
+    fuori = []
+    for o in json.loads(testo):
+        try:
+            if str(o.get('MEAN_ELEMENT_THEORY', 'SGP4')).upper() not in ('SGP4', ''):
+                continue
+            nid = int(o['NORAD_CAT_ID'])
+            if nid > 339999:
+                continue
+            a5 = '%05d' % nid if nid < 100000 else 'ABCDEFGHJKLMNPQRSTUVWXYZ'[nid // 10000 - 10] + '%04d' % (nid % 10000)
+            ep = datetime.datetime.fromisoformat(str(o['EPOCH']).replace('Z', ''))
+            doy = (ep - datetime.datetime(ep.year, 1, 1)).total_seconds() / 86400 + 1
+            m = re.match(r'^(\d{4})-(\d{3})([A-Z]{1,3})$', str(o.get('OBJECT_ID', '')).strip())
+            intl = (m.group(1)[2:] + m.group(2) + m.group(3)).ljust(8) if m else ' ' * 8
+            nd = float(o.get('MEAN_MOTION_DOT') or 0)
+            r1 = _con_cifra('1 %s%s %s %02d%012.8f %s%s %s %s 0 %4d' % (a5, str(o.get('CLASSIFICATION_TYPE') or 'U')[:1], intl, ep.year % 100, doy,
+                            '-' if nd < 0 else ' ', ('%.8f' % abs(nd))[1:], _esp(float(o.get('MEAN_MOTION_DDOT') or 0)), _esp(float(o.get('BSTAR') or 0)),
+                            int(o.get('ELEMENT_SET_NO') or 999) % 10000))
+            r2 = _con_cifra('2 %s %8.4f %8.4f %07d %8.4f %8.4f %11.8f%5d' % (a5, float(o['INCLINATION']), float(o['RA_OF_ASC_NODE']),
+                            round(float(o['ECCENTRICITY']) * 1e7), float(o['ARG_OF_PERICENTER']), float(o['MEAN_ANOMALY']), float(o['MEAN_MOTION']),
+                            int(o.get('REV_AT_EPOCH') or 0) % 100000))
+            fuori += [str(o.get('OBJECT_NAME') or 'NORAD %d' % nid), r1, r2]
+        except (KeyError, ValueError, TypeError):
+            continue
+    return '\n'.join(fuori) + '\n'
 
 
 def cifra_ok(riga):
@@ -164,7 +211,8 @@ def catalogo():
 
     for nome, url in FONTI:
         try:
-            testo, n, scartati = controlla(scarica(url))
+            grezzo = scarica(url)
+            testo, n, scartati = controlla(omm_a_tle(grezzo) if 'FORMAT=json' in url else grezzo)
         except Exception as e:
             print(f'{nome}: non raggiungibile ({e})')
             continue

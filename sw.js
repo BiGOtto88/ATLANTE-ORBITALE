@@ -1,4 +1,4 @@
-/* Atlante Orbitale: service worker.
+/* Keplario: service worker.
    Tiene una copia del sito sul dispositivo, così l'app si apre anche senza rete.
 
    - Pagina (index.html): prima la rete, la copia locale se la rete manca.
@@ -10,12 +10,12 @@
    Cambia VERSIONE solo per buttare via le copie vecchie (per esempio dopo aver tolto dei file). */
 'use strict';
 
-const VERSIONE = 'atlante-v1';
+const VERSIONE = 'atlante-v2';
 const BASE = new URL('./', self.location).href;          // cartella in cui vive il sito
-const INDICE = new URL('index.html', BASE).href;
+const INDICE = new URL('index.html', BASE).href, INDICE_EN = new URL('en/index.html', BASE).href;
 
 const FISSI = [
-  'index.html', 'manifest.webmanifest', 'LICENZE.txt',
+  'index.html', 'en/index.html', 'manifest.webmanifest', 'LICENZE.txt',
   'vendor/three.min.js', 'vendor/OrbitControls.js', 'vendor/LineSegmentsGeometry.js', 'vendor/LineGeometry.js',
   'vendor/LineMaterial.js', 'vendor/LineSegments2.js', 'vendor/Line2.js', 'vendor/GLTFLoader.js', 'vendor/satellite.min.js', 'vendor/astronomy.browser.min.js',
   'fonts/b612-latin-400-normal.woff2', 'fonts/b612-latin-700-normal.woff2',
@@ -87,8 +87,9 @@ self.addEventListener('fetch', ev => {
   if (richiesta.method !== 'GET' || richiesta.headers.has('range')) return;
   if (!richiesta.url.startsWith(BASE)) return;                       // CelesTrak e ogni altro sito passano senza essere toccati
   const rel = new URL(richiesta.url).pathname.slice(new URL(BASE).pathname.length);
-  if (richiesta.mode === 'navigate') {                               // apertura della pagina: l'unica è index.html
+  if (richiesta.mode === 'navigate') {                               // apertura della pagina: index.html o la versione inglese in en/
     if (rel === '' || rel === 'index.html') ev.respondWith(primaLaRete(ev, INDICE, 4000));
+    else if (rel === 'en/' || rel === 'en' || rel === 'en/index.html') ev.respondWith(primaLaRete(ev, INDICE_EN, 4000));
     return;
   }
   if (rel === 'sw.js') return;

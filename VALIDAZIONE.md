@@ -1,4 +1,4 @@
-# Atlante Orbitale: verifica dei modelli
+# Keplario: verifica dei modelli
 
 Questo file raccoglie i confronti fatti fra i calcoli della pagina e strumenti indipendenti, con i numeri ottenuti. Gli script sono in `strumenti/validazione/`. I calcoli della pagina sono stati eseguiti nel browser (Chromium) sulla pagina stessa, con un aggancio di prova che espone le funzioni interne (`window.__dbg`); i dati d'ingresso dei confronti con Basilisk escono dalla pagina, così i due programmi lavorano sugli stessi numeri.
 
@@ -170,7 +170,7 @@ Tutti i calcoli lunghi (propagazione, vita orbitale, simulazione ADCS, congiunzi
 - Il modello termico ha un nodo per faccia e uno interno: serve per un primo dimensionamento, non sostituisce un modello termico dettagliato.
 - Le atmosfere di Venere, Marte e dei giganti sono profili medi senza dipendenza dall'ora e dal ciclo solare.
 - La magnitudine dei passaggi è una stima da sfera diffusa, utile per confronti relativi.
-- Atlante Orbitale è uno strumento didattico: non va usato per operazioni di volo.
+- Keplario è uno strumento didattico: non va usato per operazioni di volo.
 
 ## 14. Elementi orbitali della pagina Orbita (14 nov 2026)
 
@@ -199,3 +199,41 @@ Pagina Stato (quota geodetica, latitudine, longitudine, velocità, raggio, angol
 - **Finestre di lancio** (Strumenti): il viaggio della casella scelta (all'inizio il minimo di C₃; tocca un'altra casella per cambiarlo) visto dal polo nord dell'eclittica. Pianeti sulle orbite vere delle effemeridi, sonda sull'arco di Lambert propagato con il problema dei due corpi (stesse posizione e velocità iniziali dei numeri mostrati: l'arco parte dal pianeta di partenza e arriva su quello di arrivo).
 - **Percorso** (satelliti, sonde e missioni): ogni tratto (parcheggio, trasferimento, orbita finale) è una conica percorsa con la legge oraria di Keplero, con le stesse ipotesi dei numeri della pagina (manovre impulsive; per la Luna Hohmann fino alla sua distanza; per i pianeti orbite circolari e complanari e partenza alla prossima finestra). Per i satelliti il percorso parte dall'orbita media SGP4.
 - Etichette delle date nella mappa delle finestre: giorno e mese se le partenze coprono fino a 200 giorni, mese e anno intero altrimenti (prima «nov 26» voleva dire novembre 2026 ma si leggeva come 26 novembre).
+
+## 16. Progetto orbita: angolo β, traccia ripetuta, orbita congelata (15 nov 2026)
+
+- **β nel prossimo anno** (Ingegneria › Progetto orbita): dal modello dell'oggetto giorno per giorno (con la regressione del nodo) e dalla direzione vera del Sole. Contro un calcolo indipendente (python-sgp4 e posizione del Sole dell'Astronomical Almanac, precisione 0,01°) su 61 giorni: scarto massimo 0,011° per ISS, YAOGAN-29 (eliosincrona) e MERIDIAN 7 (Molniya). Prova: `strumenti/validazione/angolo_beta.py`.
+- **Traccia che si ripete**: k giri nodali in d giorni nodali con J₂ al primo ordine (moto medio, rotazione del pericentro, regressione del nodo), bisezione sul semiasse. Contro le missioni reali: Landsat 8 (233 giri in 16 giorni, eliosincrona) a = 7 077,72 km e i = 98,186°, come i valori nominali (7 077,7 km, 98,2°); Sentinel-2 (143/10) quota media 786,1 km (nominale 786 km); TOPEX/Poseidon (127/10, i = 66,04°) a = 7 714,40 km (nominale 7 714,43 km); SWOT (292/21, i = 77,6°) quota 890,5 km (nominale circa 891 km).
+- **Orbita congelata** e = −(J₃/2J₂)(R/a) sin i con ω = 90° o 270°, J₂ e J₃ dai campi di gravità. Contro un'integrazione numerica indipendente (Cowell con J₂ e J₃, SciPy): il vettore eccentricità medio su ogni giro ruota attorno al punto fisso; il centro trovato coincide con la formula entro lo 0,2 % (Terra 800 km, i = 98,6°: 0,001026 contro 0,001028 con ω = 90°; Marte 400 km, i = 92°: 0,007176 contro 0,007190 con ω = 270°). Prova: `strumenti/validazione/orbita_congelata.py`. Nello scriverla ho trovato e corretto un errore di segno nel termine J₃ della prova stessa, non della pagina.
+- **Termica, casi caldo e freddo**: i giorni del prossimo anno con |β| massimo e minimo; per la ISS 74,3° (nessuna eclisse) e 0,1° (eclisse di 36 min), come atteso per un'orbita a 51,6°.
+
+## 17. Accecamento dei sensori (15 nov 2026)
+
+- Bordo della Terra (ellissoide WGS84 allargato dello spessore dell'orizzonte) trovato per 180 azimut con bisezione; contro un calcolo a forza bruta (oltre 4 milioni di raggi per caso, NumPy) su cinque geometrie da LEO a GEO e tre spessori: scarto massimo 0,005° sull'angolo fra asse del sensore e bordo. Prova: `strumenti/validazione/bordo_ellissoide.py`.
+- Verifica fisica: per uno star tracker lungo la normale all'orbita di un satellite eliosincrono a 620 km il bordo della Terra (più 100 km) è a 23,4° dall'asse, quindi con un'esclusione di 25° dalla Terra illuminata è accecato per tutta la parte di giro in cui il bordo vicino è al Sole, come trovato (79 min su 97).
+
+## 18. Saturazione delle ruote e scarico magnetico (15 nov 2026)
+
+- Momento secolare e ciclico su un giorno, nella stessa terna e con le stesse coppie della pagina Missione › ADCS: per una missione di prova a 700 km il secolare per orbita è 0,0172 N·m·s mediato sul giorno contro 0,0207 sul primo giro (la differenza è la parte ciclica giornaliera del campo magnetico, che su un giro solo sembra secolare).
+- Capacità di scarico in una direzione u con dipolo limitato per asse: max u·(m × B) = m<sub>max</sub> Σ|(B × u)<sub>i</sub>| (massimo di una funzione lineare sul cubo dei dipoli, ai vertici), mediata sul giorno; direzione peggiore cercata su 600 direzioni.
+- Ruote: piramide a 54,74° e distribuzione a norma minima W⁺ = Wᵀ(WWᵀ)⁻¹, la stessa della simulazione ad anello chiuso.
+
+## 19. Importazione CCSDS (15 nov 2026)
+
+Prova: `strumenti/validazione/importazione_ccsds.py` (file scritti da Python con python-sgp4 ed ERFA, indipendenti dalla pagina).
+
+| Caso | Risultato |
+|---|---|
+| OEM EME2000, ISS, 360 stati a 60 s, Hermite grado 5, 40 istanti fuori griglia | 0,29 m |
+| OEM a due corpi (velocità derivata esatta della posizione), Hermite grado 5 | 0,17 mm di posizione, 9 µm/s di velocità |
+| OEM EME2000, Lagrange grado 7 | 2 mm |
+| OEM TEME (stessi stati) | 2,3 m |
+| OEM ITRF2014 (stessi stati, dalla terra fissa) | 1,9 m |
+| AEM 1.0 quaternioni FIRST A2B, FIRST B2A; AEM 2.0 quaternioni; AEM 2.0 angoli di Eulero ZYX | 0° (alla precisione di macchina) |
+| OMM → righe TLE ricostruite → SGP4, due giorni | 0 m (righe identiche a quelle di partenza) |
+| OEM costruito dal TLE vero della ISS, confronto con SGP4 nella pagina Fonte | 2 m lungo la traccia |
+
+Lo scarto Hermite sull'OEM da SGP4 viene dai dati: la velocità di SGP4 non è esattamente la derivata della sua posizione (circa 1 cm/s), mentre l'interpolazione di Hermite le usa entrambe. Con dati coerenti (caso a due corpi) l'errore è di decimi di millimetro. TEME e ITRF: 2 m fra le conversioni della pagina (Astronomy Engine) e quelle di ERFA (IAU 2000B); per ITRF non sono applicati UT1 − UTC e moto del polo.
+
+OMM con numero di catalogo oltre 99 999: righe in forma Alpha-5 (fino a 339 999), lette anche da python-sgp4. L'aggiornamento giornaliero (`strumenti/aggiorna_tle.py`) ora scarica prima gli OMM in JSON da CelesTrak e li converte allo stesso modo (righe identiche a quelle della pagina); se non risponde, ripiega sui TLE come prima. Non provato contro CelesTrak vero (non raggiungibile da qui).
+

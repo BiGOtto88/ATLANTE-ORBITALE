@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Prove automatiche del motore di calcolo di Atlante Orbitale (il blocco <script id="motore"> di index.html).
+/* Prove automatiche del motore di calcolo di Keplario (il blocco <script id="motore"> di index.html).
    Girano senza browser, con Node 18 o più recente, e senza rete. Le esegue il flusso GitHub «Verifica» a ogni modifica.
 
    Uso:  node strumenti/prove/prova_motore.js [index.html] [--rif uscita_riferimento.json]

@@ -24,7 +24,7 @@ import argparse, datetime, json, math, pathlib, re, sys, time, urllib.parse, url
 
 RADICE = pathlib.Path(__file__).resolve().parent.parent
 API = 'https://ssd.jpl.nasa.gov/api/horizons.api'
-AGENTE = 'atlante-orbitale/1.0 (aggiornamento giornaliero delle sonde)'
+AGENTE = 'keplario/1.0 (aggiornamento giornaliero delle sonde)'
 D2R, R2D, TAU = math.pi / 180, 180 / math.pi, 2 * math.pi
 
 # Costanti uguali a quelle della pagina (tabella BDEF di index.html): se cambiano lì, vanno cambiate qui.

@@ -1,7 +1,7 @@
 {
-  "name": "Atlante Orbitale",
-  "short_name": "Atlante",
-  "description": "Il sistema solare in scala reale, i satelliti attivi attorno alla Terra e le sonde in viaggio: orbita, assetto, disturbi e progetto di missione.",
+  "name": "Keplario",
+  "short_name": "Keplario",
+  "description": "Il planetario delle orbite: sistema solare in scala reale, satelliti attivi attorno alla Terra e sonde in viaggio, con orbita, assetto, disturbi e progetto di missione.",
   "lang": "it",
   "dir": "ltr",
   "id": "./",
@@ -11,11 +11,34 @@
   "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#080a0d",
-  "categories": ["education", "utilities"],
+  "categories": [
+    "education",
+    "utilities"
+  ],
   "icons": [
-    { "src": "icone/icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icone/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icone/icona-maschera-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icone/icona.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "icone/icona-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone/icona-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone/icona-maschera-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icone/icona.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }

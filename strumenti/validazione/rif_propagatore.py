@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Riferimento indipendente per il propagatore numerico di Atlante Orbitale.
+"""Riferimento indipendente per il propagatore numerico di Keplario.
 
 Stessi modelli fisici, scritti con librerie diverse da quelle della pagina:
   - gravità della Terra EGM2008: pyshtools (SHTOOLS, MakeGravGridPoint), non il codice della pagina;

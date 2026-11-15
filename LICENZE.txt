@@ -1,33 +1,35 @@
-ATLANTE ORBITALE: LICENZE, CREDITI E AVVISI
+KEPLARIO: LICENZE, CREDITI E AVVISI
 
 Questo file elenca tutto ciò che il sito contiene o usa, di chi è e a quali condizioni. Va distribuito insieme al sito.
 Le sezioni 1-9 sono in italiano; i testi di licenza ufficiali (sezioni 10 e seguenti) restano nella lingua originale.
 
 INDICE
- 1. Il codice di Atlante Orbitale
+ 1. Il codice di Keplario
  2. Librerie JavaScript (vendor/)
  3. Carattere B612 (fonts/)
  4. Texture dei pianeti (tex/)
  5. Modelli 3D dei veicoli (modelli/)
- 6. Dati: satelliti, lanci, sonde, stelle, campo magnetico
+ 6. Dati: satelliti, lanci, sonde, stelle, campo magnetico, gravità, luoghi
  7. Formule, modelli fisici e riferimenti
  8. Nomi, marchi e insegne
  9. Esclusione di garanzia e uso
 10. Testo della licenza MIT (codice dell'app)
 11. Licenze delle librerie
 12. Licenza del carattere (SIL OFL 1.1)
-13. Licenza delle texture (Creative Commons Attribution 4.0)
+13. Licenza delle texture e dei luoghi (Creative Commons Attribution 4.0)
 
 
 ========================================================================
-1. IL CODICE DI ATLANTE ORBITALE
+1. IL CODICE DI KEPLARIO
 Copyright (c) 2026 Davide Ottoninuoto. Licenza MIT (testo alla sezione 10 e nel file LICENSE).
-Vale per: index.html e la pagina sorgente (sorgente/pagina-claude.html), sw.js, manifest.webmanifest, icone/ (icona originale
-del progetto), strumenti/ (script di aggiornamento, conversione, preparazione dei modelli e prove), il flusso .github/workflows/,
+Vale per: index.html, en/index.html (la stessa pagina in inglese) e la pagina sorgente (sorgente/pagina-claude.html), sw.js,
+manifest.webmanifest, icone/ (marchio, icone e immagine di copertina anteprima.jpg, opere originali del progetto disegnate da
+strumenti/grafica/disegna_marchio.py; le scritte usano il carattere B612, che la licenza OFL permette di usare nei documenti creati con esso),
+strumenti/ (script di aggiornamento, conversione, preparazione dei modelli, grafica e prove), il flusso .github/workflows/,
 strumenti/genera_anelli.py e la texture tex/ring.png che ne risulta (opera originale del progetto, stessa licenza).
-Fa eccezione icone/anteprima.jpg (l'immagine che compare quando si condivide un link al sito): è una schermata dell'app e
-contiene la texture della Terra di Solar System Scope (CC BY 4.0, sezione 4) e il modello 3D della ISS della NASA (sezione 5),
-che restano alle loro condizioni; il resto dell'immagine è sotto licenza MIT come l'app.
+Una parte del codice della pagina deriva da satellite.js (sezione 2, licenza MIT): il calcolo degli elementi medi SGP4 all'istante
+(funzione sgp4Mean) riprende i termini secolari e di spazio profondo di quella libreria; vale anche per questa parte l'avviso di
+copyright di satellite.js alla sezione 11.
 La licenza MIT NON si estende ai materiali di terzi elencati nelle sezioni seguenti: ciascuno resta alle sue condizioni.
 Il codice è stato scritto con l'assistenza di Claude (Anthropic); il titolare dei diritti sul risultato è l'autore indicato sopra.
 
@@ -68,7 +70,7 @@ Le linee guida NASA su immagini e media (https://www.nasa.gov/nasa-brand-center/
 comprese le mappe di texture e i dati poligonali dei modelli 3D, di norma non è soggetto a diritto d'autore negli Stati Uniti,
 e chiedono di citare la NASA come fonte. Condizioni che restano valide:
  - Credito: modelli NASA 3D Resources, NASA. Elenco dei veicoli e dei file in modelli/CREDITI.txt.
- - Nessun sostegno: l'uso dei modelli non indica che la NASA, le altre agenzie o i costruttori approvino o sostengano Atlante Orbitale.
+ - Nessun sostegno: l'uso dei modelli non indica che la NASA, le altre agenzie o i costruttori approvino o sostengano Keplario.
  - Insegne: il logo NASA («meatball»), il «worm» e gli altri identificatori NASA sono protetti dalla legge e non sono concessi con i modelli.
    Se una texture di un modello ne porta, resta lì come parte del veicolo rappresentato; non va estratta né usata come logo del sito.
  - Parti di terzi: dove un veicolo include elementi di altri enti (per esempio ESA, JAXA, CSA, Roscosmos, NOAA, USGS, EUMETSAT) la NASA
@@ -116,11 +118,20 @@ per 25 × 48 direzioni, usati per resistenza atmosferica e pressione di radiazio
    Marte GMM-2B (NASA Goddard; Lemoine et al. 2001, J. Geophys. Res. 106, 23359), Venere MGNP180U (NASA JPL; Konopliv, Banerdt e Sjogren
    1999, Icarus 139, 3): prodotti del Planetary Data System della NASA, opere del governo degli Stati Uniti, nelle copie distribuite con
    GMAT (NASA Goddard, https://github.com/nasa/GMAT). Conversione: strumenti/gravita/converti_campi.py.
+ - Luoghi per la pagina Passaggi (data/citta.txt): GeoNames (https://www.geonames.org), tabella «cities15000», licenza Creative
+   Commons Attribution 4.0 (sezione 13), letta attraverso il pacchetto Python geonamescache (Y. Gregorius, licenza MIT; usato solo per
+   generare il file, non distribuito). Modifiche: tenute le città con più di 30 000 abitanti e quelle italiane oltre 15 000, tolte le
+   suddivisioni amministrative, coordinate arrotondate al millesimo di grado, aggiunti i nomi italiani di alcune città straniere
+   (strumenti/citta/genera_citta.py). GeoNames non approva né sostiene questo progetto.
+ - Secondi intercalari (importazione CCSDS): tabella TAI−UTC pubblicata dall'IERS (Bulletin C), un dato di fatto.
  - Stazioni di terra (pagina Collegamenti): coordinate arrotondate a circa 100 m dalle descrizioni pubbliche delle reti ESA ESTRACK,
    NASA Deep Space Network e Near Earth Network, Telespazio (Fucino) e Agenzia Spaziale Italiana (Matera, Malindi).
  - Riferimenti per le prove (cartella strumenti/validazione/): effemeridi JPL DE421 (Folkner, Williams e Boggs 2008, IPN Progress
    Report 42-178), scaricate dal flusso di verifica da https://naif.jpl.nasa.gov e non ridistribuite; calcoli di SHTOOLS (BSD 3-Clause),
-   ERFA (BSD 3-Clause), SciPy (BSD 3-Clause), pymsis (MIT), jplephem (MIT). Sono usati solo dagli script di verifica, non dalla pagina.
+   ERFA (BSD 3-Clause), SciPy (BSD 3-Clause), NumPy (BSD 3-Clause), pymsis (MIT), jplephem (MIT), python-sgp4 (MIT), Skyfield (MIT),
+   Basilisk (ISC), Embree (Apache 2.0). Sono usati solo dagli script di verifica, non dalla pagina, e non sono distribuiti con il sito.
+   Gli script di grafica e di preparazione usano Playwright (Apache 2.0), Pillow (licenza HPND/MIT-CMU) e glTF-Transform (MIT),
+   anch'essi non distribuiti.
  - Pianeti e lune: posizioni calcolate da Astronomy Engine (sezione 2); raggi e masse da valori pubblicati di NASA/JPL.
  - Schede dei veicoli (data nelle tabelle della pagina: missione, operatore, lancio, massa): testi scritti per questo progetto a partire
    da fonti pubbliche degli enti che gestiscono le missioni; sono fatti, non testi copiati.
@@ -147,7 +158,8 @@ J. Sci. Stat. Comput. 2, 128); problema di Lambert con l'algoritmo di Izzo (2015
 con l'iterazione di Laguerre–Conway (Conway 1986); filtro di Kalman esteso moltiplicativo (Lefferts, Markley e Shuster 1982, J. Guid.
 Control Dyn. 5, 417; Markley e Crassidis 2014, «Fundamentals of Spacecraft Attitude Determination and Control»); bilancio di potenza e
 fattori di vista da Wertz e Larson, «Space Mission Analysis and Design»; orbita cimitero dalle linee guida IADC (IADC-02-01); formati dei
-messaggi CCSDS 502.0-B-3 (OEM, OPM) e 504.0-B-1 (AEM).
+messaggi CCSDS 502.0-B-3 (OEM, OPM, OMM) e 504.0-B-1 e 504.0-B-2 (AEM), usati per scrivere e leggere i file; traccia a terra
+ripetuta e orbite congelate da Vallado (cap. 11) e da Cook (1966) per il termine J₃; bordo apparente dell'ellissoide WGS84 (NIMA TR8350.2).
 Atmosfera terrestre: NRLMSISE-00 (Picone, Hedin, Drob e Aikin 2002, J. Geophys. Res. 107(A12), 1468), U.S. Naval Research Laboratory,
 opera del governo degli Stati Uniti di pubblico dominio; il codice nella pagina è una traduzione in JavaScript della versione in C di
 Dominik Brodowski (pubblico dominio, https://www.brodo.de/space/nrlmsise/), verificata con pymsis.
@@ -155,18 +167,18 @@ Dominik Brodowski (pubblico dominio, https://www.brodo.de/space/nrlmsise/), veri
 ========================================================================
 8. NOMI, MARCHI E INSEGNE
 NASA, ESA, JAXA, CSA, ISRO, KARI, Roscosmos, NOAA, USGS, SpaceX, Starlink, OneWeb e gli altri nomi di agenzie, aziende, missioni e veicoli
-compaiono solo per identificare gli oggetti rappresentati; sono marchi o nomi dei rispettivi titolari. Atlante Orbitale è un progetto
+compaiono solo per identificare gli oggetti rappresentati; sono marchi o nomi dei rispettivi titolari. Keplario è un progetto
 indipendente, non affiliato né approvato da alcuno di loro. Il sito non usa loghi di terzi come marchio proprio.
 
 ========================================================================
 9. ESCLUSIONE DI GARANZIA E USO
-Atlante Orbitale è uno strumento didattico e di visualizzazione. Posizioni, orbite, disturbi e percorsi sono calcolati con modelli
+Keplario è uno strumento didattico e di visualizzazione. Posizioni, orbite, disturbi e percorsi sono calcolati con modelli
 semplificati e con dati pubblici che possono essere in ritardo o imprecisi: NON vanno usati per operazioni di volo, per evitare collisioni,
 per osservazioni che richiedono precisione o per decisioni di sicurezza. Il software è fornito «così com'è», senza garanzie di alcun tipo
 (testo in inglese alla sezione 10).
 
 ========================================================================
-10. LICENZA MIT DEL CODICE DI ATLANTE ORBITALE
+10. LICENZA MIT DEL CODICE DI KEPLARIO
 
 
 
@@ -412,7 +424,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ========================================================================
-13. LICENZA DELLE TEXTURE (CREATIVE COMMONS ATTRIBUTION 4.0 INTERNATIONAL)
+13. LICENZA DELLE TEXTURE E DEI LUOGHI GEONAMES (CREATIVE COMMONS ATTRIBUTION 4.0 INTERNATIONAL)
 
 Creative Commons Attribution 4.0 International
 
