@@ -257,6 +257,7 @@ table.tb th:first-child,table.tb td:first-child{text-align:left}
   .left>*{pointer-events:auto}
   .left .search{background:rgba(0,0,0,.82)}
   .left.open{bottom:var(--both,46px);background:var(--pn);overflow:auto;overscroll-behavior:contain;border-bottom:1px solid var(--ln2);padding-bottom:14px}
+  .left.open{pointer-events:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}   /* the whole open list takes the finger, so it scrolls */
   .left.open>*{flex-shrink:0}   /* in the open list the sections keep their height and the list scrolls to the end */
   .left:not(.open)>.fold{display:none}
   .results{max-height:52svh}
