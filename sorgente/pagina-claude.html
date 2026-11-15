@@ -2521,7 +2521,10 @@ function setLang(l,fromHash){ if(l===LANG) return; try{ localStorage.setItem('at
   // on the site the English page lives in en/: move between the two addresses instead of reloading
   if(document.documentElement.hasAttribute('data-lang')||document.querySelector('link[hreflang=en]')){ const root=new URL('./',document.baseURI).href, to=new URL((l==='en'?root+'en/':root)+'#'+h.join('-'));
     // same page (e.g. English chosen earlier on the Italian address): only the hash would change, so reload explicitly
-    if(to.pathname.replace(/index\.html$/,'')===location.pathname.replace(/index\.html$/,'')){ try{ history.replaceState(null,'',to.pathname+to.hash); }catch(e){} location.reload(); } else location.href=to.href; return; }
+    const here=()=>{ try{ history.replaceState(null,'',location.pathname+'#'+h.join('-')); }catch(e){} location.reload(); };
+    if(to.pathname.replace(/index\.html$/,'')===location.pathname.replace(/index\.html$/,'')) here();
+    // the English address exists only if en/ was published: otherwise switch language on this page
+    else fetch(to.pathname,{method:'HEAD',cache:'no-store'}).then(r=>{ if(r.ok) location.href=to.href; else here(); }).catch(here); return; }
   try{ history.replaceState(null,'','#'+h.join('-')); }catch(e){} location.reload(); }
 
 /* ================= constants ================= */
