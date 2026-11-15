@@ -303,6 +303,7 @@ table.tb th:first-child,table.tb td:first-child{text-align:left}
   .left>*{pointer-events:auto}
   .left .search{background:rgba(0,0,0,.82)}
   .left.open{bottom:var(--both,46px);background:var(--pn);overflow:auto;overscroll-behavior:contain;border-bottom:1px solid var(--ln2);padding-bottom:14px}
+  .left.open>*{flex-shrink:0}   /* in the open list the sections keep their height and the list scrolls to the end */
   .left:not(.open)>.fold{display:none}
   .results{max-height:52svh}
   #btnFilters{display:block}
@@ -2565,7 +2566,9 @@ function tr(t){ if(LANG!=='en'||typeof t!=='string'||t.length<2) return t; if(!t
 function setLang(l,fromHash){ if(l===LANG) return; try{ localStorage.setItem('atlante-lingua',l); }catch(e){}
   const h=(location.hash||'').slice(1).split('-').filter(x=>x&&x!=='en'&&x!=='it'); h.push(l);
   // on the site the English page lives in en/: move between the two addresses instead of reloading
-  if(document.documentElement.hasAttribute('data-lang')||document.querySelector('link[hreflang=en]')){ const root=new URL('./',document.baseURI).href; location.href=(l==='en'?root+'en/':root)+'#'+h.join('-'); return; }
+  if(document.documentElement.hasAttribute('data-lang')||document.querySelector('link[hreflang=en]')){ const root=new URL('./',document.baseURI).href, to=new URL((l==='en'?root+'en/':root)+'#'+h.join('-'));
+    // same page (e.g. English chosen earlier on the Italian address): only the hash would change, so reload explicitly
+    if(to.pathname.replace(/index\.html$/,'')===location.pathname.replace(/index\.html$/,'')){ try{ history.replaceState(null,'',to.pathname+to.hash); }catch(e){} location.reload(); } else location.href=to.href; return; }
   try{ history.replaceState(null,'','#'+h.join('-')); }catch(e){} location.reload(); }
 
 /* ================= constants ================= */
