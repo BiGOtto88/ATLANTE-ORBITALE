@@ -4,7 +4,7 @@
 
    Variabili da impostare nel pannello di Cloudflare (Settings → Variables and Secrets):
      ANTHROPIC_API_KEY   (segreto)  la chiave dell'API
-     ALLOWED_ORIGIN      https://bigotto88.github.io          (l'indirizzo del sito, senza barra finale e senza percorso)
+     ALLOWED_ORIGIN      https://ottonspace.github.io          (l'indirizzo del sito, senza barra finale e senza percorso)
    Facoltativi:
      SPACETRACK_USER     (segreto)  l'e-mail dell'account Space-Track (serve per lo strumento spacetrack_tle)
      SPACETRACK_PASS     (segreto)  la password dell'account Space-Track
