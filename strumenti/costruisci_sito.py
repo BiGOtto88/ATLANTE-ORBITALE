@@ -29,7 +29,7 @@ DESCRIZIONE_EN = ('Keplario, the orbit planetarium: satellites and solar-system 
 # indirizzo pubblico del sito (GitHub Pages): serve ai motori di ricerca e alle anteprime dei link; cambialo se il sito si sposta
 SITO = 'https://ottonspace.github.io/keplario/'
 # Indirizzo del servizio dell'assistente (vedi assistente/LEGGIMI-assistente.md). Vuoto = assistente nascosto.
-ASSISTENTE = 'keplario-assistente.davide-ottoninuoto.workers.dev'
+ASSISTENTE = 'https://keplario-assistente.davide-ottoninuoto.workers.dev'
 SOTTOTITOLO = 'il planetario delle orbite'
 SOTTOTITOLO_EN = 'the orbit planetarium'
 

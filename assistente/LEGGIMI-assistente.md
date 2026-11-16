@@ -4,7 +4,7 @@ L'assistente risponde a domande libere. Capisce la richiesta, sceglie da solo qu
 
 ## Costi e sicurezza
 
-- Ogni domanda usa l'API del modello scelto. Predefinito: **Google Gemini** (`gemini-4-hydrogen`, il più economico). In alternativa Claude di Anthropic (`claude-haiku-5-5`): basta cambiare la variabile `PROVIDER`. Nome del modello con la variabile `MODEL`: i nomi cambiano spesso, controllali su ai.google.dev/gemini-api/docs/models.
+- Ogni domanda usa l'API del modello scelto. Predefinito: **Google Gemini** (`gemini-3.5-flash-lite`, il più economico). In alternativa il modello di Anthropic (`claude-haiku-5-5`): basta cambiare la variabile `PROVIDER`. Nome del modello con la variabile `MODEL`: i nomi cambiano spesso, controllali su ai.google.dev/gemini-api/docs/models.
 - **Gemini, piano gratuito:** esiste, con limiti di richieste al minuto e al giorno bassi, e Google può usare le domande per migliorare i propri prodotti. Con la fatturazione attivata (piano a pagamento) non le usa. Se vuoi più riservatezza, attiva la fatturazione e metti un limite di spesa.
 - Prima di tutto, nella console del fornitore (Google AI Studio o Anthropic) imposta un **limite di spesa mensile**, o tieni bassi `DAILY_PER_IP` e `DAILY_TOTAL`.
 - La chiave non sta mai nella pagina: sta solo nell'intermediario (segreto di Cloudflare).
@@ -52,7 +52,7 @@ Senza questi due segreti `spacetrack_tle` risponde che Space-Track non è config
 
 ## Nell'artifact di Claude
 
-Nell'artifact l'assistente non usa il servizio né Gemini: è la pagina stessa a chiamare Claude con gli stessi strumenti (capacità «sample» dell'artifact), sull'account di chi guarda, e chiede il consenso alla prima domanda. Il pulsante compare da solo, senza indirizzo.
+Nell'artifact l'assistente non usa il servizio né Gemini: è la pagina stessa a chiamare il modello di chi guarda con gli stessi strumenti (capacità «sample» dell'artifact), sull'account di chi guarda, e chiede il consenso alla prima domanda. Il pulsante compare da solo, senza indirizzo.
 
 ## Provare il servizio senza rete
 

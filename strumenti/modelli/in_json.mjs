@@ -1,4 +1,4 @@
-// Scrive ogni modello .glb come un unico file JSON (glTF con i dati incorporati in base64): è il formato che il visualizzatore di Claude sa servire.
+// Scrive ogni modello .glb come un unico file JSON (glTF con i dati incorporati in base64): è il formato che il visualizzatore integrato sa servire.
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import fs from 'fs';

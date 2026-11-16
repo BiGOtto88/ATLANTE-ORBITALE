@@ -45,7 +45,7 @@ try:
         verifica('un\'espressione non ammessa viene rifiutata', R[12]['e'] and 'not allowed' in R[12]['c'])
         verifica('uno strumento inventato viene rifiutato', R[13]['e'])
         verifica('nessun errore nella pagina', not err, str(err[:2]))
-        # secondo percorso: nell'artifact è la pagina stessa a chiamare Claude con gli strumenti (capacità «sample»); qui con una funzione finta
+        # secondo percorso: nell'artifact è la pagina stessa a chiamare il modello di chi guarda con gli strumenti (capacità «sample»); qui con una funzione finta
         pg2 = b.new_page(viewport={'width': 1280, 'height': 900}); err2 = []; pg2.on('pageerror', lambda e: err2.append(str(e)))
         pg2.goto('http://localhost:%d/index.html' % PORTA); pg2.wait_for_timeout(4000)
         pg2.evaluate("document.getElementById('btnAsk').hidden=false;document.getElementById('tabAsk').hidden=false"); pg2.click('#btnAsk'); pg2.wait_for_timeout(400)
@@ -90,7 +90,7 @@ try:
         pg3.close(); ctx3.close()
         ctx4 = b.new_context(viewport={'width': 1280, 'height': 900}); pg4 = ctx4.new_page(); err4 = []; pg4.on('pageerror', lambda e: err4.append(str(e)))
         def pagina_con_servizio(r):
-            resp = r.fetch(); r.fulfill(response=resp, body=resp.text().replace('<meta name="assistente" content="">', '<meta name="assistente" content="https://servizio.prova/">'))
+            resp = r.fetch(); r.fulfill(response=resp, body=re.sub(r'<meta name="assistente" content="[^"]*">', '<meta name="assistente" content="https://servizio.prova/">', resp.text()))
         ctx4.route('http://localhost:%d/index.html' % PORTA, pagina_con_servizio)
         ctx4.route('https://ssd.jpl.nasa.gov/**', lambda r: r.abort())   # Horizons non raggiungibile dal browser: si deve usare il servizio
         hz = '{"result":"header\\n$$SOE\\n2460745.500694444, A.D. 2025-Mar-10 00:01:00.0000, -4000.5, 5000.25, 3000.75, -3.5, -4.25, 5.125,\\n2460745.501388889, A.D. 2025-Mar-10 00:02:00.0000, 1, 2, 3, 4, 5, 6,\\n$$EOE\\nfooter"}'
@@ -125,7 +125,7 @@ try:
         verifica('storico: data non valida rifiutata', R4[6]['e'])
         pg4.evaluate("window.atlante.AS.mock=null"); pg4.fill('#asIn', 'errore'); pg4.click('#asGo'); pg4.wait_for_timeout(2500)
         T5 = pg4.evaluate("document.getElementById('asLog').innerText")
-        verifica('errore del servizio: il pannello mostra il codice', 'HTTP 502' in T5 and 'upstream' in T5 and '404' in T5 and 'modello prova' in T5, T5[-160:])
+        verifica('errore del servizio: il pannello mostra il codice', 'HTTP 502' in T5 and 'servizio.prova' in T5 and 'upstream' in T5 and '404' in T5 and 'modello prova' in T5, T5[-160:])
         verifica('storico: nessun errore nella pagina', not err4, str(err4[:2]))
         b.close()
 finally:
