@@ -29,11 +29,15 @@ il browser blocca la lettura dei file di dati se la pagina non arriva da un serv
 
 Da quel momento il flusso riparte da solo ogni giorno alle 04:23 UTC e a ogni modifica che carichi.
 
-## Cambiare nome al repository (da ATLANTE-ORBITALE a keplario)
+## Nome del repository
+
+**Il repository si chiama `KEPLARIO` e resta così**: il sito è già nei motori di ricerca a questo indirizzo (GitHub Pages distingue le maiuscole) e `SITO` in `strumenti/costruisci_sito.py` è `https://ottonspace.github.io/KEPLARIO/`. Rinominarlo farebbe perdere l'indirizzo indicizzato. Il resto di questa sezione vale solo se un giorno cambierai nome.
+
+### Come cambiare nome al repository
 
 Il repository esistente si rinomina senza perdere nulla: **Settings → General → Repository name** → `keplario` → **Rename**.
 GitHub reindirizza da solo il vecchio indirizzo del repository, ma **non** quello del sito: dopo il cambio il sito è a
-`https://ottonspace.github.io/keplario/` e il vecchio `…/ATLANTE-ORBITALE/` smette di funzionare. Poiché il sito non era ancora
+`https://ottonspace.github.io/KEPLARIO/` e il vecchio `…/ATLANTE-ORBITALE/` smette di funzionare. Poiché il sito non era ancora
 nei motori di ricerca, conviene farlo adesso. Poi riavvia il flusso (Actions → «Aggiorna i dati e pubblica il sito» → Run workflow).
 Se preferisci tenere il vecchio nome del repository, rimetti il vecchio indirizzo nella variabile `SITO` di `strumenti/costruisci_sito.py`.
 
@@ -50,7 +54,7 @@ Un sito nuovo non compare subito nelle ricerche: i motori lo trovano seguendo i 
 nessun link possono passare settimane. Per accelerare (gratis, una volta sola):
 
 1. **Google Search Console** (https://search.google.com/search-console): «Aggiungi proprietà» → tipo **Prefisso URL** →
-   `https://ottonspace.github.io/keplario/`. Come verifica scegli **File HTML**: scarica il file che ti dà
+   `https://ottonspace.github.io/KEPLARIO/`. Come verifica scegli **File HTML**: scarica il file che ti dà
    (si chiama `google` seguito da lettere e numeri, `.html`), caricalo nella cartella principale del repository e aspetta
    che il flusso «Aggiorna i dati e pubblica il sito» finisca (scheda Actions); poi torna su Search Console e premi **Verifica**.
    Verificato il sito, apri **Sitemap** e invia `sitemap.xml`; poi in **Controllo URL** incolla l'indirizzo del sito
@@ -233,3 +237,7 @@ ricreano con `python3 strumenti/genera_anelli.py tex/ring.png`, il marchio, le i
 
 Il sito è uno strumento didattico: posizioni e orbite non vanno usate per operazioni di volo (avviso in `LICENZE.txt`, sezione 9).
 Ricorda che con un account GitHub gratuito il repository di GitHub Pages è pubblico: il codice sarà visibile a tutti, con la licenza MIT.
+
+## Scheda di presentazione (testo per i motori di ricerca)
+In `sorgente/pagina-sorgente.html` il blocco `<section id="about">` contiene il testo che Google legge e che i nuovi visitatori vedono alla prima apertura (italiano e inglese, ciascuno tra i marcatori `<!--L:it-->…<!--/L-->` e `<!--L:en-->…<!--/L-->`). Per cambiarlo si modifica lì e si rigenera con `python3 strumenti/costruisci_sito.py sorgente/pagina-sorgente.html`: `index.html` tiene il blocco italiano, `en/index.html` quello inglese. I visitatori che tornano e i link a una scena (`#sat-…`, `#sonda-…`) non vedono la scheda; il pulsante **Info** la riapre. Da tastiera: frecce per ruotare la vista, + e − per lo zoom, spazio per la pausa.
+

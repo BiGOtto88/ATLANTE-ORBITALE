@@ -22,12 +22,10 @@ RANGE_LATINO = ('U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC
                 'U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD')
 CARATTERI = [('B612', 400, 'b612-latin-400-normal.woff2'), ('B612', 700, 'b612-latin-700-normal.woff2'),
              ('B612 Mono', 400, 'b612-mono-latin-400-normal.woff2'), ('B612 Mono', 700, 'b612-mono-latin-700-normal.woff2')]
-DESCRIZIONE = ('Keplario, il planetario delle orbite: satelliti in orbita e sonde del sistema solare in scala reale e in tempo reale, '
-               'con orbite, assetto, disturbi, propagatore numerico, finestre di lancio e progetto di missione. Gratis, da computer e da telefono.')
-DESCRIZIONE_EN = ('Keplario, the orbit planetarium: satellites and solar-system probes at true scale and in real time, with orbits, '
-                  'attitude, disturbances, a numerical propagator, launch windows and mission design. Free, on computer and phone.')
+DESCRIZIONE = ('Satelliti e sonde in orbita in scala reale e in tempo reale: orbite, assetto, finestre di lancio e progetto di missione. Gratis, da computer e da telefono.')
+DESCRIZIONE_EN = ('Satellites and probes in orbit at true scale and in real time: orbits, attitude, launch windows and mission design. Free, on computer and phone.')
 # indirizzo pubblico del sito (GitHub Pages): serve ai motori di ricerca e alle anteprime dei link; cambialo se il sito si sposta
-SITO = 'https://ottonspace.github.io/keplario/'
+SITO = 'https://ottonspace.github.io/KEPLARIO/'
 # Indirizzo del servizio dell'assistente (vedi assistente/LEGGIMI-assistente.md). Vuoto = assistente nascosto.
 ASSISTENTE = 'https://keplario-assistente.davide-ottoninuoto.workers.dev'
 SOTTOTITOLO = 'il planetario delle orbite'
@@ -39,6 +37,7 @@ def dati_strutturati(titolo, en=False):
     d = {'@context': 'https://schema.org', '@type': 'WebApplication', 'name': titolo, 'alternateName': ['Keplario', 'Atlante Orbitale'], 'url': SITO + ('en/' if en else ''),
          'description': DESCRIZIONE_EN if en else DESCRIZIONE, 'applicationCategory': 'EducationalApplication', 'operatingSystem': 'Any (web browser)' if en else 'Qualsiasi (browser)',
          'inLanguage': ['it', 'en'], 'isAccessibleForFree': True, 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'EUR'},
+         'featureList': (['Orbit, position and speed of ~15,000 satellites', 'Solar-system probes with ground track', 'ISS and satellite passes over your location', 'Mission design: orbit, attitude, perturbations, power, links, launch windows'] if en else ['Orbita, posizione e velocità di oltre 15 000 satelliti', 'Sonde del sistema solare con traccia a terra', 'Passaggi della ISS e dei satelliti sopra il tuo luogo', 'Progetto di missione: orbita, assetto, disturbi, potenza, collegamenti, finestre di lancio']),
          'image': SITO + 'icone/anteprima.jpg', 'author': {'@type': 'Person', 'name': 'Davide Ottoninuoto'}}
     return json.dumps(d, ensure_ascii=False).replace('</', '<\\/')
 
@@ -134,7 +133,13 @@ img{max-width:100%%}
          # la pagina inglese vive in en/ ma usa i file della radice
          '<base href="../">\n' if en else '', tit, sott, desc, url, SITO, SITO, SITO, tit, tit, sott, desc, url, SITO,
          'en_GB' if en else 'it_IT', 'it_IT' if en else 'en_GB', dati_strutturati(tit, en), facce)
-    fai = lambda en: testata(en).replace('<meta name="robots" content="index,follow">', '<meta name="robots" content="index,follow">\n<meta name="assistente" content="%s">' % ASSISTENTE, 1) + stile + '\n</head>\n<body>\n' + corpo.rstrip() + '\n</body>\n</html>\n'
+    def lingua(en):
+        tieni, togli = ('en', 'it') if en else ('it', 'en')
+        c = re.sub(r'<!--L:%s-->.*?<!--/L-->\n?' % togli, '', corpo, flags=re.S)
+        c = c.replace('<!--L:%s-->' % tieni, '').replace('<!--/L-->', '')
+        if en: c = c.replace('>Esplora</button>', '>Explore</button>')
+        return c
+    fai = lambda en: testata(en).replace('<meta name="robots" content="index,follow">', '<meta name="robots" content="index,follow">\n<meta name="assistente" content="%s">' % ASSISTENTE, 1) + stile + '\n</head>\n<body>\n' + lingua(en).rstrip() + '\n</body>\n</html>\n'
     return fai(False), fai(True), n, avvisi
 
 
