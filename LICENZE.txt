@@ -22,7 +22,7 @@ INDICE
 ========================================================================
 1. IL CODICE DI KEPLARIO
 Copyright (c) 2026 Davide Ottoninuoto. Licenza MIT (testo alla sezione 10 e nel file LICENSE).
-Vale per: index.html, en/index.html (la stessa pagina in inglese) e la pagina sorgente (sorgente/pagina-claude.html), sw.js,
+Vale per: assistente/worker.js, index.html, en/index.html (la stessa pagina in inglese) e la pagina sorgente (sorgente/pagina-sorgente.html), sw.js,
 manifest.webmanifest, icone/ (marchio, icone e immagine di copertina anteprima.jpg, opere originali del progetto disegnate da
 strumenti/grafica/disegna_marchio.py; le scritte usano il carattere B612, che la licenza OFL permette di usare nei documenti creati con esso),
 strumenti/ (script di aggiornamento, conversione, preparazione dei modelli, grafica e prove), il flusso .github/workflows/,
@@ -31,7 +31,6 @@ Una parte del codice della pagina deriva da satellite.js (sezione 2, licenza MIT
 (funzione sgp4Mean) riprende i termini secolari e di spazio profondo di quella libreria; vale anche per questa parte l'avviso di
 copyright di satellite.js alla sezione 11.
 La licenza MIT NON si estende ai materiali di terzi elencati nelle sezioni seguenti: ciascuno resta alle sue condizioni.
-Il codice è stato scritto con l'assistenza di Claude (Anthropic); il titolare dei diritti sul risultato è l'autore indicato sopra.
 
 ========================================================================
 2. LIBRERIE JAVASCRIPT (cartella vendor/), tutte con licenza MIT, testi alla sezione 11
@@ -582,3 +581,7 @@ Section 8 – Interpretation.
 Creative Commons is not a party to its public licenses. Notwithstanding, Creative Commons may elect to apply one of its public licenses to material it publishes and in those instances will be considered the “Licensor.” Except for the limited purpose of indicating that material is shared under a Creative Commons public license or as otherwise permitted by the Creative Commons policies published at creativecommons.org/policies, Creative Commons does not authorize the use of the trademark “Creative Commons” or any other trademark or logo of Creative Commons without its prior written consent including, without limitation, in connection with any unauthorized modifications to any of its public licenses or any other arrangements, understandings, or agreements concerning use of licensed material. For the avoidance of doubt, this paragraph does not form part of the public licenses.
 
 Creative Commons may be contacted at creativecommons.org.
+
+
+Assistente (facoltativo)
+Il codice del servizio dell'assistente (assistente/worker.js) è sotto licenza MIT come il resto del progetto. Quando è attivato, le domande degli utenti sono inviate a Cloudflare e al fornitore del modello scelto (per impostazione predefinita Google, con l'API Gemini; in alternativa Anthropic), che le elaborano secondo i propri termini; il progetto non conserva le domande.

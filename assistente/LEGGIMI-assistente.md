@@ -4,19 +4,21 @@ L'assistente risponde a domande libere. Capisce la richiesta, sceglie da solo qu
 
 ## Costi e sicurezza
 
-- Ogni domanda usa l'API di Anthropic e la paga chi possiede la chiave (tu). Il modello è scelto nel file `worker.js` (`claude-haiku-5-5`, il più economico).
-- Prima di tutto, nella console di Anthropic imposta un **limite di spesa mensile** sulla chiave o sull'area di lavoro.
+- Ogni domanda usa l'API del modello scelto. Predefinito: **Google Gemini** (`gemini-3.5-flash-lite`, il più economico). In alternativa Claude di Anthropic (`claude-haiku-5-5`): basta cambiare la variabile `PROVIDER`. Nome del modello con la variabile `MODEL`: i nomi cambiano spesso, controllali su ai.google.dev/gemini-api/docs/models.
+- **Gemini, piano gratuito:** esiste, con limiti di richieste al minuto e al giorno bassi, e Google può usare le domande per migliorare i propri prodotti. Con la fatturazione attivata (piano a pagamento) non le usa. Se vuoi più riservatezza, attiva la fatturazione e metti un limite di spesa.
+- Prima di tutto, nella console del fornitore (Google AI Studio o Anthropic) imposta un **limite di spesa mensile**, o tieni bassi `DAILY_PER_IP` e `DAILY_TOTAL`.
 - La chiave non sta mai nella pagina: sta solo nell'intermediario (segreto di Cloudflare).
 - Il servizio risponde solo al sito indicato in `ALLOWED_ORIGIN`, accetta richieste piccole, e con l'archivio `LIMITS` limita le domande per persona (60 al giorno) e in totale (1500 al giorno). I numeri si cambiano con `DAILY_PER_IP` e `DAILY_TOTAL`.
 - Le domande degli utenti passano da Cloudflare e da Anthropic. Il pannello lo dice agli utenti.
 
 ## Passi (circa 15 minuti, piano gratuito di Cloudflare)
 
-1. Crea un account su cloudflare.com e una chiave API sulla console di Anthropic (console.anthropic.com).
+1. Crea un account su cloudflare.com e una chiave API su Google AI Studio (aistudio.google.com → Get API key).
 2. Cloudflare → **Workers & Pages** → **Create** → **Create Worker**, nome `keplario-assistente` → **Deploy**.
 3. **Edit code**: cancella il testo, incolla tutto il contenuto di `assistente/worker.js`, **Deploy**.
 4. **Settings → Variables and Secrets**, aggiungi:
-   - `ANTHROPIC_API_KEY` come **Secret**, con la tua chiave;
+   - `GEMINI_API_KEY` come **Secret**, con la chiave creata su aistudio.google.com (Get API key);
+   - (solo se usi Claude al posto di Gemini) `ANTHROPIC_API_KEY` come **Secret**, e `PROVIDER` = `anthropic`;
    - `ALLOWED_ORIGIN` come testo: `https://bigotto88.github.io` (senza barra finale e senza `/keplario`; se il nome utente GitHub cambia, cambia anche questo).
 5. Per i limiti: **Storage & Databases → KV** → crea un archivio, poi nel Worker **Settings → Bindings → Add → KV namespace**, nome della variabile `LIMITS`.
 6. Copia l'indirizzo del Worker (finisce con `.workers.dev`).
@@ -50,7 +52,11 @@ Senza questi due segreti `spacetrack_tle` risponde che Space-Track non è config
 
 ## Nell'artifact di Claude
 
-Nell'artifact l'assistente non usa il servizio: è la pagina stessa a chiamare Claude con gli stessi strumenti (capacità «sample» dell'artifact), sull'account di chi guarda, e chiede il consenso alla prima domanda. Il pulsante compare da solo, senza indirizzo.
+Nell'artifact l'assistente non usa il servizio né Gemini: è la pagina stessa a chiamare Claude con gli stessi strumenti (capacità «sample» dell'artifact), sull'account di chi guarda, e chiede il consenso alla prima domanda. Il pulsante compare da solo, senza indirizzo.
+
+## Provare il servizio senza rete
+
+`node strumenti/prove/prova_worker.mjs .` simula le risposte di Gemini e di Anthropic e controlla che messaggi, strumenti e firme di ragionamento (richieste da Gemini 3) siano tradotti bene.
 
 ## Se modifichi gli strumenti
 
