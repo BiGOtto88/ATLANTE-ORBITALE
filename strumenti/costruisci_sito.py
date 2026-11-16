@@ -134,9 +134,11 @@ img{max-width:100%%}
          '<base href="../">\n' if en else '', tit, sott, desc, url, SITO, SITO, SITO, tit, tit, sott, desc, url, SITO,
          'en_GB' if en else 'it_IT', 'it_IT' if en else 'en_GB', dati_strutturati(tit, en), facce)
     def lingua(en):
-        tieni, togli = ('en', 'it') if en else ('it', 'en')
-        c = re.sub(r'<!--L:%s-->.*?<!--/L-->\n?' % togli, '', corpo, flags=re.S)
-        c = c.replace('<!--L:%s-->' % tieni, '').replace('<!--/L-->', '')
+        # il testo di presentazione c'è nelle due lingue: nella pagina si vede subito quello della lingua della pagina,
+        # l'altro è nascosto (lo mostra la pagina se il visitatore usa l'altra lingua)
+        c = corpo.replace('<!--L:it-->', '').replace('<!--L:en-->', '').replace('<!--/L-->', '')
+        altra = 'it' if en else 'en'
+        c = c.replace('<div class="al" data-l="%s">' % altra, '<div class="al" data-l="%s" hidden>' % altra)
         if en: c = c.replace('>Esplora</button>', '>Explore</button>')
         return c
     fai = lambda en: testata(en).replace('<meta name="robots" content="index,follow">', '<meta name="robots" content="index,follow">\n<meta name="assistente" content="%s">' % ASSISTENTE, 1) + stile + '\n</head>\n<body>\n' + lingua(en).rstrip() + '\n</body>\n</html>\n'

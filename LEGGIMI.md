@@ -241,3 +241,9 @@ Ricorda che con un account GitHub gratuito il repository di GitHub Pages è pubb
 ## Scheda di presentazione (testo per i motori di ricerca)
 In `sorgente/pagina-sorgente.html` il blocco `<section id="about">` contiene il testo che Google legge e che i nuovi visitatori vedono alla prima apertura (italiano e inglese, ciascuno tra i marcatori `<!--L:it-->…<!--/L-->` e `<!--L:en-->…<!--/L-->`). Per cambiarlo si modifica lì e si rigenera con `python3 strumenti/costruisci_sito.py sorgente/pagina-sorgente.html`: `index.html` tiene il blocco italiano, `en/index.html` quello inglese. I visitatori che tornano e i link a una scena (`#sat-…`, `#sonda-…`) non vedono la scheda; il pulsante **Info** la riapre. Da tastiera: frecce per ruotare la vista, + e − per lo zoom, spazio per la pausa.
 
+## Visita guidata e pieghe della colonna
+La visita guidata (pulsante nella scheda di presentazione) è nella costante `TOUR` della pagina sorgente: sei tappe, ciascuna con una scena (`go`) e il testo in italiano e inglese. Per aggiungere una tappa si aggiunge un elemento alla lista e si aggiorna il numero nelle due scritte «6 tappe» / «6 stops» della scheda. Le sezioni «Regime orbitale», «Famiglia» e «Vista» della colonna sinistra sono ripiegate di base; la scelta di ciascun visitatore si ricorda (`keplario-pieghe`).
+
+## Luce dei pianeti
+Pianeti e lune sono illuminati in luce lineare come la Terra (funzione `linLit`): le texture sRGB sono decodificate prima della luce e ricodificate alla fine, e il termine ambiente è ridotto a quasi zero, perché nello spazio la parte non illuminata è davvero scura. Il terminatore della Luna ora corrisponde alla fase vera.
+

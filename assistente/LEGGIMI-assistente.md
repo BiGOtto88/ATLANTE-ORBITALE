@@ -61,3 +61,14 @@ Nell'artifact l'assistente non usa il servizio né Gemini: è la pagina stessa a
 ## Se modifichi gli strumenti
 
 Le istruzioni e le definizioni degli strumenti stanno in `worker.js`. Dopo ogni modifica lancia `python3 strumenti/sincronizza_assistente.py` (le copia nella pagina) e poi riconverti la pagina con `costruisci_sito.py`.
+
+## Velocità e consumo di token (novembre 2026)
+Il servizio è stato alleggerito. Cosa fa ora, senza che tu debba cambiare niente nella pagina:
+- **Ragionamento basso.** Con i modelli Gemini 3 il ragionamento è impostato su `low` (di solito era il tempo di attesa maggiore, e i token di ragionamento si pagano come quelli d'uscita). Per cambiarlo imposta la variabile `THINKING_LEVEL` (`minimal`, `low`, `medium`, `high`); con il valore `default` si lascia la scelta al modello.
+- **Cronologia compatta.** Le chiamate e i risultati degli strumenti restano solo per la domanda in corso; delle domande precedenti si rimandano solo il testo tuo e quello delle risposte. I risultati degli strumenti sono tagliati a 3000 caratteri.
+- **Istruzioni e strumenti più corti** (circa un quarto in meno) e contesto della pagina (orologio, oggetto scelto) in fondo alla domanda invece che nelle istruzioni: la parte fissa resta identica da una richiesta all'altra, e il fornitore può riusarla dalla cache (con Gemini la cache implicita sconta i token ripetuti).
+- **Strumenti in parallelo.** L'assistente è istruito a chiamare insieme gli strumenti indipendenti, così servono meno giri.
+- **Limiti.** Nel conto giornaliero (`DAILY_PER_IP`, `DAILY_TOTAL`) entra ora solo la domanda nuova, non i suoi passaggi di calcolo: prima una domanda con 5 passaggi ne consumava 5 e le scritture dell'archivio KV (1000 al giorno nel piano gratuito) finivano presto. I passaggi hanno un limite leggero di 60 al minuto per indirizzo.
+
+Per applicare la nuova versione: Cloudflare → il tuo Worker → **Edit code** → incolla tutto `assistente/worker.js` → **Deploy**. Le variabili e i segreti restano quelli già impostati.
+
