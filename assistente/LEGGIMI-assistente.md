@@ -19,7 +19,7 @@ L'assistente risponde a domande libere. Capisce la richiesta, sceglie da solo qu
 4. **Settings → Variables and Secrets**, aggiungi:
    - `GEMINI_API_KEY` come **Secret**, con la chiave creata su aistudio.google.com (Get API key);
    - (solo se usi Claude al posto di Gemini) `ANTHROPIC_API_KEY` come **Secret**, e `PROVIDER` = `anthropic`;
-   - `ALLOWED_ORIGIN` come testo: `https://bigotto88.github.io` (senza barra finale e senza `/keplario`; se il nome utente GitHub cambia, cambia anche questo).
+   - `ALLOWED_ORIGIN` come testo: `https://ottonspace.github.io` (senza barra finale e senza `/keplario`; se il nome utente GitHub cambia, cambia anche questo).
 5. Per i limiti: **Storage & Databases → KV** → crea un archivio, poi nel Worker **Settings → Bindings → Add → KV namespace**, nome della variabile `LIMITS`.
 6. Copia l'indirizzo del Worker (finisce con `.workers.dev`).
 7. Mettilo nel sito, in uno di questi due modi:

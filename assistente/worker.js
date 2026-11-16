@@ -5,7 +5,7 @@
    Variabili da impostare nel pannello di Cloudflare (Settings → Variables and Secrets):
      GEMINI_API_KEY      (segreto)  la chiave di Google AI Studio (modello Gemini)
      ANTHROPIC_API_KEY   (segreto)  in alternativa, la chiave dell'API di Anthropic (modello Claude)
-     ALLOWED_ORIGIN      https://bigotto88.github.io          (l'indirizzo del sito, senza barra finale e senza percorso)
+     ALLOWED_ORIGIN      https://ottonspace.github.io          (l'indirizzo del sito, senza barra finale e senza percorso)
    Facoltativi:
      SPACETRACK_USER     (segreto)  l'e-mail dell'account Space-Track (serve per lo strumento spacetrack_tle)
      SPACETRACK_PASS     (segreto)  la password dell'account Space-Track

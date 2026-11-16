@@ -1,9 +1,9 @@
 # Keplario: sito autonomo e app installabile
 
-Keplario, il planetario delle orbite: il nome unisce Keplero e «planetario».
+Keplario, il planetario delle orbite (in inglese *the orbit planetarium*): il nome unisce Keplero e «planetario».
 Fino al 15 novembre 2026 il progetto si chiamava Atlante Orbitale.
 
-Questa cartella è il sito completo. Non dipende da Claude né da altri servizi per funzionare:
+Questa cartella è il sito completo. Non dipende da altri servizi per funzionare:
 librerie, caratteri, texture e dati sono tutti qui dentro. È un sito statico, quindi va bene
 qualsiasi hosting; le istruzioni qui sotto usano GitHub Pages perché è gratuito e sa anche
 aggiornare i dati da solo ogni giorno.
@@ -33,9 +33,9 @@ Da quel momento il flusso riparte da solo ogni giorno alle 04:23 UTC e a ogni mo
 
 Il repository esistente si rinomina senza perdere nulla: **Settings → General → Repository name** → `keplario` → **Rename**.
 GitHub reindirizza da solo il vecchio indirizzo del repository, ma **non** quello del sito: dopo il cambio il sito è a
-`https://bigotto88.github.io/keplario/` e il vecchio `…/ATLANTE-ORBITALE/` smette di funzionare. Poiché il sito non era ancora
+`https://ottonspace.github.io/keplario/` e il vecchio `…/ATLANTE-ORBITALE/` smette di funzionare. Poiché il sito non era ancora
 nei motori di ricerca, conviene farlo adesso. Poi riavvia il flusso (Actions → «Aggiorna i dati e pubblica il sito» → Run workflow).
-Se preferisci tenere il vecchio nome del repository, rimetti il vecchio indirizzo nella variabile `SITO` di `strumenti/da_claude_a_sito.py`.
+Se preferisci tenere il vecchio nome del repository, rimetti il vecchio indirizzo nella variabile `SITO` di `strumenti/costruisci_sito.py`.
 
 ## Italiano e inglese
 
@@ -50,7 +50,7 @@ Un sito nuovo non compare subito nelle ricerche: i motori lo trovano seguendo i 
 nessun link possono passare settimane. Per accelerare (gratis, una volta sola):
 
 1. **Google Search Console** (https://search.google.com/search-console): «Aggiungi proprietà» → tipo **Prefisso URL** →
-   `https://bigotto88.github.io/keplario/`. Come verifica scegli **File HTML**: scarica il file che ti dà
+   `https://ottonspace.github.io/keplario/`. Come verifica scegli **File HTML**: scarica il file che ti dà
    (si chiama `google` seguito da lettere e numeri, `.html`), caricalo nella cartella principale del repository e aspetta
    che il flusso «Aggiorna i dati e pubblica il sito» finisca (scheda Actions); poi torna su Search Console e premi **Verifica**.
    Verificato il sito, apri **Sitemap** e invia `sitemap.xml`; poi in **Controllo URL** incolla l'indirizzo del sito
@@ -62,7 +62,7 @@ nessun link possono passare settimane. Per accelerare (gratis, una volta sola):
 
 Il sito ha già quello che serve ai motori: titolo e descrizione, indirizzo canonico, `sitemap.xml`, dati strutturati
 schema.org (WebApplication) e un'immagine di anteprima (`icone/anteprima.jpg`) per i link condivisi.
-L'indirizzo del sito è scritto in `strumenti/da_claude_a_sito.py` (variabile `SITO`): se cambia, aggiornalo lì e riconverti.
+L'indirizzo del sito è scritto in `strumenti/costruisci_sito.py` (variabile `SITO`): se cambia, aggiornalo lì e riconverti.
 Un dominio tutto tuo (per esempio `keplario.com` o `keplario.it`, una decina di euro all'anno; controlla che sia libero) si collega a GitHub Pages da
 **Settings → Pages → Custom domain** e rende il nome più facile da ricordare, ma non è necessario per comparire nelle ricerche.
 
@@ -127,15 +127,15 @@ si ricava dal file, quindi può non coincidere con l'assetto di volo reale.
 
 ## Modificare l'app
 
-Il codice dell'app è uno solo: `sorgente/pagina-claude.html`, la stessa pagina pubblicata come
-artifact in Claude. `index.html` si ricava da quella e non va modificato a mano.
+Il codice dell'app è uno solo: `sorgente/pagina-sorgente.html`, la stessa pagina pubblicata come
+anteprima incorporata. `index.html` si ricava da quella e non va modificato a mano.
 
 ```
-python3 strumenti/da_claude_a_sito.py sorgente/pagina-claude.html
+python3 strumenti/costruisci_sito.py sorgente/pagina-sorgente.html
 ```
 
 Lo strumento aggiunge la testata del sito e punta le librerie alle copie in `vendor/`.
-Dopo una modifica fatta con Claude: salva la pagina aggiornata in `sorgente/`, lancia il comando
+Dopo una modifica alla pagina: salva la pagina aggiornata in `sorgente/`, lancia il comando
 qui sopra e carica il risultato su GitHub; il flusso ripubblica il sito.
 
 Prove automatiche, da lanciare dopo aver toccato gli strumenti o la pagina:
@@ -199,7 +199,8 @@ vendor/                 three.js r128, satellite.js 5.0.0, Astronomy Engine 2.1.
 fonts/                  carattere B612
 icone/                  marchio, icone dell'app e immagine di copertina (copertina.svg → anteprima.jpg)
 LICENSE                 licenza MIT del codice dell'app
-sorgente/               la pagina sviluppata in Claude
+sorgente/               la pagina sorgente dell'app
+assistente/             il servizio dell'assistente (worker.js) e le istruzioni per attivarlo
 sitemap.xml             l'elenco delle pagine per i motori di ricerca (generato dalla conversione)
 strumenti/              aggiornamento dei dati, conversione della pagina, prove
 .github/workflows/      aggiornamento giornaliero e pubblicazione su GitHub Pages
@@ -222,7 +223,7 @@ Il sito è pronto da pubblicare sul piano legale: ogni componente ha la sua font
 
 La pagina cita le fonti nel pannello **Dati** e rimanda a `LICENZE.txt`; il flusso di pubblicazione copia `LICENSE` e
 `LICENZE.txt` nel sito, perché le licenze devono accompagnare i file distribuiti. Se cambi il tuo nome come titolare o la licenza del
-codice, correggi `LICENSE`, la sezione 1 e la sezione 10 di `LICENZE.txt` e la riga iniziale di `strumenti/da_claude_a_sito.py`.
+codice, correggi `LICENSE`, la sezione 1 e la sezione 10 di `LICENZE.txt` e la riga iniziale di `strumenti/costruisci_sito.py`.
 
 Quando aggiungi qualcosa (un modello, una texture, una libreria, una nuova fonte dati): annota fonte, autore, licenza e modifiche
 in `LICENZE.txt` e nel `CREDITI.txt` della cartella, **prima** di pubblicare. Non aggiungere materiale di cui non conosci la licenza.
