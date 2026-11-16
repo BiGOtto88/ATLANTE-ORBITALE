@@ -97,6 +97,7 @@ try:
         def servizio(r):
             if r.request.method == 'OPTIONS': return r.fulfill(status=204, headers={'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type'})
             q = json.loads(r.request.post_data); h = {'access-control-allow-origin': '*', 'content-type': 'application/json'}
+            if 'messages' in q: return r.fulfill(status=502, headers=h, body=json.dumps({'error': 'upstream', 'status': 404, 'detail': 'modello prova'}))
             if q['proxy'] == 'horizons': return r.fulfill(status=200, headers=h, body=json.dumps({'status': 200, 'text': hz}))
             return r.fulfill(status=200, headers=h, body=json.dumps({'before': tle.replace('03509', '04242'), 'after': ''}) if q['norad'] == 4242 else json.dumps({'before': '', 'after': ''}))
         ctx4.route('https://servizio.prova/', servizio)
@@ -122,6 +123,9 @@ try:
         verifica('storico: object_status a un istante passato', J4[4].get('time_utc', '').startswith('2025-03-10T00:01') and J4[4].get('altitude_km'), str(R4[4]['c'][:120]))
         verifica("storico: show_in_3d sposta l'orologio", J4[5].get('clock_utc', '').startswith('2025-03-10T00:01'), str(R4[5]['c'][:120]))
         verifica('storico: data non valida rifiutata', R4[6]['e'])
+        pg4.evaluate("window.atlante.AS.mock=null"); pg4.fill('#asIn', 'errore'); pg4.click('#asGo'); pg4.wait_for_timeout(2500)
+        T5 = pg4.evaluate("document.getElementById('asLog').innerText")
+        verifica('errore del servizio: il pannello mostra il codice', 'HTTP 502' in T5 and 'upstream' in T5 and '404' in T5 and 'modello prova' in T5, T5[-160:])
         verifica('storico: nessun errore nella pagina', not err4, str(err4[:2]))
         b.close()
 finally:

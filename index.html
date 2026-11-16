@@ -13,7 +13,7 @@
 <link rel="alternate" hreflang="en" href="https://ottonspace.github.io/keplario/en/">
 <link rel="alternate" hreflang="x-default" href="https://ottonspace.github.io/keplario/">
 <meta name="robots" content="index,follow">
-<meta name="assistente" content="https://keplario-assistente.davide-ottoninuoto.workers.dev">
+<meta name="assistente" content="">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Keplario">
 <meta property="og:title" content="Keplario · il planetario delle orbite">
@@ -5072,8 +5072,8 @@ function asMd(s){ const inl=t=>asEsc(t).replace(/`([^`]+)`/g,'<code>$1</code>').
 function asAdd(cls,html){ const d=document.createElement('div'); d.className='asm '+cls; d.setAttribute('data-notr','1'); d.innerHTML=html; const log=$('asLog'); log.appendChild(d); d.scrollIntoView({block:'end'}); return d; }
 function asHist(){ const idx=[]; AS.msgs.forEach((m,i)=>{ if(m.role==='user'&&typeof m.content==='string') idx.push(i); }); const from=idx.length>6?idx[idx.length-6]:0; return AS.msgs.slice(from); }
 async function asCall(){ if(AS.mock) return AS.mock(asHist());
-  let r; try{ r=await fetch(ASSIST_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:asHist(),lang:LANG,ctx:{centre:centre,selected:selName()||null,clock_utc:asIso(simMs)}})}); }catch(e){ throw {friendly:'Il servizio non risponde: riprova tra poco.'}; }
-  if(r.status===429) throw {friendly:'Troppe domande oggi: riprova più tardi.'}; if(!r.ok) throw {friendly:'Il servizio non risponde: riprova tra poco.'}; return r.json(); }
+  let r; try{ r=await fetch(ASSIST_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:asHist(),lang:LANG,ctx:{centre:centre,selected:selName()||null,clock_utc:asIso(simMs)}})}); }catch(e){ throw {friendly:'Il servizio non risponde: riprova tra poco.',code:'rete o origine non ammessa'}; }
+  if(r.status===429) throw {friendly:'Troppe domande oggi: riprova più tardi.'}; if(!r.ok){ let j=null; try{ j=await r.json(); }catch(e){} throw {friendly:'Il servizio non risponde: riprova tra poco.',code:'HTTP '+r.status+(j&&j.error?' · '+j.error:'')+(j&&j.status?' · '+j.status:'')+(j&&j.detail?' · '+String(j.detail).slice(0,400):'')}; } return r.json(); }
 async function asSendSample(txt){ const f=AS.sample, bub=AS.cur=asAdd('bot','<div class="astx"><p class="asw">'+tr('Sto calcolando…')+'</p></div>'), tx=bub.firstChild; let defs=AS_DEFS; AS.ctl=new AbortController(); $('asStop').hidden=false;
   try{ const lim=await f.limits().catch(()=>null); if(lim&&lim.tools&&lim.tools.maxCount<defs.length) defs=defs.slice(0,lim.tools.maxCount);
     const tools=defs.map(d=>({name:d.name,description:d.description,inputSchema:d.input_schema,execute:async inp=>{ AS.cur=bub; let out, bad=false; try{ out=await AS_TOOLS[d.name](inp||{}); }catch(e){ out={error:String(e&&e.message||e)}; bad=true; }
@@ -5097,7 +5097,7 @@ async function asSend(txt){ txt=String(txt||'').trim().slice(0,1500); if(!txt||A
         const js=JSON.stringify(out), det=document.createElement('details'); det.className='aschip'; det.innerHTML='<summary>⚙ '+asEsc(c.name)+(bad?' ✗':'')+'</summary><pre>'+asEsc(JSON.stringify(c.input||{}))+'\n→ '+asEsc(js.length>1500?js.slice(0,1500)+'…':js)+'</pre>'; clean(); bub.appendChild(det);
         res.push({type:'tool_result',tool_use_id:c.id,content:js.length>7000?js.slice(0,7000)+'…(truncated)':js,is_error:bad||undefined}); }
       AS.msgs.push({role:'user',content:res}); if(step===7){ clean(); AS.msgs.length=base; bub.insertAdjacentHTML('beforeend','<p>'+tr('Troppi passaggi di calcolo: riformula la domanda.')+'</p>'); } }
-  }catch(e){ clean(); AS.msgs.length=base; bub.insertAdjacentHTML('beforeend','<p>'+tr((e&&e.friendly)||'Il servizio non risponde: riprova tra poco.')+'</p>'); }
+  }catch(e){ clean(); AS.msgs.length=base; bub.insertAdjacentHTML('beforeend','<p>'+tr((e&&e.friendly)||'Il servizio non risponde: riprova tra poco.')+(e&&e.code?' <small>('+asEsc(e.code)+')</small>':'')+'</p>'); }
   finally{ clean(); AS.busy=false; AS.cur=null; $('asGo').disabled=false; } }
 function asHtml(){ const ex=['Quando passa la ISS sopra Milano nei prossimi giorni?','Mostrami la traccia a terra di Hubble nelle prossime 6 ore','Disegna gli elementi orbitali e spiega a cosa servono','Orbita con a=11376 km, e=0,4178, i=66°, Ω=40°, ω=20°, ν=23°: dove sarà dopo 4 giorni con J2?'];
   return '<p class="note">Chiedi qualsiasi cosa su orbite, satelliti e su questa app. L\'assistente usa i calcoli dell\'app: i numeri non sono a memoria.</p><div class="chips asex">'+ex.map(t=>'<button class="sk" type="button">'+t+'</button>').join('')+'</div>'+'<p class="fine">Le domande vengono inviate a un servizio di intelligenza artificiale ('+(AS.sample?'Anthropic':'Google Gemini')+') per essere elaborate: non scrivere dati personali. Può sbagliare, controlla i dati importanti.</p><div id="asLog" class="aslog" aria-live="polite"></div>'+
