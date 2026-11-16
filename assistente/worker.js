@@ -16,7 +16,7 @@
      DAILY_TOTAL         richieste al giorno in totale (predefinito 1500)
    Per i limiti serve un archivio KV collegato con il nome LIMITS (gratuito). Senza, i limiti non si applicano. */
 
-const MODEL_DEFAULT = 'claude-haiku-5-5', GEMINI_DEFAULT = 'gemini-3.5-flash-lite';
+const MODEL_DEFAULT = 'claude-haiku-5-5', GEMINI_DEFAULT = 'gemini-3.8-flash';
 const GEMINI_MAX_TOKENS = 4096;   // per Gemini includono anche i token di ragionamento
 const MAX_TOKENS = 1600, MAX_BYTES = 90000, MAX_MESSAGES = 60;
 
