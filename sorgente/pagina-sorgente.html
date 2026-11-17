@@ -122,29 +122,79 @@ button{cursor:pointer}
 .lbar i{position:absolute;top:0;bottom:0;left:0;width:35%;background:var(--cy);animation:lbar 1.4s ease-in-out infinite}
 @keyframes lbar{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 @media (prefers-reduced-motion:reduce){.lbar i{animation:none;width:100%;opacity:.45}}
-/* presentation card: the text search engines read, the first thing a new visitor sees, and four scenes to start from */
-.about{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:flex-start;padding:clamp(12px,3vw,40px);pointer-events:none;
   background:linear-gradient(90deg,rgba(0,0,0,.82) 0,rgba(0,0,0,.5) 50%,rgba(0,0,0,0) 85%)}
-.about .ac{pointer-events:auto;width:min(62ch,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;background:rgba(8,10,13,.94);border:1px solid var(--ln2);border-left:3px solid var(--cy);padding:18px 22px 20px}
-.about h2{margin:0 0 10px;font-size:clamp(19px,2.6vw,26px);line-height:1.2;font-weight:700;letter-spacing:.01em}
-.about p{margin:0 0 10px;font-size:13.5px;line-height:1.55;color:var(--tx2)}
-.about p b,.about li b{color:var(--tx);font-weight:700}
-.about ul{margin:0 0 12px;padding:0;list-style:none}
-.about li{position:relative;padding:0 0 5px 16px;font-size:13.5px;line-height:1.5;color:var(--tx2)}
-.about li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:2px;background:var(--cy)}
-.about .kb{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--tx3)}
-.about .lbl{display:block;margin:12px 0 6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
-.about .scenes{display:flex;flex-wrap:wrap;gap:6px}
 a.chip{display:inline-block;text-decoration:none;padding:6px 11px;font-size:12.5px}
 a.chip:focus-visible{outline:2px solid var(--mg);outline-offset:1px}
+/* etichette di sezione in maiuscolo/minuscolo normale, meno spaziatura, barra «Vai a» più leggibile */
+.hd{font-family:var(--ui);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--tx2);font-weight:600;padding:9px 0 7px}
+.hd b{font-weight:400}
+.bottom .lbl{font-family:var(--ui);font-size:12px;letter-spacing:0;text-transform:none;color:var(--tx2)}
+.sk{letter-spacing:.02em}
+.about .lbl{font-family:var(--ui);letter-spacing:0;text-transform:none;font-size:12px}
+/* ingresso: Terra, un modello NASA per ogni macro-materia, elenco a sinistra */
+.hv{position:relative;min-height:100%;background:#05070b;overflow:hidden}
+.hv-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hv-glow{position:absolute;inset:-25%;background:radial-gradient(circle at 62% 46%,#7fb2ff 0,transparent 40%);opacity:.14;pointer-events:none}
+.hv-top{position:absolute;top:22px;left:clamp(18px,3vw,36px);right:clamp(18px,3vw,36px);display:flex;justify-content:space-between;font-size:14px;color:var(--tx3);z-index:3}
+.hv-top b{color:var(--tx)}
+.hv nav{position:absolute;z-index:3;left:clamp(18px,3vw,36px);top:84px;display:grid;gap:4px}
+.hv nav button{all:unset;cursor:pointer;font:italic 400 clamp(19px,2.2vw,29px)/1.2 Georgia,"Times New Roman",serif;color:var(--tx3);padding:2px 0;transition:color .25s,transform .25s}
+.hv nav button:hover{color:var(--tx);transform:translateX(5px)}
+.hv nav button[aria-pressed=true]{color:var(--tx)}
+.hv nav button[aria-pressed=true]::before{content:"";display:inline-block;width:26px;height:2px;background:#7fb2ff;vertical-align:middle;margin-right:11px}
+.hv nav button:focus-visible{outline:2px solid #7fb2ff;outline-offset:3px}
+.hv-info{position:absolute;z-index:3;left:clamp(18px,3vw,36px);bottom:34px;max-width:480px}
+.hv-info h2{font:italic 400 clamp(36px,4.6vw,60px)/1.02 Georgia,"Times New Roman",serif;margin:0 0 12px;color:var(--tx)}
+.hv-info p{margin:0;font-size:16px;line-height:1.5;color:var(--tx2)}
+.hv-act{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.hv-act a,.hv-act button{display:inline-block;text-decoration:none;font:700 15px var(--ui);padding:12px 22px;border-radius:999px;cursor:pointer;border:1px solid #e9e5dc;background:#e9e5dc;color:#07090f}
+.hv-act .ghost{background:transparent;color:var(--tx)}
+.hv-act a:focus-visible,.hv-act button:focus-visible{outline:2px solid #7fb2ff;outline-offset:3px}
+.hv-soon{margin-top:18px!important;color:var(--tx)!important}
+.hv-cr{position:absolute;right:clamp(18px,3vw,36px);bottom:30px;z-index:3;font-size:12px;color:var(--tx3);margin:0}
+.hv-swap{opacity:0;transform:translateY(8px)}
+.hv-info>*{transition:opacity .35s,transform .35s}
+@media (max-width:760px){.hv nav{top:70px}.hv-info{right:18px;bottom:24px;max-width:none}.hv-info h2{font-size:36px}.hv-cr{display:none}}
+/* intro card (hero): copy on the left, the real spacecraft turning on the right. The card covers the page the first time; Info reopens it. */
+.about{position:fixed;inset:0;z-index:40;background:#000;overflow:auto;overscroll-behavior:contain}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);min-height:100%;background:radial-gradient(ellipse 70% 60% at 70% 45%,#0b1620 0,#000 70%)}
+.copy{align-self:center;padding:clamp(24px,5vw,72px);max-width:64ch}
+.about h2{font-size:clamp(34px,4.6vw,60px);line-height:1.04;margin:0 0 20px;font-weight:700;letter-spacing:-.01em;text-wrap:balance;color:var(--tx)}
+.about .lead{font-size:17px;line-height:1.6;color:var(--tx2);max-width:44ch;margin:0 0 24px}
+.about p{margin:0 0 12px;font-size:14px;line-height:1.6;color:var(--tx2)}
+.about p b{color:var(--tx);font-weight:700}
+.about .kb{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--tx3)}
+.about .lbl{display:block;margin:20px 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+.about .scenes{display:flex;flex-wrap:wrap;gap:6px}
+.about .cta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 4px}
+.about .cta .sk{padding:11px 18px;font-size:15px}
+.about .go{background:var(--cy);border:1px solid var(--cy);color:#000;font-weight:700}
+.about .go:hover{filter:brightness(1.1)}
+.about .ghost:hover{border-color:var(--cy);color:var(--cy)}
 .about details{border-top:1px solid var(--ln);margin-top:12px;padding-top:8px}
 .about summary{cursor:pointer;font-size:13px;color:var(--tx);padding:3px 0}
 .about summary:hover{color:var(--cy)}
 .about details p{margin:4px 0 6px;font-size:13px}
-.about .foot{position:sticky;bottom:-20px;margin:12px -22px -20px;padding:10px 22px;background:rgba(8,10,13,.97);border-top:1px solid var(--ln)}
-.about .go{padding:8px 18px;background:var(--cy);border:1px solid var(--cy);color:#000;font-weight:700}
-.about .go:hover{filter:brightness(1.12)}
-.about .go:disabled{opacity:.5;cursor:default}
+.about a.chip{display:inline-block;text-decoration:none;padding:6px 11px;font-size:12.5px}
+.about a.chip:focus-visible,.about .go:focus-visible,.about .ghost:focus-visible{outline:2px solid var(--mg);outline-offset:2px}
+.vetrina{position:relative;margin:0;display:flex;flex-direction:column;min-height:72vh}
+#vtCv{flex:1;width:100%;min-height:0;display:block;outline:none}
+#vtCv:focus-visible{outline:2px solid var(--mg);outline-offset:-2px}
+.vt-spec{position:absolute;left:clamp(16px,3vw,40px);top:clamp(16px,3vw,40px);font-size:15px;line-height:1.5;color:var(--tx2);max-width:30ch;margin:0}
+.vt-spec b{color:var(--tx);font-weight:700}
+.vt-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:0 clamp(16px,3vw,40px) 24px;justify-content:center}
+.vt-tabs button{padding:7px 12px;font-size:13px;background:rgba(8,10,13,.7);border:1px solid var(--ln2);color:var(--tx);cursor:pointer}
+.vt-tabs button[aria-selected=true]{border-color:var(--cy);color:var(--cy)}
+.vt-tabs button:focus-visible{outline:2px solid var(--mg);outline-offset:2px}
+.vt-credit{margin:0;padding:0 clamp(16px,3vw,40px) 16px;text-align:center;font-size:11px;color:var(--tx3)}
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .vetrina{order:-1;min-height:50vh}
+  .copy{padding:20px 18px 36px;max-width:none}
+  .about h2{font-size:32px}
+  .about .lead{font-size:15px}
+  .loading{padding-bottom:20px}
+}
 .fold>.hd[data-fold]{cursor:pointer;display:flex;justify-content:space-between;align-items:center}
 .fold>.hd[data-fold]::after{content:"";width:6px;height:6px;border-right:1.5px solid var(--tx3);border-bottom:1.5px solid var(--tx3);transform:rotate(45deg);transition:transform .15s;margin:0 4px 3px 0}
 .fold>.hd[data-fold]:hover{color:var(--tx)}
@@ -159,8 +209,6 @@ a.chip:focus-visible{outline:2px solid var(--mg);outline-offset:1px}
 .tour .go{background:var(--cy);border-color:var(--cy);color:#000;font-weight:700}
 .tour .go:disabled,.tour .sk:disabled{opacity:.45;cursor:default}
 @media (max-width:860px){.tour{top:64px}}
-.about .tourgo{margin:2px 0 8px}
-@media (max-width:860px){.about{padding:64px 10px 10px;align-items:flex-end}.about .ac{padding:14px 16px 16px}.about .foot{bottom:-16px;margin:12px -16px -16px;padding:10px 16px}.about p,.about li{font-size:13px}.loading{padding-bottom:20px}}
 .drop{position:absolute;inset:8px;border:1px dashed var(--cy);display:grid;place-items:center;background:rgba(0,0,0,.8);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;pointer-events:none;z-index:9}
 
 /* right column */
@@ -431,45 +479,23 @@ table.tb th:first-child,table.tb td:first-child{text-align:left}
     <div class="scale" title="Scala alla distanza del punto inquadrato"><span id="scaleTxt">1 000 km</span><div class="bar" id="scaleBar"></div></div>
     <p class="hint" id="hint">Trascina per ruotare · rotella o pizzico per lo zoom · clic su un punto o su un'etichetta</p>
     <div class="loading" id="loading"><div class="lcard"><div id="loadingMsg" role="status">Carico effemeridi e catalogo…</div><span class="lbar" aria-hidden="true"><i></i></span></div></div>
-    <section class="about" id="about" aria-labelledby="aboutT-it">
-      <div class="ac">
-<!--L:it--><div class="al" data-l="it">
-        <h2 id="aboutT-it">Guarda dove sono i satelliti, adesso</h2>
-        <p><b>Keplario</b> mostra la Terra, il Sistema Solare e oltre 15 000 satelliti in orbita, in scala reale e in tempo reale. Niente è ingrandito: la ISS è un puntino perché lo è davvero. Avvicinati e, per una trentina di veicoli, compare il modello 3D vero.</p>
-        <ul>
-          <li><b>Scegli un satellite o una sonda</b> e leggi orbita, posizione, velocità, forma e missione.</li>
-          <li><b>Segui 31 sonde</b>, dalla Luna a Voyager 1, con la traccia a terra sul pianeta che stanno orbitando.</li>
-          <li><b>Scopri quando la ISS passa sopra di te</b> e se si vede a occhio nudo.</li>
-          <li><b>Progetta una missione</b>: orbita, assetto, disturbi, potenza, collegamenti e finestre di lancio verso i pianeti.</li>
-          <li><b>Fai una domanda</b> all'assistente.</li>
-        </ul>
-        <p>Gratis, senza registrazione, da computer e da telefono. I dati orbitali vengono da CelesTrak e si aggiornano ogni giorno; i calcoli usano i modelli dell'ingegneria spaziale (SGP4, IGRF, NRLMSISE-00).</p>
-        <p class="kb">Da tastiera: frecce per ruotare · + e − per lo zoom · spazio per la pausa.</p>
-        <button class="sk tourgo" type="button">▶ Visita guidata · 6 tappe</button>
-        <span class="lbl">Oppure prova una scena</span>
-        <div class="scenes"><a class="chip scene" href="#sat-25544">ISS</a><a class="chip scene" href="#sat-20580">Hubble</a><a class="chip scene" href="#sonda-JUNO">Juno</a><a class="chip scene" href="#sonda-VGR1">Voyager 1</a></div>
-        <details><summary>Da dove vengono i dati?</summary><p>Gli elementi orbitali dei satelliti sono di CelesTrak, le posizioni delle sonde di NASA/JPL Horizons, le stelle del catalogo Hipparcos dell'ESA. I modelli 3D vengono dalla raccolta pubblica NASA 3D Resources. Tutte le fonti e le licenze sono in LICENZE.txt.</p></details>
-        <details><summary>Posso usarlo come app?</summary><p>Sì. Dal browser puoi installarlo sul telefono o sul computer e, dopo la prima apertura, funziona anche senza rete con gli ultimi dati scaricati.</p></details>
-      </div><!--/L-->
-<!--L:en--><div class="al" data-l="en">
-        <h2 id="aboutT-en">See where the satellites are, right now</h2>
-        <p><b>Keplario</b> shows the Earth, the Solar System and over 15,000 satellites in orbit, at true scale and in real time. Nothing is enlarged: the ISS is a dot because it really is one. Move in and, for about thirty spacecraft, the real 3D model appears.</p>
-        <ul>
-          <li><b>Pick a satellite or a probe</b> and read its orbit, position, speed, shape and mission.</li>
-          <li><b>Follow 31 probes</b>, from the Moon to Voyager 1, with the ground track on the planet they orbit.</li>
-          <li><b>Find out when the ISS passes over you</b> and whether you can see it with the naked eye.</li>
-          <li><b>Design a mission</b>: orbit, attitude, perturbations, power, links and launch windows to the planets.</li>
-          <li><b>Ask the assistant</b> a question.</li>
-        </ul>
-        <p>Free, no sign-up, on computer and phone. Orbital data come from CelesTrak and update every day; the calculations use the models of space engineering (SGP4, IGRF, NRLMSISE-00).</p>
-        <p class="kb">Keyboard: arrows to rotate · + and − to zoom · space to pause.</p>
-        <button class="sk tourgo" type="button">▶ Guided tour · 6 stops</button>
-        <span class="lbl">Or try a scene</span>
-        <div class="scenes"><a class="chip scene" href="#sat-25544">ISS</a><a class="chip scene" href="#sat-20580">Hubble</a><a class="chip scene" href="#sonda-JUNO">Juno</a><a class="chip scene" href="#sonda-VGR1">Voyager 1</a></div>
-        <details><summary>Where does the data come from?</summary><p>Satellite orbital elements are from CelesTrak, probe positions from NASA/JPL Horizons, stars from ESA's Hipparcos catalogue. The 3D models come from the public NASA 3D Resources collection. All sources and licences are listed in LICENZE.txt.</p></details>
-        <details><summary>Can I use it as an app?</summary><p>Yes. You can install it from the browser on your phone or computer and, after the first visit, it also works offline with the latest data it downloaded.</p></details>
-      </div><!--/L-->
-        <div class="foot"><button class="sk go" id="aboutGo" data-l-it="Esplora" data-l-en="Explore">Esplora</button></div>
+    <section class="about" id="about" aria-labelledby="hvH">
+      <div class="hv">
+        <div class="hv-glow"></div>
+        <canvas class="hv-cv" id="hvCv" aria-hidden="true"></canvas>
+        <div class="hv-top"><b>Keplario</b><span id="hvSub"></span></div>
+        <nav id="hvNav" aria-label="Macro-materie"></nav>
+        <div class="hv-info" id="hvInfo">
+          <h2 id="hvH"></h2>
+          <p id="hvP"></p>
+          <div class="hv-act">
+            <a id="hvCalc" href="calcolatore.html">Apri il calcolatore</a>
+            <button class="ghost" id="aboutGo" type="button" data-l-it="Esplora il cielo" data-l-en="Explore the sky">Esplora il cielo</button>
+            <button class="ghost tourgo" type="button" data-l-it="Visita guidata · 6 tappe" data-l-en="Guided tour · 6 stops">Visita guidata · 6 tappe</button>
+          </div>
+          <p class="hv-soon" id="hvSoon" hidden></p>
+        </div>
+        <p class="hv-cr" id="hvCr"></p>
       </div>
     </section>
     <script>try{if(localStorage.getItem('keplario-info')||/^#(sat|sonda)-/.test(location.hash)){document.getElementById('about').hidden=true;document.getElementById('btnAbout').setAttribute('aria-expanded','false');}}catch(e){}</script>
@@ -5196,6 +5222,67 @@ const TOUR=[
   $('tourPrev').onclick=()=>{ if(k>0) show(k-1); }; $('tourNext').onclick=()=>show(k>=TOUR.length-1?-1:k+1); $('tourEnd').onclick=()=>show(-1);
   document.querySelectorAll('.tourgo').forEach(b=>b.onclick=window.tourStart);
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!box.hidden&&$('about').hidden){ show(-1); e.stopPropagation(); } },true); })();
+/* intro card: the spacecraft turning on the right. Its own small renderer, running only while the card is open; website only (the embedded viewer has no model files). */
+(function(){ const cv=$('hvCv'), EN=LANG==='en', T=EN?1:0;
+  const D={
+    orbite:{m:'iss',n:['Orbite e manovre','Orbits and manoeuvres'],h:['Parti da due numeri.','Start from two numbers.'],p:['Forma, periodo, velocità, posizione nel tempo. Poi cambia orbita e vedi quanto costa.','Shape, period, speed, position over time. Then change orbit and see what it costs.'],live:1},
+    assetto:{m:'hubble',n:['Assetto e controllo','Attitude and control'],h:['Dove punta, come gira.','Where it points, how it turns.'],p:['Cosa disturba il satellite, cosa lo misura, cosa lo corregge.','What disturbs the satellite, what measures it, what corrects it.']},
+    strutture:{m:'jwst',n:['Strutture e materiali','Structures and materials'],h:['Cosa regge e cosa si rompe.','What holds and what breaks.'],p:['Carichi del lancio, vibrazioni, calore e scelta dei materiali.','Launch loads, vibration, heat and the choice of materials.']},
+    propulsione:{m:'juno',n:['Propulsione e lanciatori','Propulsion and launchers'],h:['Quanta spinta serve.','How much thrust you need.'],p:['Propellente, rendimento dei motori e fin dove arriva un lanciatore.','Propellant, engine efficiency and how far a launcher gets.']},
+    comunicazioni:{m:'hubble',n:['Comunicazioni e navigazione','Communications and navigation'],h:['Parlare con la Terra.','Talking to Earth.'],p:['Antenne, link radio e come il GPS ti dice dove sei.','Antennas, radio links and how GPS tells you where you are.']},
+    missione:{m:'iss',n:['Sistemi e missione','Systems and mission'],h:['Far quadrare tutto.','Making it all add up.'],p:['Massa, energia, costi e rischi di una missione intera.','Mass, energy, cost and risk of a whole mission.']}};
+  const KEYS=Object.keys(D);
+  $('hvSub').textContent=EN?'Orbits, attitude, structures, propulsion':'Orbite, assetto, strutture, propulsione';
+  $('hvCr').textContent=EN?'3D models: NASA':'Modelli 3D: NASA';
+  $('hvCalc').textContent=EN?'Open the calculator':'Apri il calcolatore';
+  document.querySelectorAll('.tourgo,#aboutGo').forEach(b=>{ b.textContent=EN?b.dataset.lEn:b.dataset.lIt; });
+  const nav=$('hvNav'); KEYS.forEach((k,i)=>{ const b=document.createElement('button'); b.type='button'; b.dataset.k=k; b.textContent=D[k].n[T]; b.setAttribute('aria-pressed',String(i===0)); nav.appendChild(b); });
+  let cur='orbite';
+  function text(k){ const d=D[k]; $('hvH').textContent=d.h[T]; $('hvP').textContent=d.p[T]; $('hvCalc').hidden=!d.live; $('hvSoon').hidden=!!d.live; $('hvSoon').textContent=EN?'Coming soon.':'In arrivo.'; }
+  text('orbite');
+  if(!(!window.claude&&/^https?:$/.test(location.protocol))){ cv.hidden=true; nav.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; cur=b.dataset.k; nav.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); text(cur); }; return; }   // embedded viewer: no textures or .glb models, so no 3D
+  let R=null, scn, cam, earth, clouds, groups={}, raf=0, running=false, fade=1, t0=performance.now(), loader=null; const cache={}, TILT=new THREE.Euler(0.95,0.1,0.5), RAD=2.5;
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function init(){ if(R) return;
+    R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true}); R.setPixelRatio(Math.min(devicePixelRatio,2));
+    scn=new THREE.Scene(); cam=new THREE.PerspectiveCamera(30,1,0.1,100);
+    scn.add(new THREE.AmbientLight(0x8a8a9a,1.1)); const sunL=new THREE.DirectionalLight(0xfff1e0,1.6); sunL.position.set(5,2.5,4); scn.add(sunL);
+    const TL=new THREE.TextureLoader(), tx=n=>{ const t=TL.load('tex/'+n+'.jpg'); t.anisotropy=8; return t; }, sunDir=new THREE.Vector3(5,2.5,4).normalize();
+    earth=new THREE.Mesh(new THREE.SphereGeometry(1.5,128,96),new THREE.ShaderMaterial({uniforms:{day:{value:tx('day')},night:{value:tx('night')},spec:{value:tx('spec')},sun:{value:sunDir}},
+      vertexShader:'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+      fragmentShader:'uniform sampler2D day,night,spec; uniform vec3 sun; varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vec3 n=normalize(vN); vec3 L=normalize((viewMatrix*vec4(sun,0.)).xyz); float d=dot(n,L); float k=smoothstep(-0.12,0.18,d); vec3 dc=texture2D(day,vUv).rgb; vec3 nc=texture2D(night,vUv).rgb*1.4; vec3 c=mix(nc,dc*(0.25+0.95*max(d,0.)),k); float sp=texture2D(spec,vUv).r; vec3 h=normalize(L+vV); c+=sp*pow(max(dot(n,h),0.),48.)*0.45*k; float f=pow(1.-max(dot(n,vV),0.),3.); c+=vec3(.25,.5,1.)*f*0.3*(0.2+k); gl_FragColor=vec4(c,1.); }'}));
+    scn.add(earth);
+    const cm=new THREE.MeshPhongMaterial({transparent:true,opacity:0.55,depthWrite:false}); TL.load('tex/clouds.jpg',t=>{ cm.alphaMap=t; cm.needsUpdate=true; });
+    clouds=new THREE.Mesh(new THREE.SphereGeometry(1.515,96,72),cm); scn.add(clouds);
+    scn.add(new THREE.Mesh(new THREE.SphereGeometry(1.62,64,48),new THREE.ShaderMaterial({transparent:true,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending,
+      vertexShader:'varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+      fragmentShader:'varying vec3 vN; void main(){ float i=pow(0.72-dot(vN,vec3(0.,0.,1.)),3.); gl_FragColor=vec4(.3,.55,1.,1.)*i*0.45; }'})));
+    KEYS.forEach(k=>{ const g=new THREE.Group(); g.visible=(k==='orbite');
+      const pts=Array.from({length:257},(_,i)=>{ const a=i/256*Math.PI*2; return new THREE.Vector3(Math.cos(a)*RAD,0,Math.sin(a)*RAD); });
+      const ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xf3efe8,transparent:true,opacity:0.35})); ring.rotation.copy(TILT); g.add(ring);
+      if(k==='orbite'){ const ap=Array.from({length:160},(_,i)=>{ const a=i/159*Math.PI; return new THREE.Vector3(-Math.cos(a)*0.9+0.9,0,Math.sin(a)*1.5); });
+        const arc=new THREE.Line(new THREE.BufferGeometry().setFromPoints(ap),new THREE.LineDashedMaterial({color:0x7fb2ff,dashSize:0.1,gapSize:0.07})); arc.computeLineDistances(); arc.rotation.copy(TILT); g.add(arc); }
+      const sat=new THREE.Group(); g.add(sat); g.userData.sat=sat; scn.add(g); groups[k]=g; load(D[k].m,sat); }); }
+  function load(name,holder){ const done=o=>{ const c=o.clone(true), b=new THREE.Box3().setFromObject(c), s=b.getSize(new THREE.Vector3()), m=b.getCenter(new THREE.Vector3()); c.position.sub(m); const w=new THREE.Group(); w.add(c); w.scale.setScalar(1.25/Math.max(s.x,s.y,s.z)); holder.add(w); };
+    if(cache[name]) return done(cache[name]); (loader||(loader=new THREE.GLTFLoader())).load('modelli/'+name+'.glb',g=>{ cache[name]=g.scene; done(g.scene); }); }
+  function size(){ const r=cv.getBoundingClientRect(); if(!r.width||!R) return; R.setSize(r.width,r.height,false); cam.aspect=r.width/r.height; cam.updateProjectionMatrix(); cam.position.set(0,0.8,r.width<760?14:9.5); cam.lookAt(0,0,0); scn.position.x=r.width<760?0:Math.min(1.6,r.width*0.0011); }
+  function show(k){ if(k===cur) return; cur=k; fade=0; groups[k].visible=true;
+    nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.k===k)));
+    const info=$('hvInfo'); info.querySelectorAll('h2,p').forEach(e=>e.classList.add('hv-swap')); setTimeout(()=>{ text(k); info.querySelectorAll('h2,p').forEach(e=>e.classList.remove('hv-swap')); },300);
+    setTimeout(()=>KEYS.forEach(x=>{ if(x!==k) groups[x].visible=false; }),650); }
+  nav.onclick=e=>{ const b=e.target.closest('button'); if(b) show(b.dataset.k); };
+  function tick(now){ if(!running) return; raf=requestAnimationFrame(tick); const t=still?0:(now-t0)/1000;
+    earth.rotation.y=t*0.08; clouds.rotation.y=t*0.1;
+    const g=groups[cur], sat=g.userData.sat, a=still?1:t*0.6, p=new THREE.Vector3(Math.cos(a)*RAD,0,Math.sin(a)*RAD).applyEuler(TILT), depth=(p.z/RAD+1)/2;
+    sat.position.copy(p); sat.scale.setScalar(0.4+depth*1.0); sat.rotation.set(0.25,-a*0.6+0.6,0.1);
+    sat.traverse(o=>{ if(o.material){ o.material.depthTest=depth>0.5||Math.abs(p.x)>1.7||Math.abs(p.y)>1.7; o.renderOrder=5; } });   // behind the planet it is still drawn unless it is hidden by the disc
+    if(fade<1) fade=Math.min(1,fade+0.04); g.scale.setScalar(0.85+0.15*fade);
+    R.render(scn,cam); }
+  function start(){ init(); size(); if(!running){ running=true; raf=requestAnimationFrame(tick); } }
+  function stop(){ running=false; cancelAnimationFrame(raf); }
+  addEventListener('resize',size);
+  const prev=window.aboutShow; window.aboutShow=on=>{ prev(on); on?start():stop(); };
+  if(!$('about').hidden) start(); })();
 /* ---- side columns: drag the inner edge to widen or narrow them (or arrow keys on it); double click puts them back ---- */
 (function(){ const W0={l:292,r:352}, key='atlante-colonne'; let w={l:W0.l,r:W0.r}; try{ const j=JSON.parse(localStorage.getItem(key)||'null'); if(j&&isFinite(j.l)&&isFinite(j.r)) w={l:j.l,r:j.r}; }catch(e){}
   const apply=()=>{ const L=[220,Math.max(240,Math.min(560,innerWidth*0.36))], R=[300,Math.max(320,Math.min(860,innerWidth*0.55))]; w.l=Math.max(L[0],Math.min(L[1],w.l)); w.r=Math.max(R[0],Math.min(R[1],w.r));
@@ -5222,9 +5309,8 @@ function kbView(e){ if(tween||e.ctrlKey||e.metaKey||e.altKey) return false; cons
   if(dy){ const ax=new THREE.Vector3().crossVectors(up,off).normalize(), o2=off.clone().applyAxisAngle(ax,dy), a=o2.angleTo(up); if(a>0.06&&a<Math.PI-0.06) off.copy(o2); }
   if(z!==1){ const d=off.length(), d2=Math.min(controls.maxDistance,Math.max(controls.minDistance,d*z)); off.multiplyScalar(d2/d); }
   camera.position.copy(controls.target).add(off); controls.update(); return true; }
-/* presentation card: open on a first visit, closed for returning visitors and for shared links; the Info button reopens it */
 (function(){ const ab=$('about'); if(!ab) return;
-  ab.querySelectorAll('.al[data-l]').forEach(b=>{ b.hidden=b.dataset.l!==LANG; }); ab.setAttribute('aria-labelledby','aboutT-'+(LANG==='en'?'en':'it'));   // both texts are in the page; the one in the page language is visible from the start
+  ab.querySelectorAll('.al[data-l]').forEach(b=>{ b.hidden=b.dataset.l!==LANG; }); ab.setAttribute('aria-labelledby','hvH');   // both texts are in the page; the one in the page language is visible from the start
   const go=$('aboutGo'); if(go) go.textContent=LANG==='en'?go.dataset.lEn:go.dataset.lIt;
   const flag=()=>{ try{ localStorage.setItem('keplario-info','1'); }catch(e){} };
   window.aboutShow=on=>{ ab.hidden=!on; $('btnAbout').setAttribute('aria-expanded',String(on)); if(on){ if(go) go.focus({preventScroll:true}); } else flag(); };

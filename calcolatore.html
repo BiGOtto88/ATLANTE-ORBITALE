@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calcolatore orbitale · Keplario</title>
+<meta name="description" content="Inserisci due dati qualsiasi di un'orbita: il calcolatore ricava forma, periodo e velocità e la disegna in 2D o in 3D. Gratis.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/calcolatore.html">
+<style>
+@font-face{font-family:'B612';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-400-normal.woff2) format('woff2')}
+:root{--bk:#03060a;--pn:rgba(12,16,22,.78);--ln:rgba(120,140,160,.22);--ln2:rgba(120,140,160,.4);--tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;--cy:#35d4f2;--am:#ffb224;--gr:#58e07f;--mono:"B612 Mono","DejaVu Sans Mono",monospace;--ui:"B612","DejaVu Sans",Verdana,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(1200px 700px at 75% -10%,#0d2233 0,#03060a 60%) fixed,var(--bk);color:var(--tx);font-family:var(--ui);line-height:1.5;min-height:100vh}
+main{max-width:1080px;margin:0 auto;padding:32px 22px 70px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-size:30px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--tx2);font-size:15px;margin:4px 0 0}
+.topics{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border-radius:999px;border:1px solid var(--ln2);background:rgba(255,255,255,.03);color:var(--tx2);padding:7px 14px;font:inherit;font-size:14px;cursor:pointer;transition:all .2s ease}
+.chip:hover:not(:disabled){color:var(--tx);border-color:var(--cy)}
+.chip[aria-pressed=true]{border-color:var(--cy);color:var(--cy);background:rgba(53,212,242,.08)}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{border:1px solid var(--ln);background:var(--pn);border-radius:18px;padding:16px 18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.card h3{font-size:14px;letter-spacing:0;text-transform:none;color:var(--tx2);margin:2px 0 10px;font-weight:700}
+.field{display:grid;grid-template-columns:1fr 118px;gap:10px;align-items:center;margin:7px 0;font-size:14px;color:var(--tx2)}
+input[type=text],input:not([type]){background:rgba(0,0,0,.5);border:1px solid var(--ln2);border-radius:10px;color:var(--tx);padding:7px 10px;font:inherit;font-family:var(--mono);font-size:14px;width:100%;transition:border-color .2s}
+input:focus-visible,button:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+input:hover{border-color:var(--tx3)}
+.hint{font-size:12.5px;color:var(--tx3);margin:8px 0 0}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 2px;font-size:15px;cursor:pointer;user-select:none}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.sw{width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:background .25s ease;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+.toggle input:checked + .sw{background:var(--cy)}
+.toggle input:checked + .sw::after{transform:translateX(20px)}
+.toggle input:focus-visible + .sw{outline:2px solid var(--cy);outline-offset:2px}
+button.go{width:100%;border-radius:14px;border:0;background:linear-gradient(135deg,#35d4f2,#2a9fd6);color:#02131b;font:inherit;font-weight:700;font-size:16px;padding:13px 16px;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease;box-shadow:0 8px 24px -10px rgba(53,212,242,.6)}
+button.go:hover{transform:translateY(-1px);box-shadow:0 12px 30px -10px rgba(53,212,242,.8)}
+button.go:active{transform:translateY(0) scale(.99)}
+.viewer{position:relative;border:1px solid var(--ln);background:#02050a;border-radius:18px;overflow:hidden;aspect-ratio:1/1;min-height:300px}
+.viewer svg,.viewer canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.bar{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.play{width:42px;height:42px;border-radius:50%;border:1px solid var(--ln2);background:rgba(255,255,255,.04);color:var(--tx);cursor:pointer;font-size:16px;transition:all .2s ease;flex:none}
+.play:hover{border-color:var(--cy);color:var(--cy)}
+.bar input[type=range]{flex:1;min-width:160px;accent-color:var(--cy)}
+.tlab{font-family:var(--mono);font-size:13px;color:var(--gr);min-width:150px;text-align:right}
+.res{margin-top:16px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:7px 2px;border-bottom:1px solid var(--ln);animation:in .5s ease both}
+.row:last-child{border-bottom:0}
+.row span:first-child{color:var(--tx2)}
+.row span:last-child{font-family:var(--mono);color:var(--gr);text-align:right}
+@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.msg{border-radius:12px;background:rgba(255,178,36,.1);border:1px solid rgba(255,178,36,.35);color:var(--am);font-size:14px;padding:10px 14px;margin:0 0 12px}
+.note{font-size:13px;color:var(--tx3);margin:12px 2px 0}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--tx3);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.back{margin:0 0 10px;font-size:14px}.back a{color:var(--tx2);text-decoration:none}.back a:hover{color:var(--cy)}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div>
+    <p class="back"><a href="./">← Keplario</a></p>
+    <h1>Calcolatore orbitale</h1>
+    <p class="sub">Inserisci i dati che hai, anche solo due. Il calcolatore ricava il resto e lo mostra.</p>
+  </div>
+  <div class="topics" role="group" aria-label="Argomento">
+    <button class="chip" type="button" aria-pressed="true">Orbite</button>
+    <button class="chip" type="button" aria-pressed="false" disabled title="In arrivo">Manovre</button>
+    <button class="chip" type="button" aria-pressed="false" disabled title="In arrivo">Perturbazioni</button>
+    <button class="chip" type="button" aria-pressed="false" disabled title="In arrivo">Assetto</button>
+  </div>
+</header>
+
+<div class="grid">
+<form id="f" novalidate>
+  <section class="card">
+    <h3>Forma dell'orbita</h3>
+    <div class="field"><label for="a">Semiasse maggiore a (km)</label><input id="a" type="text" inputmode="decimal"></div>
+    <div class="field"><label for="e">Eccentricità e</label><input id="e" type="text" inputmode="decimal"></div>
+    <div class="field"><label for="rp">Perigeo rp (km)</label><input id="rp" type="text" inputmode="decimal"></div>
+    <div class="field"><label for="ra">Apogeo ra (km)</label><input id="ra" type="text" inputmode="decimal"></div>
+    <div class="field"><label for="T">Periodo T (s)</label><input id="T" type="text" inputmode="decimal"></div>
+    <p class="hint">Basta una coppia, per esempio a ed e, oppure rp e ra.</p>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <h3>Orientamento (per la 3D)</h3>
+    <div class="field"><label for="i">Inclinazione i (°)</label><input id="i" type="text" inputmode="decimal" value="0"></div>
+    <div class="field"><label for="raan">Nodo Ω (°)</label><input id="raan" type="text" inputmode="decimal" value="0"></div>
+    <div class="field"><label for="argp">Perigeo ω (°)</label><input id="argp" type="text" inputmode="decimal" value="0"></div>
+    <div class="field"><label for="nu">Anomalia vera ν (°)</label><input id="nu" type="text" inputmode="decimal"></div>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <h3>Corpo centrale e vista</h3>
+    <div class="field"><label for="mu">μ (km³/s²)</label><input id="mu" type="text" inputmode="decimal" value="398600.4418"></div>
+    <label class="toggle"><span>Vista 3D</span><input id="v3d" type="checkbox"><span class="sw" aria-hidden="true"></span></label>
+  </section>
+
+  <div style="margin-top:14px"><button class="go" type="submit">Calcola</button></div>
+</form>
+
+<section>
+  <div id="msg"></div>
+  <div class="viewer" id="viewer">
+    <svg id="svg" viewBox="0 0 400 400" role="img" aria-label="Disegno dell'orbita"></svg>
+  </div>
+  <div class="bar">
+    <button class="play" id="play" type="button" aria-label="Avvia il moto">▶</button>
+    <input id="tm" type="range" min="0" max="1" step="1" value="0" aria-label="Tempo dal perigeo">
+    <span class="tlab" id="tlab">—</span>
+  </div>
+  <div class="legend">
+    <span><i style="background:#35d4f2"></i>orbita</span>
+    <span><i style="background:#ffb224"></i>perigeo e apogeo</span>
+    <span><i style="background:#58e07f"></i>satellite</span>
+  </div>
+  <div class="res" id="res"></div>
+</section>
+</div>
+<p class="note">Orbite ellittiche. Le orbite aperte (e ≥ 1) arriveranno dopo.</p>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const D = Math.PI / 180, RE = 6378.137;
+const num = id => { const v = $(id).value.trim(); if (v === '') return null; const x = Number(v.replace(',', '.')); return Number.isFinite(x) ? x : NaN; };
+const fmt = (x, d) => x.toLocaleString('it-IT', { maximumFractionDigits: d, minimumFractionDigits: d });
+
+function solve(inp, mu) {
+  let a = inp.a, e = inp.e; const log = [];
+  if (a == null && inp.rp != null && inp.ra != null) { a = (inp.rp + inp.ra) / 2; log.push('a da rp e ra'); }
+  if (a == null && inp.T != null) { a = Math.cbrt(mu * (inp.T / (2 * Math.PI)) ** 2); log.push('a dal periodo'); }
+  if (e == null && inp.rp != null && inp.ra != null) { e = (inp.ra - inp.rp) / (inp.ra + inp.rp); log.push('e da rp e ra'); }
+  if (a == null && e != null && inp.rp != null) { a = inp.rp / (1 - e); log.push('a da rp ed e'); }
+  if (a == null && e != null && inp.ra != null) { a = inp.ra / (1 + e); log.push('a da ra ed e'); }
+  if (e == null && a != null && inp.rp != null) { e = 1 - inp.rp / a; log.push('e da rp e a'); }
+  if (e == null && a != null && inp.ra != null) { e = inp.ra / a - 1; log.push('e da ra e a'); }
+  return { a, e, log };
+}
+
+function kepler(M, e) { let E = M; for (let k = 0; k < 40; k++) { const d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E)); E -= d; if (Math.abs(d) < 1e-12) break; } return E; }
+function stateAt(a, e, mu, t) {
+  const n = Math.sqrt(mu / a ** 3), T = 2 * Math.PI / n;
+  const M = ((n * t) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const E = kepler(M, e);
+  const nu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+  const r = a * (1 - e * Math.cos(E));
+  return { t: ((t % T) + T) % T, nu, r, T, n };
+}
+function timeOfNu(a, e, mu, nu) {
+  const E = 2 * Math.atan2(Math.sqrt(1 - e) * Math.sin(nu / 2), Math.sqrt(1 + e) * Math.cos(nu / 2));
+  const M = E - e * Math.sin(E), n = Math.sqrt(mu / a ** 3);
+  return ((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) / n;
+}
+function toECI(x, y, i, raan, argp) {
+  const cw = Math.cos(argp), sw = Math.sin(argp), ci = Math.cos(i), si = Math.sin(i), co = Math.cos(raan), so = Math.sin(raan);
+  const x1 = x * cw - y * sw, y1 = x * sw + y * cw;
+  const x2 = x1, y2 = y1 * ci, z2 = y1 * si;
+  return [x2 * co - y2 * so, x2 * so + y2 * co, z2];
+}
+
+const S = { c: null, t: 0, playing: false };
+
+function compute(a, e, mu, i, raan, argp, nuDeg) {
+  const rp = a * (1 - e), ra = a * (1 + e), p = a * (1 - e * e);
+  const T = 2 * Math.PI * Math.sqrt(a ** 3 / mu), n = 2 * Math.PI / T, eps = -mu / (2 * a), h = Math.sqrt(mu * p);
+  const rows = [
+    ['Semiasse maggiore', `${fmt(a, 1)} km`], ['Eccentricità', fmt(e, 4)],
+    ['Perigeo', `${fmt(rp, 1)} km · quota ${fmt(rp - RE, 1)} km`], ['Apogeo', `${fmt(ra, 1)} km · quota ${fmt(ra - RE, 1)} km`],
+    ['Periodo', `${fmt(T, 1)} s · ${fmt(T / 60, 2)} min`], ['Energia specifica', `${fmt(eps, 3)} km²/s²`],
+    ['Momento angolare', `${fmt(h, 1)} km²/s`], ['Velocità al perigeo', `${fmt(h / rp, 3)} km/s`], ['Velocità all\'apogeo', `${fmt(h / ra, 3)} km/s`],
+  ];
+  let nu0 = null;
+  if (nuDeg != null) nu0 = timeOfNu(a, e, mu, nuDeg * D);
+  return { rows, a, e, rp, ra, p, T, n, mu, i: i * D, raan: raan * D, argp: argp * D, nu0 };
+}
+
+function orbitPoints(c, N = 240) {
+  const pts = [];
+  for (let k = 0; k <= N; k++) {
+    const nu = 2 * Math.PI * k / N, r = c.p / (1 + c.e * Math.cos(nu));
+    pts.push(toECI(r * Math.cos(nu), r * Math.sin(nu), c.i, c.raan, c.argp));
+  }
+  return pts;
+}
+
+/* ---------- 2D ---------- */
+function draw2D(c) {
+  const svg = $('svg'); svg.innerHTML = '';
+  const cx = 200, cy = 200, sc = 165 / c.ra, ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, at) => { const x = document.createElementNS(ns, tag); for (const k in at) x.setAttribute(k, at[k]); svg.appendChild(x); return x; };
+  const g = el('g', {});
+  const b = c.a * Math.sqrt(1 - c.e * c.e);
+  el('ellipse', { cx: cx - c.a * c.e * sc, cy, rx: c.a * sc, ry: b * sc, fill: 'none', stroke: '#35d4f2', 'stroke-width': 1.6, opacity: .9 });
+  const R = RE * sc;
+  const grad = document.createElementNS(ns, 'radialGradient'); grad.id = 'eg';
+  grad.innerHTML = '<stop offset="0" stop-color="#3a8fd0"/><stop offset="1" stop-color="#0b2f52"/>';
+  svg.appendChild(document.createElementNS(ns, 'defs')).appendChild(grad);
+  el('circle', { cx, cy, r: Math.max(R, 2), fill: R > 2 ? 'url(#eg)' : '#fff' });
+  el('circle', { cx: cx + c.rp * sc, cy, r: 3.5, fill: '#ffb224' });
+  el('circle', { cx: cx - c.ra * sc, cy, r: 3.5, fill: '#ffb224' });
+  const sat = el('circle', { r: 5, fill: '#58e07f', id: 'sat2' });
+  sat.style.filter = 'drop-shadow(0 0 6px #58e07f)';
+  return { sat, cx, cy, sc };
+}
+function place2D(v, st) {
+  const x = v.cx + st.r * Math.cos(st.nu) * v.sc, y = v.cy - st.r * Math.sin(st.nu) * v.sc;
+  v.sat.setAttribute('cx', x); v.sat.setAttribute('cy', y);
+}
+
+/* ---------- 3D ---------- */
+let R3 = null;
+function setup3D() {
+  if (R3) return R3;
+  const cv = document.createElement('canvas');
+  $('viewer').appendChild(cv);
+  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 1000);
+  scene.add(new THREE.HemisphereLight(0xbfe6ff, 0x081018, 0.9));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(5, 3, 4); scene.add(sun);
+  // stelle
+  const sg = new THREE.BufferGeometry(), N = 900, pos = new Float32Array(N * 3);
+  for (let k = 0; k < N; k++) { const u = Math.random() * 2 - 1, t = Math.random() * 6.283, s = Math.sqrt(1 - u * u); const r = 60 + Math.random() * 30; pos.set([r * s * Math.cos(t), r * u, r * s * Math.sin(t)], k * 3); }
+  sg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.12, sizeAttenuation: true, transparent: true, opacity: 0.8 })));
+  // Terra + atmosfera
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), new THREE.MeshStandardMaterial({ color: 0x15487a, roughness: 0.9, metalness: 0 }));
+  scene.add(earth);
+  const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.04, 64, 64), new THREE.MeshBasicMaterial({ color: 0x4fc3f7, transparent: true, opacity: 0.12, side: THREE.BackSide, blending: THREE.AdditiveBlending }));
+  scene.add(atmo);
+  const orbitMat = new THREE.LineBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.95 });
+  const orbitGeo = new THREE.BufferGeometry();
+  const orbit = new THREE.LineLoop(orbitGeo, orbitMat); scene.add(orbit);
+  const peri = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffb224 })); scene.add(peri);
+  const apo = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffb224 })); scene.add(apo);
+  const sat = new THREE.Mesh(new THREE.SphereGeometry(0.035, 20, 20), new THREE.MeshBasicMaterial({ color: 0x58e07f })); scene.add(sat);
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(0.08, 20, 20), new THREE.MeshBasicMaterial({ color: 0x58e07f, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending })); scene.add(halo);
+  const controls = new THREE.OrbitControls(camera, cv);
+  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = false;
+  R3 = { renderer, scene, camera, controls, orbit, orbitGeo, peri, apo, sat, halo, cv, dist: 4 };
+  const size = () => { const w = $('viewer').clientWidth, h = $('viewer').clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+  R3.size = size; addEventListener('resize', size); size();
+  (function loop() {
+    requestAnimationFrame(loop);
+    if ($('v3d').checked && S.c) { controls.update(); renderer.render(scene, camera); }
+  })();
+  return R3;
+}
+const v3 = p => new THREE.Vector3(p[0] / RE, p[2] / RE, -p[1] / RE); // ECI → Three (Y in alto)
+function draw3D(c) {
+  const r = setup3D();
+  const pts = orbitPoints(c).map(v3);
+  r.orbit.geometry.dispose(); r.orbit.geometry = new THREE.BufferGeometry().setFromPoints(pts);
+  r.peri.position.copy(v3(toECI(c.rp, 0, c.i, c.raan, c.argp)));
+  r.apo.position.copy(v3(toECI(-c.ra, 0, c.i, c.raan, c.argp)));
+  const d = Math.max(4.2, (c.ra / RE) * 2.4 + 1.6);
+  r.camera.position.set(d * 0.6, d * 0.45, d * 0.75); r.controls.target.set(0, 0, 0); r.controls.update();
+  r.size();
+}
+function place3D(c, st) {
+  const r = R3; if (!r) return;
+  const p = v3(toECI(st.r * Math.cos(st.nu), st.r * Math.sin(st.nu), c.i, c.raan, c.argp));
+  r.sat.position.copy(p); r.halo.position.copy(p);
+}
+
+/* ---------- stato e tempo ---------- */
+function setTime(t) {
+  const c = S.c; if (!c) return;
+  const st = stateAt(c.a, c.e, c.mu, t);
+  $('tm').value = Math.round(st.t);
+  $('tlab').textContent = `t = ${fmt(st.t, 0)} s · ν = ${fmt((st.nu / D + 360) % 360, 1)}°`;
+  place2D(S.v2, st); place3D(c, st);
+  S.st = st;
+}
+function renderView() {
+  const is3D = $('v3d').checked;
+  $('svg').style.display = is3D ? 'none' : 'block';
+  if (R3) R3.cv.style.display = is3D ? 'block' : 'none';
+  if (is3D) draw3D(S.c);
+  setTime(S.t);
+}
+function tick(now) {
+  if (!S.playing) return;
+  const dt = (now - (S.last || now)) / 1000; S.last = now;
+  S.t += dt * S.c.T / 24;     // un giro in 24 secondi
+  setTime(S.t);
+  requestAnimationFrame(tick);
+}
+
+function run(ev) {
+  if (ev) ev.preventDefault();
+  const inp = { a: num('a'), e: num('e'), rp: num('rp'), ra: num('ra'), T: num('T') };
+  const mu = num('mu') || 398600.4418, i = num('i') ?? 0, raan = num('raan') ?? 0, argp = num('argp') ?? 0, nu = num('nu');
+  const vals = [...Object.values(inp), mu, i, raan, argp, nu].filter(v => v !== null);
+  if (vals.some(v => Number.isNaN(v))) { $('msg').innerHTML = '<p class="msg">Controlla i valori: alcuni non sono numeri.</p>'; return; }
+  const s = solve(inp, mu);
+  if (s.a == null || s.e == null) { $('msg').innerHTML = '<p class="msg">Non basta: servono due dati indipendenti sulla forma, per esempio a ed e, oppure rp e ra.</p>'; $('res').innerHTML = ''; return; }
+  if (!(s.a > 0) || s.e < 0 || s.e >= 1) { $('msg').innerHTML = '<p class="msg">Per ora gestisco solo orbite ellittiche: 0 ≤ e &lt; 1 e a &gt; 0.</p>'; $('res').innerHTML = ''; return; }
+  const warn = s.a * (1 - s.e) < RE - 1 ? '<p class="msg">Il perigeo è sotto la superficie terrestre: controlla i dati.</p>' : '';
+  $('msg').innerHTML = warn;
+  S.c = compute(s.a, s.e, mu, i, raan, argp, nu);
+  S.t = S.c.nu0 ?? 0;
+  S.playing = false; $('play').textContent = '▶';
+  $('tm').max = Math.round(S.c.T);
+  $('res').innerHTML = S.c.rows.map(([l, v]) => `<div class="row"><span>${l}</span><span>${v}</span></div>`).join('') +
+    (s.log.length ? `<p class="note">Ricavato da: ${s.log.join(', ')}.</p>` : '');
+  S.v2 = draw2D(S.c);
+  renderView();
+}
+
+$('f').addEventListener('submit', run);
+$('v3d').addEventListener('change', () => { if (S.c) renderView(); });
+$('tm').addEventListener('input', e => { S.t = Number(e.target.value); setTime(S.t); });
+$('play').addEventListener('click', () => { if (!S.c) return; S.playing = !S.playing; $('play').textContent = S.playing ? '❚❚' : '▶'; if (S.playing) { S.last = 0; requestAnimationFrame(tick); } });
+$('a').value = '6878'; $('e').value = '0.001'; $('i').value = '51.6'; $('raan').value = '30'; $('argp').value = '40'; $('nu').value = '30';
+run();
+</script>
+</body>
+</html>

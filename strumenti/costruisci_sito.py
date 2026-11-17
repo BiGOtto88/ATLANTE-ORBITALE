@@ -139,7 +139,7 @@ img{max-width:100%%}
         c = corpo.replace('<!--L:it-->', '').replace('<!--L:en-->', '').replace('<!--/L-->', '')
         altra = 'it' if en else 'en'
         c = c.replace('<div class="al" data-l="%s">' % altra, '<div class="al" data-l="%s" hidden>' % altra)
-        if en: c = c.replace('>Esplora</button>', '>Explore</button>')
+        if en: c = c.replace('>Esplora il cielo</button>', '>Explore the sky</button>').replace('>Visita guidata · 6 tappe</button>', '>Guided tour · 6 stops</button>')
         return c
     fai = lambda en: testata(en).replace('<meta name="robots" content="index,follow">', '<meta name="robots" content="index,follow">\n<meta name="assistente" content="%s">' % ASSISTENTE, 1) + stile + '\n</head>\n<body>\n' + lingua(en).rstrip() + '\n</body>\n</html>\n'
     return fai(False), fai(True), n, avvisi
