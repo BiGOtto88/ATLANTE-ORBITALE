@@ -5225,8 +5225,8 @@ const TOUR=[
 /* intro card: the spacecraft turning on the right. Its own small renderer, running only while the card is open; website only (the embedded viewer has no model files). */
 (function(){ const cv=$('hvCv'), EN=LANG==='en', T=EN?1:0;
   const D={
-    orbite:{m:'iss',n:['Orbite e manovre','Orbits and manoeuvres'],h:['Parti da due numeri.','Start from two numbers.'],p:['Forma, periodo, velocità, posizione nel tempo. Poi cambia orbita e vedi quanto costa.','Shape, period, speed, position over time. Then change orbit and see what it costs.'],live:1},
-    assetto:{m:'hubble',n:['Assetto e controllo','Attitude and control'],h:['Dove punta, come gira.','Where it points, how it turns.'],p:['Cosa disturba il satellite, cosa lo misura, cosa lo corregge.','What disturbs the satellite, what measures it, what corrects it.']},
+    orbite:{m:'iss',n:['Orbite e manovre','Orbits and manoeuvres'],h:['Parti da due numeri.','Start from two numbers.'],p:['Forma, periodo, velocità, posizione nel tempo. Poi cambia orbita e vedi quanto costa.','Shape, period, speed, position over time. Then change orbit and see what it costs.'],live:1,href:'calcolatore.html'},
+    assetto:{m:'hubble',n:['Assetto e controllo','Attitude and control'],h:['Dove punta, come gira.','Where it points, how it turns.'],p:['Rotazione libera, disturbi, quaternioni e angoli. Dai quello che sai.','Free rotation, disturbances, quaternions and angles. Give what you know.'],live:1,href:'assetto.html'},
     strutture:{m:'jwst',n:['Strutture e materiali','Structures and materials'],h:['Cosa regge e cosa si rompe.','What holds and what breaks.'],p:['Carichi del lancio, vibrazioni, calore e scelta dei materiali.','Launch loads, vibration, heat and the choice of materials.']},
     propulsione:{m:'juno',n:['Propulsione e lanciatori','Propulsion and launchers'],h:['Quanta spinta serve.','How much thrust you need.'],p:['Propellente, rendimento dei motori e fin dove arriva un lanciatore.','Propellant, engine efficiency and how far a launcher gets.']},
     comunicazioni:{m:'hubble',n:['Comunicazioni e navigazione','Communications and navigation'],h:['Parlare con la Terra.','Talking to Earth.'],p:['Antenne, link radio e come il GPS ti dice dove sei.','Antennas, radio links and how GPS tells you where you are.']},
@@ -5238,7 +5238,7 @@ const TOUR=[
   document.querySelectorAll('.tourgo,#aboutGo').forEach(b=>{ b.textContent=EN?b.dataset.lEn:b.dataset.lIt; });
   const nav=$('hvNav'); KEYS.forEach((k,i)=>{ const b=document.createElement('button'); b.type='button'; b.dataset.k=k; b.textContent=D[k].n[T]; b.setAttribute('aria-pressed',String(i===0)); nav.appendChild(b); });
   let cur='orbite';
-  function text(k){ const d=D[k]; $('hvH').textContent=d.h[T]; $('hvP').textContent=d.p[T]; $('hvCalc').hidden=!d.live; $('hvSoon').hidden=!!d.live; $('hvSoon').textContent=EN?'Coming soon.':'In arrivo.'; }
+  function text(k){ const d=D[k]; $('hvH').textContent=d.h[T]; $('hvP').textContent=d.p[T]; $('hvCalc').hidden=!d.live; if(d.href) $('hvCalc').href=d.href; $('hvSoon').hidden=!!d.live; $('hvSoon').textContent=EN?'Coming soon.':'In arrivo.'; }
   text('orbite');
   if(!(!window.claude&&/^https?:$/.test(location.protocol))){ cv.hidden=true; nav.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; cur=b.dataset.k; nav.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); text(cur); }; return; }   // embedded viewer: no textures or .glb models, so no 3D
   let R=null, scn, cam, earth, clouds, groups={}, raf=0, running=false, fade=1, t0=performance.now(), loader=null; const cache={}, TILT=new THREE.Euler(0.95,0.1,0.5), RAD=2.5;
@@ -5281,8 +5281,8 @@ const TOUR=[
   function start(){ init(); size(); if(!running){ running=true; raf=requestAnimationFrame(tick); } }
   function stop(){ running=false; cancelAnimationFrame(raf); }
   addEventListener('resize',size);
-  const prev=window.aboutShow; window.aboutShow=on=>{ prev(on); on?start():stop(); };
-  if(!$('about').hidden) start(); })();
+  const ab=$('about'), sync=()=>{ ab.hidden?stop():start(); };   // follows the card however it is opened or closed (Info, Esc, tour), whatever order the scripts run in
+  new MutationObserver(sync).observe(ab,{attributes:true,attributeFilter:['hidden']}); sync(); })();
 /* ---- side columns: drag the inner edge to widen or narrow them (or arrow keys on it); double click puts them back ---- */
 (function(){ const W0={l:292,r:352}, key='atlante-colonne'; let w={l:W0.l,r:W0.r}; try{ const j=JSON.parse(localStorage.getItem(key)||'null'); if(j&&isFinite(j.l)&&isFinite(j.r)) w={l:j.l,r:j.r}; }catch(e){}
   const apply=()=>{ const L=[220,Math.max(240,Math.min(560,innerWidth*0.36))], R=[300,Math.max(320,Math.min(860,innerWidth*0.55))]; w.l=Math.max(L[0],Math.min(L[1],w.l)); w.r=Math.max(R[0],Math.min(R[1],w.r));

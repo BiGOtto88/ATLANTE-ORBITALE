@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calcolatore di assetto · Keplario</title>
+<meta name="description" content="Rotazione libera di un corpo rigido, disturbi su un satellite e conversioni fra quaternioni, angoli di Eulero e matrice di rotazione. Inserisci i dati che hai, il resto lo calcola.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/assetto.html">
+<style>
+@font-face{font-family:'B612';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-400-normal.woff2) format('woff2')}
+:root{--bk:#03060a;--pn:rgba(12,16,22,.78);--ln:rgba(120,140,160,.22);--ln2:rgba(120,140,160,.4);--tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;--cy:#35d4f2;--am:#ffb224;--gr:#58e07f;--mono:"B612 Mono","DejaVu Sans Mono",monospace;--ui:"B612","DejaVu Sans",Verdana,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(1200px 700px at 75% -10%,#0d2233 0,#03060a 60%) fixed,var(--bk);color:var(--tx);font-family:var(--ui);line-height:1.5;min-height:100vh}
+main{max-width:1080px;margin:0 auto;padding:32px 22px 70px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-size:30px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--tx2);font-size:15px;margin:4px 0 0}
+.topics{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border-radius:999px;border:1px solid var(--ln2);background:rgba(255,255,255,.03);color:var(--tx2);padding:7px 14px;font:inherit;font-size:14px;cursor:pointer;transition:all .2s ease}
+.chip:hover:not(:disabled){color:var(--tx);border-color:var(--cy)}
+.chip[aria-pressed=true]{border-color:var(--cy);color:var(--cy);background:rgba(53,212,242,.08)}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{border:1px solid var(--ln);background:var(--pn);border-radius:18px;padding:16px 18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.card h3{font-size:14px;letter-spacing:0;text-transform:none;color:var(--tx2);margin:2px 0 10px;font-weight:700}
+.field{display:grid;grid-template-columns:1fr 118px;gap:10px;align-items:center;margin:7px 0;font-size:14px;color:var(--tx2)}
+input[type=text],input:not([type]){background:rgba(0,0,0,.5);border:1px solid var(--ln2);border-radius:10px;color:var(--tx);padding:7px 10px;font:inherit;font-family:var(--mono);font-size:14px;width:100%;transition:border-color .2s}
+input:focus-visible,button:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+input:hover{border-color:var(--tx3)}
+.hint{font-size:12.5px;color:var(--tx3);margin:8px 0 0}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 2px;font-size:15px;cursor:pointer;user-select:none}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.sw{width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:background .25s ease;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+.toggle input:checked + .sw{background:var(--cy)}
+.toggle input:checked + .sw::after{transform:translateX(20px)}
+.toggle input:focus-visible + .sw{outline:2px solid var(--cy);outline-offset:2px}
+button.go{width:100%;border-radius:14px;border:0;background:linear-gradient(135deg,#35d4f2,#2a9fd6);color:#02131b;font:inherit;font-weight:700;font-size:16px;padding:13px 16px;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease;box-shadow:0 8px 24px -10px rgba(53,212,242,.6)}
+button.go:hover{transform:translateY(-1px);box-shadow:0 12px 30px -10px rgba(53,212,242,.8)}
+button.go:active{transform:translateY(0) scale(.99)}
+.viewer{position:relative;border:1px solid var(--ln);background:#02050a;border-radius:18px;overflow:hidden;aspect-ratio:1/1;min-height:300px}
+.viewer svg,.viewer canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.bar{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.play{width:42px;height:42px;border-radius:50%;border:1px solid var(--ln2);background:rgba(255,255,255,.04);color:var(--tx);cursor:pointer;font-size:16px;transition:all .2s ease;flex:none}
+.play:hover{border-color:var(--cy);color:var(--cy)}
+.bar input[type=range]{flex:1;min-width:160px;accent-color:var(--cy)}
+.tlab{font-family:var(--mono);font-size:13px;color:var(--gr);min-width:150px;text-align:right}
+.res{margin-top:16px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:7px 2px;border-bottom:1px solid var(--ln);animation:in .5s ease both}
+.row:last-child{border-bottom:0}
+.row span:first-child{color:var(--tx2)}
+.row span:last-child{font-family:var(--mono);color:var(--gr);text-align:right}
+@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.msg{border-radius:12px;background:rgba(255,178,36,.1);border:1px solid rgba(255,178,36,.35);color:var(--am);font-size:14px;padding:10px 14px;margin:0 0 12px}
+.note{font-size:13px;color:var(--tx3);margin:12px 2px 0}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--tx3);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.back{margin:0 0 10px;font-size:14px}.back a{color:var(--tx2);text-decoration:none}.back a:hover{color:var(--cy)}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.sec[hidden]{display:none}
+.row.sub2 span:last-child{color:var(--am)}
+.vec{font-family:var(--mono)}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div>
+    <p class="back"><a href="./">← Keplario</a></p>
+    <h1>Calcolatore di assetto</h1>
+    <p class="sub">Scegli cosa vuoi capire, inserisci i dati che hai. Il resto lo ricava il calcolatore.</p>
+  </div>
+  <div class="topics" role="group" aria-label="Argomento">
+    <a class="chip" href="calcolatore.html" style="text-decoration:none">Orbite</a>
+    <button class="chip" type="button" aria-pressed="true">Assetto</button>
+    <button class="chip" type="button" disabled title="In arrivo">Strutture</button>
+    <button class="chip" type="button" disabled title="In arrivo">Propulsione</button>
+  </div>
+</header>
+
+<div class="seg" role="tablist" aria-label="Cosa vuoi calcolare">
+  <button class="chip" type="button" role="tab" data-m="free" aria-pressed="true">Rotazione libera</button>
+  <button class="chip" type="button" role="tab" data-m="dist" aria-pressed="false">Disturbi</button>
+  <button class="chip" type="button" role="tab" data-m="rep" aria-pressed="false">Quaternioni e angoli</button>
+</div>
+
+<div class="grid">
+<form id="f" novalidate>
+
+  <div class="sec" id="s-free">
+    <section class="card">
+      <h3>Inerzie principali</h3>
+      <div class="field"><label for="Ix">Ix (kg·m²)</label><input id="Ix" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="Iy">Iy (kg·m²)</label><input id="Iy" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="Iz">Iz (kg·m²)</label><input id="Iz" type="text" inputmode="decimal"></div>
+      <p class="hint">Oppure dai la massa e le tre dimensioni di un parallelepipedo:</p>
+      <div class="field"><label for="m">Massa (kg)</label><input id="m" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="da">Lunghezza lungo x (m)</label><input id="da" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="db">Lunghezza lungo y (m)</label><input id="db" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="dc">Lunghezza lungo z (m)</label><input id="dc" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Velocità angolare iniziale</h3>
+      <div class="field"><label for="wx">ωx (°/s)</label><input id="wx" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="wy">ωy (°/s)</label><input id="wy" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="wz">ωz (°/s)</label><input id="wz" type="text" inputmode="decimal"></div>
+    </section>
+  </div>
+
+  <div class="sec" id="s-dist" hidden>
+    <section class="card">
+      <h3>Orbita</h3>
+      <div class="field"><label for="h">Quota (km)</label><input id="h" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="r">Oppure raggio orbitale (km)</label><input id="r" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Gradiente di gravità</h3>
+      <div class="field"><label for="Imax">Inerzia massima (kg·m²)</label><input id="Imax" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="Imin">Inerzia minima (kg·m²)</label><input id="Imin" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="th">Disallineamento θ (°)</label><input id="th" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Pressione solare</h3>
+      <div class="field"><label for="A">Superficie esposta (m²)</label><input id="A" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="q">Riflettività (0–1)</label><input id="q" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="L">Distanza centro di pressione, baricentro (m)</label><input id="L" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Resistenza atmosferica</h3>
+      <div class="field"><label for="Cd">Coefficiente di resistenza</label><input id="Cd" type="text" inputmode="decimal" value="2.2"></div>
+      <div class="field"><label for="rho">Densità (kg/m³)</label><input id="rho" type="text" inputmode="decimal"></div>
+      <p class="hint">Se lasci vuota la densità, la stimo dalla quota (ordine di grandezza, attività solare media).</p>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Campo magnetico</h3>
+      <div class="field"><label for="md">Dipolo residuo (A·m²)</label><input id="md" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Per la reazione</h3>
+      <div class="field"><label for="Is">Inerzia del satellite (kg·m²)</label><input id="Is" type="text" inputmode="decimal"></div>
+    </section>
+  </div>
+
+  <div class="sec" id="s-rep" hidden>
+    <section class="card">
+      <h3>Quaternione (scalare ultimo)</h3>
+      <div class="field"><label for="qx">qx</label><input id="qx" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="qy">qy</label><input id="qy" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="qz">qz</label><input id="qz" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="qw">qw</label><input id="qw" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Asse e angolo</h3>
+      <div class="field"><label for="ax">Asse x</label><input id="ax" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="ay">Asse y</label><input id="ay" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="az">Asse z</label><input id="az" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="an">Angolo (°)</label><input id="an" type="text" inputmode="decimal"></div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h3>Angoli di Eulero (sequenza 3-2-1)</h3>
+      <div class="field"><label for="roll">Rollio φ (°)</label><input id="roll" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="pitch">Beccheggio θ (°)</label><input id="pitch" type="text" inputmode="decimal"></div>
+      <div class="field"><label for="yaw">Imbardata ψ (°)</label><input id="yaw" type="text" inputmode="decimal"></div>
+      <p class="hint">Basta un gruppo solo. Se ne compili più di uno, uso prima il quaternione, poi asse e angolo.</p>
+    </section>
+  </div>
+
+  <div style="margin-top:14px"><button class="go" type="submit">Calcola</button></div>
+  <button type="button" class="chip" id="demo" style="margin-top:10px">Compila un esempio</button>
+</form>
+
+<section>
+  <div id="msg"></div>
+  <div class="viewer" id="viewer"></div>
+  <div class="bar" id="bar">
+    <button class="play" id="play" type="button" aria-label="Avvia il moto">▶</button>
+    <button class="chip" id="reset" type="button">Riparti</button>
+    <label style="font-size:13px;color:var(--tx3)">Velocità <input id="spd" type="range" min="0.2" max="5" step="0.1" value="1" style="width:110px;accent-color:var(--cy)"></label>
+    <span class="tlab" id="tlab">—</span>
+  </div>
+  <div class="legend">
+    <span><i style="background:#ff6b6b"></i>asse x</span>
+    <span><i style="background:#58e07f"></i>asse y</span>
+    <span><i style="background:#5aa0ff"></i>asse z</span>
+    <span><i style="background:#ffb224"></i>momento angolare H (fisso nello spazio)</span>
+  </div>
+  <div class="res" id="res"></div>
+</section>
+</div>
+<p class="note">Assi principali d'inerzia. Rotazione libera senza coppie esterne. Gli angoli di Eulero sono 3-2-1 (imbardata, beccheggio, rollio), il quaternione ha lo scalare in ultima posizione.</p>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const D = Math.PI / 180, MU = 398600.4418, RE = 6378.137;
+const num = id => { const v = $(id).value.trim(); if (v === '') return null; const x = Number(v.replace(',', '.')); return Number.isFinite(x) ? x : NaN; };
+const fmt = (x, d = 3) => Number.isFinite(x) ? x.toLocaleString('it-IT', { maximumFractionDigits: d, minimumFractionDigits: 0 }) : '—';
+const sci = x => !Number.isFinite(x) ? '—' : (x === 0 ? '0' : (Math.abs(x) >= 0.01 && Math.abs(x) < 10000 ? fmt(x, 4) : x.toExponential(2).replace('.', ',').replace('e', ' × 10^').replace('+', '')));
+const row = (l, v, cls = '') => `<div class="row ${cls}"><span>${l}</span><span>${v}</span></div>`;
+const msg = t => { $('msg').innerHTML = t ? `<p class="msg">${t}</p>` : ''; };
+
+/* ---------- vettori e quaternioni (scalare ultimo) ---------- */
+const qmul = (a, b) => [a[3]*b[0] + a[0]*b[3] + a[1]*b[2] - a[2]*b[1], a[3]*b[1] - a[0]*b[2] + a[1]*b[3] + a[2]*b[0], a[3]*b[2] + a[0]*b[1] - a[1]*b[0] + a[2]*b[3], a[3]*b[3] - a[0]*b[0] - a[1]*b[1] - a[2]*b[2]];
+const qnorm = q => { const n = Math.hypot(...q); return q.map(x => x / n); };
+function qFromEuler(r, p, y) { const cr = Math.cos(r/2), sr = Math.sin(r/2), cp = Math.cos(p/2), sp = Math.sin(p/2), cy = Math.cos(y/2), sy = Math.sin(y/2);
+  return [sr*cp*cy - cr*sp*sy, cr*sp*cy + sr*cp*sy, cr*cp*sy - sr*sp*cy, cr*cp*cy + sr*sp*sy]; }
+function eulerFromQ(q) { const [x, y, z, w] = q;
+  return [Math.atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y)), Math.asin(Math.max(-1, Math.min(1, 2*(w*y - z*x)))), Math.atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))]; }
+function dcmFromQ(q) { const [x, y, z, w] = q;
+  return [[1-2*(y*y+z*z), 2*(x*y-w*z), 2*(x*z+w*y)], [2*(x*y+w*z), 1-2*(x*x+z*z), 2*(y*z-w*x)], [2*(x*z-w*y), 2*(y*z+w*x), 1-2*(x*x+y*y)]]; }
+const matVec = (R, v) => [0,1,2].map(i => R[i][0]*v[0] + R[i][1]*v[1] + R[i][2]*v[2]);
+
+/* ---------- 3D ---------- */
+const V = { ready: false, q: [0, 0, 0, 1], dims: [1, 1, 1], H: null };
+function setup3D() {
+  if (V.ready) return; V.ready = true;
+  const host = $('viewer');
+  const cv = document.createElement('canvas'); host.appendChild(cv);
+  const R = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+  R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  cam.position.set(2.6, 2.1, 3.2);
+  scene.add(new THREE.AmbientLight(0x8a96a6, 1.0)); const sun = new THREE.DirectionalLight(0xffffff, 1.4); sun.position.set(3, 4, 2); scene.add(sun);
+  const ref = new THREE.Group(); ref.rotation.x = -Math.PI / 2; scene.add(ref);   // z verso l'alto, come nei libri
+  const body = new THREE.Group(); ref.add(body);
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x9aa8b8, metalness: 0.4, roughness: 0.45 })); body.add(box);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), new THREE.LineBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.55 })); body.add(edges);
+  const ax = (dir, col) => { const a = new THREE.ArrowHelper(new THREE.Vector3(...dir), new THREE.Vector3(), 1.4, col, 0.16, 0.09); body.add(a); return a; };
+  ax([1,0,0], 0xff6b6b); ax([0,1,0], 0x58e07f); ax([0,0,1], 0x5aa0ff);
+  // riferimento fisso: tre assi tenui
+  const fx = (dir) => { const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(...dir).multiplyScalar(2.1)]); ref.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x5b6672, transparent: true, opacity: 0.6 }))); };
+  fx([1,0,0]); fx([0,1,0]); fx([0,0,1]);
+  const Harr = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(), 1.9, 0xffb224, 0.2, 0.11); Harr.visible = false; ref.add(Harr);
+  const controls = new THREE.OrbitControls(cam, cv); controls.enableDamping = true; controls.enablePan = false;
+  Object.assign(V, { R, scene, cam, body, box, edges, Harr, controls, cv });
+  V.size = () => { const w = host.clientWidth, h = host.clientHeight; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+  addEventListener('resize', V.size); V.size();
+  (function loop() { requestAnimationFrame(loop); controls.update(); R.render(scene, cam); })();
+}
+function setDims(d) {
+  const mx = Math.max(...d); const s = d.map(x => Math.max(0.12, x / mx * 1.25));
+  V.box.scale.set(...s); V.edges.scale.set(...s);
+}
+function setAtt(q) { V.q = q; V.body.quaternion.set(q[0], q[1], q[2], q[3]); }
+function setH(v) { if (!v) { V.Harr.visible = false; return; } const n = Math.hypot(...v); if (n < 1e-12) { V.Harr.visible = false; return; }
+  V.Harr.visible = true; V.Harr.setDirection(new THREE.Vector3(v[0]/n, v[1]/n, v[2]/n)); }
+
+/* ---------- rotazione libera ---------- */
+const S = { mode: 'free', I: null, w: null, q: [0,0,0,1], w0: null, q0: [0,0,0,1], t: 0, playing: false, last: 0 };
+function inertias() {
+  let I = [num('Ix'), num('Iy'), num('Iz')];
+  const m = num('m'), d = [num('da'), num('db'), num('dc')];
+  const haveI = I.every(x => x !== null), haveBox = m !== null && d.every(x => x !== null);
+  if (!haveI && haveBox) { const [a, b, c] = d; I = [m/12*(b*b + c*c), m/12*(a*a + c*c), m/12*(a*a + b*b)]; }
+  else if (!haveI) return { err: 'Servono le tre inerzie principali, oppure la massa e le tre lunghezze del parallelepipedo.' };
+  if (I.some(x => !(x > 0))) return { err: 'Le inerzie devono essere positive.' };
+  const [x, y, z] = I; if (x + y < z * 0.999999 || y + z < x * 0.999999 || x + z < y * 0.999999) return { err: 'Queste inerzie non sono possibili per un corpo reale: la somma di due non può essere minore della terza.' };
+  let dims = haveBox ? d : [Math.sqrt(6*(y + z - x)), Math.sqrt(6*(x + z - y)), Math.sqrt(6*(x + y - z))];
+  return { I, dims };
+}
+function free() {
+  const r = inertias(); if (r.err) { msg(r.err); $('res').innerHTML = ''; return; }
+  const w = [num('wx'), num('wy'), num('wz')];
+  if (w.some(x => x === null)) { msg('Servono le tre componenti della velocità angolare (anche zero).'); return; }
+  const [I1, I2, I3] = r.I, W = w.map(x => x * D);
+  const H = [I1*W[0], I2*W[1], I3*W[2]], Hn = Math.hypot(...H), T = 0.5*(I1*W[0]**2 + I2*W[1]**2 + I3*W[2]**2);
+  const ord = [0,1,2].sort((a, b) => r.I[a] - r.I[b]), names = ['x','y','z'];
+  const lo = r.I[ord[0]], mid = r.I[ord[1]], hi = r.I[ord[2]];
+  let out = row('Momento angolare H', `${sci(Hn)} kg·m²/s`) + row('Energia cinetica', `${sci(T)} J`) + row('Velocità angolare', `${fmt(Math.hypot(...w), 3)} °/s`);
+  out += row('H in assi corpo', `(${sci(H[0])}; ${sci(H[1])}; ${sci(H[2])})`);
+  if (Hn > 0) {
+    const Ie = Hn*Hn/(2*T), tol = 1e-6*mid;
+    let txt;
+    if (Math.abs(hi - mid) < tol && Math.abs(mid - lo) < tol) txt = 'Corpo sferico: ruota come un blocco attorno a ω, senza oscillazioni.';
+    else if (Math.abs(Ie - mid) < 1e-4*mid) txt = `Vicino alla separatrice: il moto è instabile, il corpo si ribalta periodicamente (asse ${names[ord[1]]} intermedio).`;
+    else if (Ie > mid) txt = `Ruota attorno all'asse di inerzia massima (${names[ord[2]]}): stabile.`;
+    else txt = `Ruota attorno all'asse di inerzia minima (${names[ord[0]]}): stabile se non c'è dissipazione. Con attrito interno passa all'asse massimo.`;
+    out += row('Inerzia effettiva H²/2T', `${sci(Ie)} kg·m²`) + row('Esito', txt, 'sub2');
+  } else out += row('Esito', 'Fermo: nessuna rotazione da studiare.', 'sub2');
+  const nuts = (Math.abs(I1 - I2) < 1e-9*I1 || Math.abs(I2 - I3) < 1e-9*I2 || Math.abs(I1 - I3) < 1e-9*I1);
+  if (nuts && Hn > 0) {   // simmetrico: periodo di precessione
+    const sym = Math.abs(I1 - I2) < 1e-9*I1 ? 2 : (Math.abs(I2 - I3) < 1e-9*I2 ? 0 : 1);
+    const Is = r.I[sym], It = r.I[(sym + 1) % 3], ws = W[sym];
+    if (Math.abs(Is - It) > 1e-12) { const lam = (Is - It)/It*ws; out += row('Frequenza di nutazione nel corpo', `${fmt(Math.abs(lam)/D, 3)} °/s`) + row('Periodo di nutazione', Math.abs(lam) > 1e-12 ? `${fmt(2*Math.PI/Math.abs(lam), 2)} s` : '—'); }
+  }
+  $('res').innerHTML = out; msg('');
+  S.I = r.I; S.w0 = W; S.w = W.slice(); S.q0 = [0,0,0,1]; S.q = [0,0,0,1]; S.t = 0;
+  setDims(r.dims); setAtt(S.q); setH(H);   // con q = identità il corpo coincide con il riferimento: H fisso = H in assi corpo
+  $('bar').style.display = 'flex'; $('tlab').textContent = 't = 0 s';
+}
+function deriv(w, q, I) {
+  const dw = [ ((I[1] - I[2])*w[1]*w[2]) / I[0], ((I[2] - I[0])*w[2]*w[0]) / I[1], ((I[0] - I[1])*w[0]*w[1]) / I[2] ];
+  const dq = qmul(q, [w[0], w[1], w[2], 0]).map(x => 0.5*x);
+  return { dw, dq };
+}
+function step(dt) {
+  const I = S.I; let w = S.w, q = S.q;
+  const add = (a, b, s) => a.map((x, i) => x + b[i]*s);
+  const k1 = deriv(w, q, I), k2 = deriv(add(w, k1.dw, dt/2), add(q, k1.dq, dt/2), I), k3 = deriv(add(w, k2.dw, dt/2), add(q, k2.dq, dt/2), I), k4 = deriv(add(w, k3.dw, dt), add(q, k3.dq, dt), I);
+  w = w.map((x, i) => x + dt/6*(k1.dw[i] + 2*k2.dw[i] + 2*k3.dw[i] + k4.dw[i]));
+  q = qnorm(q.map((x, i) => x + dt/6*(k1.dq[i] + 2*k2.dq[i] + 2*k3.dq[i] + k4.dq[i])));
+  S.w = w; S.q = q;
+}
+function tick(now) {
+  if (!S.playing) return;
+  const dt = Math.min(0.05, (now - (S.last || now)) / 1000) * Number($('spd').value); S.last = now;
+  const n = Math.max(1, Math.ceil(dt / 0.005)); for (let k = 0; k < n; k++) step(dt / n);
+  S.t += dt; setAtt(S.q); $('tlab').textContent = `t = ${fmt(S.t, 1)} s`;
+  requestAnimationFrame(tick);
+}
+
+/* ---------- disturbi ---------- */
+function rhoEst(h) {   // ordine di grandezza, attività solare media
+  const T = [[200, 2.5e-10], [300, 2.0e-11], [400, 3.0e-12], [500, 6.0e-13], [600, 1.5e-13], [800, 1.6e-14], [1000, 4e-15]];
+  if (h < T[0][0] || h > T[T.length-1][0]) return null;
+  for (let i = 0; i < T.length - 1; i++) if (h <= T[i+1][0]) { const f = (h - T[i][0]) / (T[i+1][0] - T[i][0]); return Math.exp(Math.log(T[i][1]) + f*(Math.log(T[i+1][1]) - Math.log(T[i][1]))); }
+}
+function dist() {
+  let r = num('r'), h = num('h');
+  if (r === null && h !== null) r = h + RE; if (h === null && r !== null) h = r - RE;
+  if (r === null) { msg('Serve almeno la quota o il raggio orbitale.'); $('res').innerHTML = ''; return; }
+  if (!(r > RE)) { msg('Il raggio orbitale deve superare quello terrestre (6378 km).'); return; }
+  const rm = r * 1000, mu = MU * 1e9, n = Math.sqrt(MU / r**3), P = 2*Math.PI / n, V0 = Math.sqrt(MU / r) * 1000;
+  let out = row('Raggio orbitale', `${fmt(r, 1)} km · quota ${fmt(h, 1)} km`) + row('Periodo orbitale', `${fmt(P / 60, 2)} min`) + row('Velocità', `${fmt(V0 / 1000, 3)} km/s`);
+  const T = [];
+  const Imax = num('Imax'), Imin = num('Imin'), th = num('th');
+  if (Imax !== null && Imin !== null) {
+    const k = 3*mu / (2*rm**3) * Math.abs(Imax - Imin);
+    out += row('Gradiente di gravità, massimo', `${sci(k)} N·m`); T.push(['gradiente di gravità', k]);
+    if (th !== null) out += row(`Gradiente di gravità a θ = ${fmt(th, 1)}°`, `${sci(k*Math.abs(Math.sin(2*th*D)))} N·m`);
+  }
+  const A = num('A'), q = num('q'), L = num('L');
+  if (A !== null && L !== null) {
+    const refl = q === null ? 0.6 : q;
+    const F = 1361 / 299792458 * A * (1 + refl), t = F * Math.abs(L);
+    out += row('Pressione solare, forza', `${sci(F)} N`) + row('Pressione solare, coppia', `${sci(t)} N·m`); T.push(['pressione solare', t]);
+    if (q === null) out += row('', 'Riflettività non data: uso 0,6.', 'sub2');
+  }
+  const Cd = num('Cd') ?? 2.2; let rho = num('rho'), rhoNote = '';
+  if (rho === null && h !== null) { rho = rhoEst(h); if (rho) rhoNote = ' (stima)'; }
+  if (A !== null && L !== null && rho) {
+    const t = 0.5*rho*V0**2*Cd*A*Math.abs(L);
+    out += row(`Resistenza atmosferica${rhoNote}`, `${sci(t)} N·m · densità ${sci(rho)} kg/m³`); T.push(['resistenza atmosferica', t]);
+  } else if (A !== null && L !== null && !rho) out += row('Resistenza atmosferica', 'Fuori dal campo della stima (200–1000 km): dai tu la densità.', 'sub2');
+  const md = num('md');
+  if (md !== null) { const B = 3.12e-5 * (RE / r)**3, t = md*B; out += row('Campo magnetico (equatore)', `${sci(B*1e9)} nT`) + row('Coppia magnetica, massima', `${sci(2*t)} N·m`); T.push(['campo magnetico', 2*t]); }
+  if (!T.length) { msg('Con questi dati calcolo solo l\'orbita. Aggiungi le inerzie, la superficie e la distanza del centro di pressione, oppure il dipolo.'); $('res').innerHTML = out; return; }
+  T.sort((a, b) => b[1] - a[1]);
+  const tot = T.reduce((s, x) => s + x[1], 0);
+  out += row('Disturbo dominante', `${T[0][0]} (${fmt(T[0][1]/tot*100, 0)}% del totale)`, 'sub2') + row('Somma nel caso peggiore', `${sci(tot)} N·m`);
+  const Is = num('Is') ?? Imax;
+  if (Is) out += row('Accelerazione angolare peggiore', `${sci(tot/Is/D)} °/s²`) + row('Momento accumulato in un\'orbita', `${sci(tot*P)} N·m·s`) + row('', 'Calcolato con coppia costante per tutta l\'orbita: per una ruota di reazione è un limite superiore.', 'sub2');
+  $('res').innerHTML = out; msg('');
+  setH(null); setDims([1, 1, 1]); setAtt([0, 0, 0, 1]);
+}
+
+/* ---------- rappresentazioni ---------- */
+function rep() {
+  const Q = ['qx','qy','qz','qw'].map(num), A = ['ax','ay','az','an'].map(num), E = ['roll','pitch','yaw'].map(num);
+  const hasQ = Q.some(x => x !== null), hasA = A.some(x => x !== null), hasE = E.some(x => x !== null);
+  if (!hasQ && !hasA && !hasE) { msg('Compila quaternione, asse e angolo, oppure gli angoli di Eulero.'); $('res').innerHTML = ''; return; }
+  let q, src;
+  if (hasQ) { if (Q.some(x => x === null)) { msg('Il quaternione vuole tutte e quattro le componenti.'); return; } if (Math.hypot(...Q) < 1e-9) { msg('Il quaternione non può essere nullo.'); return; } q = qnorm(Q); src = 'quaternione';
+    if (Math.abs(Math.hypot(...Q) - 1) > 1e-3) msg('Il quaternione non aveva norma 1: l\'ho normalizzato.'); else msg(''); }
+  else if (hasA) { if (A.some(x => x === null)) { msg('Servono i tre numeri dell\'asse e l\'angolo.'); return; } const n = Math.hypot(A[0], A[1], A[2]); if (n < 1e-9) { msg('L\'asse non può essere nullo.'); return; }
+    const s = Math.sin(A[3]*D/2) / n; q = [A[0]*s, A[1]*s, A[2]*s, Math.cos(A[3]*D/2)]; src = 'asse e angolo'; msg(''); }
+  else { if (E.some(x => x === null)) { msg('Servono i tre angoli di Eulero (anche zero).'); return; } q = qFromEuler(E[0]*D, E[1]*D, E[2]*D); src = 'angoli di Eulero'; msg(''); }
+  if (q[3] < 0) q = q.map(x => -x);   // stessa rotazione, scalare positivo
+  const e = eulerFromQ(q), ang = 2*Math.acos(Math.min(1, q[3])), sn = Math.hypot(q[0], q[1], q[2]), axis = sn < 1e-9 ? [1, 0, 0] : q.slice(0, 3).map(x => x / sn), R = dcmFromQ(q);
+  let out = row('Partito da', src, 'sub2');
+  out += row('Quaternione (x; y; z; w)', `${fmt(q[0], 5)}; ${fmt(q[1], 5)}; ${fmt(q[2], 5)}; ${fmt(q[3], 5)}`);
+  out += row('Asse di rotazione', sn < 1e-9 ? 'qualsiasi (nessuna rotazione)' : `(${fmt(axis[0], 5)}; ${fmt(axis[1], 5)}; ${fmt(axis[2], 5)})`) + row('Angolo', `${fmt(ang/D, 4)}°`);
+  out += row('Rollio φ', `${fmt(e[0]/D, 4)}°`) + row('Beccheggio θ', `${fmt(e[1]/D, 4)}°`) + row('Imbardata ψ', `${fmt(e[2]/D, 4)}°`);
+  if (Math.abs(Math.abs(e[1]) - Math.PI/2) < 1e-4) out += row('', 'Beccheggio a ±90°: rollio e imbardata non sono distinguibili (blocco cardanico).', 'sub2');
+  out += R.map((rw, i) => row(`Matrice, riga ${i + 1}`, rw.map(x => fmt(x, 5)).join(' ; '), 'vec')).join('');
+  $('res').innerHTML = out;
+  S.playing = false; $('play').textContent = '▶'; $('bar').style.display = 'none';
+  setDims([1.6, 1, 0.6]); setH(null); setAtt(q);
+}
+
+/* ---------- comandi ---------- */
+function run(ev) {
+  if (ev) ev.preventDefault();
+  setup3D(); S.playing = false; $('play').textContent = '▶';
+  const all = [...document.querySelectorAll('input[type=text]')];
+  if (all.some(i => i.value.trim() !== '' && !Number.isFinite(Number(i.value.trim().replace(',', '.'))))) { msg('Controlla i valori: alcuni non sono numeri.'); return; }
+  $('bar').style.display = S.mode === 'free' ? 'flex' : 'none'; $('viewer').style.display = S.mode === 'dist' ? 'none' : ''; document.querySelector('.legend').style.display = S.mode === 'dist' ? 'none' : '';
+  ({ free, dist, rep })[S.mode]();
+}
+function setMode(m) {
+  S.mode = m; S.playing = false; $('play').textContent = '▶';
+  document.querySelectorAll('.seg .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+  ['free', 'dist', 'rep'].forEach(k => $('s-' + k).hidden = k !== m); $('viewer').style.display = m === 'dist' ? 'none' : ''; document.querySelector('.legend').style.display = m === 'dist' ? 'none' : '';
+  $('res').innerHTML = ''; msg('');
+}
+const DEMO = {
+  free: { Ix: 10, Iy: 15, Iz: 20, wx: 0.2, wy: 8, wz: 0.2 },
+  dist: { h: 500, Imax: 120, Imin: 40, th: 20, A: 2, q: 0.5, L: 0.1, md: 0.5, Is: 80 },
+  rep: { roll: 30, pitch: 20, yaw: 45 }
+};
+$('demo').addEventListener('click', () => { document.querySelectorAll('input[type=text]').forEach(i => { if (i.id !== 'Cd') i.value = ''; });
+  Object.entries(DEMO[S.mode]).forEach(([k, v]) => $(k).value = v); run(); });
+document.querySelectorAll('.seg .chip').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.m); }));
+$('f').addEventListener('submit', run);
+$('play').addEventListener('click', () => { if (S.mode !== 'free' || !S.I) return; S.playing = !S.playing; $('play').textContent = S.playing ? '❚❚' : '▶'; if (S.playing) { S.last = 0; requestAnimationFrame(tick); } });
+$('reset').addEventListener('click', () => { if (!S.I) return; S.w = S.w0.slice(); S.q = [0,0,0,1]; S.t = 0; setAtt(S.q); $('tlab').textContent = 't = 0 s'; });
+setup3D(); setMode('free'); $('demo').click();
+</script>
+</body>
+</html>
