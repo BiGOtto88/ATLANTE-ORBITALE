@@ -63,6 +63,9 @@ jobs:
         run: |
           mkdir _site
           cp -r index.html manifest.webmanifest sw.js LICENSE LICENZE.txt sitemap.xml data tex vendor fonts icone modelli _site/
+          # versione inglese e pagine dei calcolatori (calcolatore.html, assetto.html e quelle che verranno), se presenti
+          if [ -d en ]; then cp -r en _site/; fi
+          for f in *.html; do case "$f" in index.html|google*.html) ;; *) cp "$f" _site/ ;; esac; done
           # file di verifica dei motori di ricerca (Google Search Console, Bing Webmaster Tools), se caricati nella radice del repository
           for f in google*.html BingSiteAuth.xml; do if [ -f "$f" ]; then cp "$f" _site/; fi; done
 
