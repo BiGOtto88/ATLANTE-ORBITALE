@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-en="Systems and mission: power, thermal, budgets · Keplario">Sistemi e missione: energia, termica, bilanci · Keplario</title>
+<meta name="description" content="Eclissi, pannelli e batteria, temperatura di un satellite, bilanci di massa, Δv e potenza con i margini ESA. Dai i numeri, la pagina ricava il resto." data-en-content="Eclipses, arrays and battery, spacecraft temperature, mass, Δv and power budgets with ESA margins. Give your numbers, the page works out the rest.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/sistemi.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Sistemi e missione · Keplario","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/sistemi.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<style>
+/* Keplario · laboratorio: stile comune delle pagine di calcolo.
+   Stessi colori e caratteri dell'app (cruscotto scuro, B612), senza maiuscole forzate, sfumature o bagliori.
+   Regola dei colori: ciano = cose che si toccano e la prima serie dei grafici; verde = valori calcolati;
+   ambra = avvisi. Niente rosso o magenta. */
+@font-face{font-family:'B612';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-700-normal.woff2) format('woff2')}
+:root{
+  --bk:#000;--pn:#080a0d;--pn2:#10141a;--pn3:#171c24;--ln:#252b33;--ln2:#414b57;
+  --tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;
+  --cy:#35d4f2;--cy2:#1aa9c7;--gr:#58e07f;--vi:#a995ff;--ic:#cfe3f5;--am:#ffb224;
+  --ui:"B612","DejaVu Sans",Verdana,sans-serif;--mono:"B612 Mono","DejaVu Sans Mono",Consolas,monospace;
+  --num:"B612","DejaVu Sans",Verdana,sans-serif;  /* numeri: B612 ha cifre di larghezza uguale e una virgola stretta (in B612 Mono la virgola sembra uno spazio) */
+  --r:6px;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;background:var(--bk)}
+body{color:var(--tx);font:15px/1.5 var(--ui);min-height:100vh}
+a{color:var(--cy)}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* barra in alto: Keplario, Cielo, le sei materie, lingua */
+.kb{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.92);border-bottom:1px solid var(--ln);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.kb-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:6px;padding:0 18px;height:50px}
+.kb-home{font-weight:700;color:var(--tx);text-decoration:none;font-size:15px;margin-right:10px;white-space:nowrap}
+.kb-sky{color:var(--tx2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:var(--r);white-space:nowrap}
+.kb-sky:hover{color:var(--tx);background:var(--pn2)}
+.kb-sep{width:1px;height:20px;background:var(--ln);margin:0 6px;flex:none}
+.kb-nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.kb-nav::-webkit-scrollbar{display:none}
+.kb-nav a{color:var(--tx2);text-decoration:none;font-size:14px;padding:14px 9px 12px;white-space:nowrap;border-bottom:2px solid transparent}
+.kb-nav a:hover{color:var(--tx)}
+.kb-nav a[aria-current=page]{color:var(--tx);border-bottom-color:var(--cy)}
+.kb-lang{flex:none;margin-left:6px}
+@media (max-width:760px){
+  .kb-in{flex-wrap:wrap;height:auto;padding:0 12px;row-gap:0}
+  .kb-home{padding:13px 0}
+  .kb-sep{display:none}
+  .kb-lang{margin-left:auto}
+  .kb-nav{order:5;flex-basis:100%;margin:0 -12px;padding:0 6px;border-top:1px solid var(--ln)}
+  .kb-nav a{padding:11px 9px 9px}
+}
+
+main{max-width:1240px;margin:0 auto;padding:30px 18px 80px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:18px 28px;flex-wrap:wrap;margin-bottom:20px}
+.ph h1{font-size:28px;line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.005em}
+.ph .lead{color:var(--tx2);margin:0;max-width:62ch}
+
+/* bottoni */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--ln2);background:var(--pn);color:var(--tx);font:inherit;font-size:14px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,color .15s}
+.btn:hover:not(:disabled){border-color:var(--cy);color:var(--cy)}
+.btn:active:not(:disabled){background:var(--pn2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--cy);border-color:var(--cy);color:#00141a;font-weight:700}
+.btn.pri:hover:not(:disabled){background:#62e0f7;color:#00141a}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:13px}
+.btn.icon{width:36px;padding:0}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+
+/* schede di modo (orbita, manovre, ...) */
+.seg{display:flex;gap:0;border-bottom:1px solid var(--ln);margin:0 0 18px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{background:none;border:0;border-bottom:2px solid transparent;color:var(--tx2);font:inherit;font-size:15px;padding:10px 14px 9px;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.seg button:hover{color:var(--tx)}
+.seg button[aria-selected=true]{color:var(--tx);border-bottom-color:var(--cy)}
+
+/* griglia: dati a sinistra, vista e risultati a destra */
+.lab{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:22px;align-items:start}
+.lab > *{min-width:0}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.stack{display:grid;gap:14px}
+.pnl{background:var(--pn);border:1px solid var(--ln);border-radius:var(--r);padding:14px 16px 16px}
+.pnl > h2,.pnl > h3{font-size:14px;font-weight:700;color:var(--tx);margin:0 0 4px}
+.pnl > .why{font-size:13px;color:var(--tx3);margin:0 0 10px}
+.pnl + .acts{margin-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* campi: etichetta a sinistra, numero a destra. Un campo vuoto mostra in verde il valore ricavato. */
+.f{display:grid;grid-template-columns:minmax(0,1fr) 116px 54px;gap:8px;align-items:center;margin:6px 0}
+.f > .u{font-size:13px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f > label,.f > .lb{font-size:14px;color:var(--tx2);line-height:1.3}
+.f input,.f select{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 9px;font:inherit;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.f select{font-family:var(--ui);text-align:left;padding-right:4px}
+.f input:hover,.f select:hover{border-color:var(--tx3)}
+.f input:focus{border-color:var(--cy);outline:none;box-shadow:0 0 0 1px var(--cy)}
+.f input::placeholder{color:var(--tx3);opacity:1}
+.f input.der::placeholder{color:var(--gr)}
+.f input.bad{border-color:var(--am);box-shadow:0 0 0 1px var(--am)}
+.f.wide{grid-template-columns:1fr}
+.f.nou{grid-template-columns:minmax(0,1fr) 178px}
+@media (max-width:420px){.f{grid-template-columns:minmax(0,1fr) 104px 46px}.f.nou{grid-template-columns:minmax(0,1fr) 158px}}
+.f.wide input{text-align:left}
+.ck{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2);margin:8px 0;cursor:pointer}
+.ck input{width:17px;height:17px;accent-color:var(--cy);margin:0}
+.hint{font-size:13px;color:var(--tx3);margin:8px 0 0}
+.hint b{color:var(--tx2);font-weight:400}
+
+/* partire da un satellite reale */
+.sat{position:relative}
+.sat input{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 10px;font:inherit;font-size:14px}
+.sat input:focus{border-color:var(--cy);outline:none}
+.sat ul{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:var(--r);max-height:280px;overflow:auto;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.sat li{padding:7px 9px;border-radius:4px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;gap:10px}
+.sat li small{color:var(--tx3);font-family:var(--num);font-variant-numeric:tabular-nums;font-size:12px}
+.sat li[aria-selected=true],.sat li:hover{background:var(--pn3);color:var(--cy)}
+.satnote{font-size:13px;color:var(--tx3);margin:6px 0 0}
+.satnote a{color:var(--cy)}
+
+/* messaggi */
+.msg{border-left:2px solid var(--am);background:rgba(255,178,36,.06);color:#ffd27a;padding:8px 12px;font-size:14px;margin:0 0 12px;border-radius:0 var(--r) var(--r) 0}
+.msg.info{border-left-color:var(--cy);background:rgba(53,212,242,.06);color:var(--tx)}
+.msg:empty{display:none}
+
+/* vista 2D/3D */
+.view{position:relative;width:100%;background:#000;border:1px solid var(--ln);border-radius:var(--r);overflow:hidden;aspect-ratio:16/11}
+@media (max-width:600px){.view{aspect-ratio:1/1}}
+.view.sq{aspect-ratio:1/1}
+.view > canvas,.view > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.view .cap{position:absolute;left:12px;bottom:10px;right:12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--tx2);pointer-events:none;text-shadow:0 1px 3px #000}
+.view .cap i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.view .cap i.dot{width:8px;height:8px;border-radius:50%}
+.view .tl{position:absolute;right:10px;top:10px;display:flex;gap:6px}
+.view .tl .btn{background:rgba(8,10,13,.8)}
+.view .ld{position:absolute;inset:0;display:grid;place-items:center;color:var(--tx3);font-size:13px}
+.bar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.bar input[type=range]{flex:1;min-width:150px;accent-color:var(--cy)}
+.bar .t{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--gr);min-width:140px;text-align:right}
+
+/* risultati */
+.out{margin-top:16px}
+.out h3{font-size:13.5px;font-weight:700;color:var(--tx2);margin:18px 0 4px}
+.out h3:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--ln);font-size:14px}
+.row > span:first-child{color:var(--tx2)}
+.row .v{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--gr);text-align:right;white-space:nowrap}
+.row .v small{color:var(--tx3);font-size:12.5px;margin-left:6px}
+.row .n{grid-column:1/-1;font-size:12.5px;color:var(--tx3);margin-top:-2px}
+.row.key .v{font-size:17px}
+.row.warn .v{color:var(--am)}
+.note{font-size:13px;color:var(--tx3);margin:12px 0 0;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 26px}
+
+/* grafici */
+.chart{position:relative;margin-top:14px;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:8px 8px 4px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ttl{font-size:13px;color:var(--tx2);margin:2px 4px 6px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.chart .ttl b{color:var(--tx);font-weight:700;margin-right:6px}
+.chart .ttl i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.chart .tip{position:absolute;pointer-events:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:4px;padding:5px 8px;font-size:12.5px;font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--tx);white-space:nowrap;z-index:5}
+.chart .tip span{display:block}
+.chart text{font-family:var(--num);font-size:11px;fill:var(--tx3)}
+.chart .ax{stroke:var(--ln2);stroke-width:1}
+.chart .gd{stroke:var(--ln);stroke-width:1}
+
+/* tabelle di dati */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+.tbl th{text-align:left;font-weight:400;color:var(--tx3);border-bottom:1px solid var(--ln2);padding:6px 8px 6px 0}
+.tbl td{border-bottom:1px solid var(--ln);padding:6px 8px 6px 0}
+.tbl td.num,.tbl th.num{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.tbl td.num{color:var(--gr)}
+
+/* piede */
+.foot{max-width:1240px;margin:0 auto;padding:22px 18px 40px;border-top:1px solid var(--ln);color:var(--tx3);font-size:13px;display:flex;gap:8px 20px;flex-wrap:wrap}
+.foot a{color:var(--tx2)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* sistemi: campi doppi (caldo/freddo, min/max), cursore di β, viste SVG, tabelle dei bilanci, barra della massa */
+.f.two{grid-template-columns:minmax(0,1fr) 78px 78px 50px}
+.f.two.hd{margin:2px 0 -3px}
+.f.two.hd > span{font-size:12.5px;color:var(--tx3);text-align:right;padding-right:10px}
+@media (max-width:420px){.f.two{grid-template-columns:minmax(0,1fr) 68px 68px 42px}}
+.f.wide select{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 9px;font:inherit;font-size:14px}
+.f input[type=date]{text-align:left;font-family:var(--ui)}
+.rng{display:block;width:100%;margin:2px 0 4px;accent-color:var(--cy)}
+.view svg text{font-family:var(--num);font-size:12px;fill:var(--tx2)}
+.view svg .mut{fill:var(--tx3)}
+.view svg .v{fill:var(--gr)}
+.view svg .big{font-size:22px;fill:var(--gr)}
+.view svg .ray{stroke:#cfe3f5;stroke-opacity:.13;stroke-width:1}
+.view svg .shd{fill:#000;stroke:var(--tx3);stroke-dasharray:4 4;stroke-width:1}
+.view svg .en{fill:#0b141c;stroke:#2c3a48}
+.view svg .ed{fill:#1c3243}
+.view svg .orb{fill:none;stroke:var(--cy);stroke-width:1.5}
+.view svg .ecl{fill:none;stroke:var(--vi);stroke-width:4}
+.view svg .ins{fill:#000;stroke:var(--ln2)}
+.view svg .on .bd{fill:var(--ic)}.view svg .on .pn{fill:var(--cy)}
+.view svg .off .bd{fill:#3a4552}.view svg .off .pn{fill:#151c24;stroke:#414b57}
+.view svg .st-on{fill:var(--cy)}.view svg .st-off{fill:var(--vi)}
+.view svg .body{fill:var(--pn2);stroke:var(--ln2);stroke-width:1.5}
+.view .tl .btn[aria-pressed=true]{border-color:var(--cy);color:var(--cy)}
+.bgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:14px}
+@media (max-width:900px){.bgrid{grid-template-columns:1fr}}
+.bt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13.5px;margin:10px 0 8px}
+.bt th{text-align:left;font-weight:400;font-size:12.5px;color:var(--tx3);border-bottom:1px solid var(--ln2);padding:4px 6px 5px 0}
+.bt td{border-bottom:1px solid var(--ln);padding:4px 6px 4px 0;vertical-align:middle}
+.bt .r{text-align:right}
+.bt input,.bt select{width:100%;min-height:32px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:4px 7px;font:inherit;font-size:13.5px}
+.bt input.n{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.bt input:focus,.bt select:focus{border-color:var(--cy);outline:none}
+.bt input.bad{border-color:var(--am)}
+.bt td.c{color:var(--gr);font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.bt .x{width:30px;height:30px;padding:0;background:none;border:1px solid transparent;border-radius:var(--r);color:var(--tx3);font:inherit;font-size:17px;line-height:1;cursor:pointer}
+.bt .x:hover{color:var(--cy);border-color:var(--ln2)}
+.bt .wx{width:34px;padding-right:0}
+.bt .w1{width:80px}.bt .w2{width:74px}.bt .w3{width:90px}.bt .w4{width:60px}
+@media (max-width:520px){.bt .hm{display:none}.bt .w1{width:70px}.bt .w2{width:66px}.bt .w4{width:54px}}
+.mbar svg{display:block;width:100%;height:auto;overflow:visible}
+.mbar text{font-family:var(--num);font-size:11.5px;fill:var(--tx3)}
+.leg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 22px;margin:10px 0 0;padding:0;list-style:none;font-size:13.5px}
+.leg li{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--ln)}
+.leg b{font-weight:400;color:var(--tx3);font-family:var(--num);min-width:1.4em;text-align:right}
+.leg svg{flex:none}
+.leg span{color:var(--tx2);flex:1;min-width:0}
+.leg em{font-style:normal;font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--gr);white-space:nowrap}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px;align-items:start}
+.info p,.info li{color:var(--tx2);font-size:14px;margin:6px 0}
+.info .fx{font-family:var(--num);color:var(--tx);background:var(--pn2);border-radius:var(--r);padding:8px 12px;margin:10px 0;overflow-x:auto;white-space:nowrap}
+.info ul{padding-left:18px;margin:6px 0}
+.info .tbl td{color:var(--tx2)}
+</style>
+</head>
+<body>
+<main>
+  <div class="ph">
+    <div>
+      <h1 data-en="Systems and mission">Sistemi e missione</h1>
+      <p class="lead" data-en="Power through the eclipses, spacecraft temperature, mass and Δv with their margins. Give the numbers you have: the page works out the rest.">Energia per le eclissi, temperatura del satellite, massa e Δv con i loro margini. Dai i numeri che hai: il resto lo ricava la pagina.</p>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" data-m="pow" aria-controls="m-pow" aria-selected="true" data-en="Power">Energia</button>
+    <button role="tab" data-m="th" aria-controls="m-th" aria-selected="false" data-en="Thermal">Termica</button>
+    <button role="tab" data-m="bud" aria-controls="m-bud" aria-selected="false" data-en="Budgets">Bilanci</button>
+    <button role="tab" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
+  </div>
+
+  <!-- orbita in comune fra Energia e Termica: lo script la sposta nella scheda aperta -->
+  <div class="stack" id="orbBox">
+    <div class="pnl">
+      <h2 data-en="Start from a real satellite">Parti da un satellite reale</h2>
+      <div id="sat"></div>
+    </div>
+    <div class="pnl">
+      <h2 data-en="Circular orbit">Orbita circolare</h2>
+      <p class="why" data-en="The Sun sits out of the orbit plane by an angle β. With β = 0 the eclipse is the longest.">Il Sole sta fuori dal piano dell'orbita di un angolo β. Con β = 0 l'eclissi è la più lunga.</p>
+      <div class="f"><label for="h" data-en="Altitude h">Quota h</label><input id="h" inputmode="decimal"><span class="u">km</span></div>
+      <div class="f"><label for="beta" data-en="Sun angle β">Angolo β del Sole</label><input id="beta" inputmode="decimal"><span class="u">°</span></div>
+      <input class="rng" type="range" id="betaR" min="-90" max="90" step="0.5" value="0" aria-label="Angolo β del Sole" data-en-aria-label="Sun angle β">
+      <p class="hint" id="bhint"></p>
+    </div>
+    <div class="pnl">
+      <h2 data-en="β from the date (optional)">β dalla data (facoltativo)</h2>
+      <p class="why" data-en="With inclination, node and date the page puts the Sun where it is and works out β. To use it, leave β empty.">Con inclinazione, nodo e data la pagina mette il Sole al suo posto e ricava β. Per usarlo lascia vuoto β.</p>
+      <div class="f"><label for="inc" data-en="Inclination i">Inclinazione i</label><input id="inc" inputmode="decimal"><span class="u">°</span></div>
+      <div class="f"><label for="raan" data-en="Ascending node Ω">Nodo ascendente Ω</label><input id="raan" inputmode="decimal"><span class="u">°</span></div>
+      <div class="f nou"><label for="date" data-en="Date (Ω on that day)">Data (Ω in quel giorno)</label><input id="date" type="date"></div>
+    </div>
+  </div>
+
+  <section id="m-pow" class="lab">
+    <form class="stack" id="f-pow" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Loads">Carichi</h2>
+        <p class="why" data-en="Average power used in sunlight and in eclipse. The Budgets tab works them out from the units.">Potenza media usata alla luce e in eclissi. La scheda Bilanci le ricava dagli apparati.</p>
+        <div class="f"><label for="Pd" data-en="In sunlight Pd">Alla luce Pd</label><input id="Pd" inputmode="decimal"><span class="u">W</span></div>
+        <div class="f"><label for="Pe" data-en="In eclipse Pe">In eclissi Pe</label><input id="Pe" inputmode="decimal"><span class="u">W</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Solar arrays">Pannelli solari</h2>
+        <p class="why" data-en="Empty fields take typical values, in green. Type yours to replace them.">I campi vuoti prendono valori tipici, in verde. Scrivi i tuoi per cambiarli.</p>
+        <div class="f nou"><label for="reg" data-en="Regulation">Regolazione</label><select id="reg"><option value="mppt" data-en="peak-power tracker">inseguitore MPPT</option><option value="det" data-en="direct (DET)">diretta (DET)</option></select></div>
+        <div class="f nou"><label for="cell" data-en="Cells">Celle</label><select id="cell"><option value="tj" data-en="triple junction">tripla giunzione</option><option value="ga" data-en="gallium arsenide">arseniuro di gallio</option><option value="si" data-en="silicon">silicio</option></select></div>
+        <div class="f"><label for="eta" data-en="Cell efficiency η">Rendimento delle celle η</label><input id="eta" inputmode="decimal"><span class="u">%</span></div>
+        <div class="f"><label for="Id" data-en="Inherent degradation Id">Degrado intrinseco Id</label><input id="Id" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="th" data-en="Worst incidence θ">Incidenza peggiore θ</label><input id="th" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="dg" data-en="Loss per year">Perdita per anno</label><input id="dg" inputmode="decimal"><span class="u" data-en="%/yr">%/anno</span></div>
+        <div class="f"><label for="life" data-en="Mission life">Durata della missione</label><input id="life" inputmode="decimal"><span class="u" data-en="years">anni</span></div>
+        <div class="f"><label for="spw" data-en="Specific power">Potenza specifica</label><input id="spw" inputmode="decimal"><span class="u">W/kg</span></div>
+        <div class="f"><label for="Aa" data-en="Array area">Area dei pannelli</label><input id="Aa" inputmode="decimal"><span class="u">m²</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Battery">Batteria</h2>
+        <p class="why" data-en="The depth of discharge depends on how many cycles the battery has to last.">La profondità di scarica dipende da quanti cicli deve reggere la batteria.</p>
+        <div class="f nou"><label for="chem" data-en="Chemistry">Chimica</label><select id="chem"><option value="li" data-en="lithium-ion">ioni di litio</option><option value="nih2" data-en="nickel-hydrogen">nichel-idrogeno</option></select></div>
+        <div class="f"><label for="cyc" data-en="Cycles in the mission">Cicli nella missione</label><input id="cyc" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="dod" data-en="Depth of discharge">Profondità di scarica</label><input id="dod" inputmode="decimal"><span class="u">%</span></div>
+        <div class="f"><label for="nb" data-en="Number of batteries N">Numero di batterie N</label><input id="nb" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="nt" data-en="Battery-to-load efficiency n">Rendimento verso i carichi n</label><input id="nt" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="vb" data-en="Bus voltage">Tensione del bus</label><input id="vb" inputmode="decimal"><span class="u">V</span></div>
+        <div class="f"><label for="cap" data-en="Capacity of each battery">Capacità di ogni batteria</label><input id="cap" inputmode="decimal"><span class="u">Wh</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex-pow" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr-pow" data-en="Clear">Svuota</button>
+      </div>
+    </form>
+    <div>
+      <div id="msg-pow"></div>
+      <div class="view" id="view-pow">
+        <div class="cap"><span style="color:var(--cy)"><i></i><span data-en="orbit in sunlight">orbita alla luce</span></span><span style="color:var(--vi)"><i></i><span data-en="eclipse">eclissi</span></span><span style="color:var(--ic)"><i class="dot"></i><span data-en="spacecraft" style="color:var(--tx2)">satellite</span></span></div>
+        <div class="tl"><button class="btn sm" type="button" id="play" aria-pressed="true" data-en="Pause">Pausa</button></div>
+      </div>
+      <div class="out" id="out-pow"></div>
+      <div id="ch-pw"></div>
+      <div id="ch-soc"></div>
+      <div id="ch-beta"></div>
+    </div>
+  </section>
+
+  <section id="m-th" class="lab" hidden>
+    <form class="stack" id="f-th" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Surface">Superficie</h2>
+        <p class="why" data-en="α absorbs sunlight, ε gives off heat in the infrared.">α assorbe la luce del Sole, ε emette calore nell'infrarosso.</p>
+        <div class="f nou"><label for="coat" data-en="Coating">Rivestimento</label><select id="coat"><option value="mli" data-en="MLI, outer Kapton">MLI, kapton esterno</option><option value="wp" data-en="white paint (Z-93)">vernice bianca (Z-93)</option><option value="bp" data-en="black paint">vernice nera</option><option value="osr" data-en="OSR mirror">specchio OSR</option><option value="al" data-en="polished aluminium">alluminio lucido</option><option value="cus" data-en="custom">su misura</option></select></div>
+        <div class="f"><label for="al" data-en="Solar absorptance α">Assorbimento solare α</label><input id="al" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="em" data-en="Infrared emittance ε">Emissività ε</label><input id="em" inputmode="decimal"><span class="u"></span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Shape">Forma</h2>
+        <div class="f nou"><label for="shape" data-en="Shape">Forma</label><select id="shape"><option value="cube" data-en="cube facing Earth">cubo verso la Terra</option><option value="sph" data-en="sphere">sfera</option><option value="plate" data-en="plate facing the Sun">piastra verso il Sole</option></select></div>
+        <div class="f"><label for="dim" id="dimL">Lato</label><input id="dim" inputmode="decimal"><span class="u">m</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Heat and environment">Calore e ambiente</h2>
+        <p class="why" data-en="Hot case: Sun and Earth at their strongest. Cold case: at their weakest. Typical values in green (SMAD, Gilmore).">Caso caldo: Sole e Terra al massimo. Caso freddo: al minimo. Valori tipici in verde (SMAD, Gilmore).</p>
+        <div class="f two hd" aria-hidden="true"><span></span><span data-en="hot">caldo</span><span data-en="cold">freddo</span><span></span></div>
+        <div class="f two"><label for="qh" data-en="Internal heat">Calore interno</label><input id="qh" inputmode="decimal"><input id="qc" inputmode="decimal" aria-label="Calore interno, caso freddo" data-en-aria-label="Internal heat, cold case"><span class="u">W</span></div>
+        <div class="f two"><label for="sh" data-en="Sunlight">Luce del Sole</label><input id="sh" inputmode="decimal"><input id="sc" inputmode="decimal" aria-label="Luce del Sole, caso freddo" data-en-aria-label="Sunlight, cold case"><span class="u">W/m²</span></div>
+        <div class="f two"><label for="ah" data-en="Earth albedo">Albedo della Terra</label><input id="ah" inputmode="decimal"><input id="ac" inputmode="decimal" aria-label="Albedo, caso freddo" data-en-aria-label="Albedo, cold case"><span class="u"></span></div>
+        <div class="f two"><label for="irh" data-en="Earth infrared">Infrarosso della Terra</label><input id="irh" inputmode="decimal"><input id="irc" inputmode="decimal" aria-label="Infrarosso, caso freddo" data-en-aria-label="Infrared, cold case"><span class="u">W/m²</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Thermal mass (optional)">Massa termica (facoltativa)</h2>
+        <p class="why" data-en="With mass and specific heat the page follows the temperature along the orbit.">Con massa e calore specifico la pagina segue la temperatura lungo l'orbita.</p>
+        <div class="f"><label for="ms" data-en="Mass">Massa</label><input id="ms" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f"><label for="cp" data-en="Specific heat">Calore specifico</label><input id="cp" inputmode="decimal"><span class="u">J/kg·K</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Allowed temperatures">Temperature ammesse</h2>
+        <div class="f nou"><label for="lim" data-en="Most delicate part">Parte più delicata</label><select id="lim"><option value="el" data-en="electronics">elettronica</option><option value="bat" data-en="batteries">batterie</option><option value="cus" data-en="custom">su misura</option></select></div>
+        <div class="f two hd" aria-hidden="true"><span></span><span>min</span><span>max</span><span></span></div>
+        <div class="f two"><label for="tmin" data-en="Range">Intervallo</label><input id="tmin" inputmode="decimal"><input id="tmax" inputmode="decimal" aria-label="max"><span class="u">°C</span></div>
+        <p class="hint" data-en="Example limits: use those in your parts' data sheets.">Limiti di esempio: usa quelli delle schede tecniche dei tuoi componenti.</p>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex-th" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr-th" data-en="Clear">Svuota</button>
+      </div>
+    </form>
+    <div>
+      <div id="msg-th"></div>
+      <div class="view" id="view-th">
+        <div class="tl"><button class="btn sm" type="button" id="thHot" aria-pressed="true" data-en="hot">caldo</button><button class="btn sm" type="button" id="thCold" aria-pressed="false" data-en="cold">freddo</button></div>
+      </div>
+      <div class="out" id="out-th"></div>
+      <div id="ch-th"></div>
+    </div>
+  </section>
+
+  <section id="m-bud" hidden>
+    <div id="msg-bud"></div>
+    <div class="pnl">
+      <h2 data-en="Launch mass">Massa al lancio</h2>
+      <p class="why" data-en="Each block is one line of the budget, numbered as in the list below; hatched blocks are margins. The white line is what the launcher can carry.">Ogni blocco è una riga del bilancio, con il numero della lista qui sotto; quelli tratteggiati sono margini. La linea bianca è quanto porta il lanciatore.</p>
+      <div id="mbar" class="mbar"></div>
+      <ol class="leg" id="mleg"></ol>
+      <div class="out cols"><div id="out-b1"></div><div id="out-b2"></div></div>
+    </div>
+    <div class="acts" style="margin-top:14px">
+      <button class="btn" type="button" id="ex-bud" data-en="Fill in an example">Compila un esempio</button>
+      <button class="btn" type="button" id="clr-bud" data-en="Clear">Svuota</button>
+    </div>
+    <div class="bgrid">
+      <div class="pnl">
+        <h2 data-en="Dry mass">Massa a secco</h2>
+        <p class="why" data-en="Maturity margin (ESA): 5 % if the unit is ready, 10 % if it needs changes, 20 % if it is new.">Margine di maturità (ESA): 5 % se l'apparato è già pronto, 10 % se va modificato, 20 % se è nuovo.</p>
+        <div class="f"><label for="pay" data-en="Payload">Carico utile</label><input id="pay" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f wide"><label for="mtyp" data-en="Mission type">Tipo di missione</label><select id="mtyp"><option value="leo" data-en="LEO with propulsion">orbita bassa con propulsione</option><option value="np" data-en="no propulsion">senza propulsione</option><option value="heo" data-en="high Earth orbit">orbita terrestre alta</option><option value="pl" data-en="planetary">planetaria</option></select></div>
+        <div class="acts"><button class="btn sm" type="button" id="est" data-en="Estimate the subsystems (SMAD)">Stima i sottosistemi (SMAD)</button></div>
+        <table class="bt" id="t-mass">
+          <thead><tr><th data-en="Subsystem">Sottosistema</th><th class="r w1">kg</th><th class="w2" data-en="Margin, %">Margine, %</th><th class="r w3 hm" data-en="With margin">Con margine</th><th class="wx"><span class="vh" data-en="Remove">Togli</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="acts"><button class="btn sm" type="button" id="add-mass" data-en="Add a row">Aggiungi una riga</button><button class="btn sm" type="button" id="csv-mass" data-en="Download CSV">Scarica CSV</button></div>
+        <div class="f"><label for="msys" data-en="System margin">Margine di sistema</label><input id="msys" inputmode="decimal"><span class="u">%</span></div>
+      </div>
+      <div class="stack">
+        <div class="pnl">
+          <h2 data-en="Δv and propellant">Δv e propellente</h2>
+          <p class="why" data-en="Margin (ESA): 5 % on manoeuvres computed precisely, 100 % on orbit keeping estimated for the whole life.">Margine (ESA): 5 % sulle manovre calcolate con precisione, 100 % sul mantenimento dell'orbita stimato per tutta la vita.</p>
+          <table class="bt" id="t-dv">
+            <thead><tr><th data-en="Manoeuvre">Manovra</th><th class="r w1">m/s</th><th class="r w4" data-en="times">volte</th><th class="w2" data-en="Margin, %">Margine, %</th><th class="r w3 hm" data-en="Total, m/s">Totale, m/s</th><th class="wx"><span class="vh" data-en="Remove">Togli</span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="acts"><button class="btn sm" type="button" id="add-dv" data-en="Add a row">Aggiungi una riga</button><button class="btn sm" type="button" id="csv-dv" data-en="Download CSV">Scarica CSV</button></div>
+          <div class="f"><label for="isp" data-en="Specific impulse Isp">Impulso specifico Isp</label><input id="isp" inputmode="decimal"><span class="u">s</span></div>
+          <div class="f"><label for="res" data-en="Residual propellant">Propellente residuo</label><input id="res" inputmode="decimal"><span class="u">%</span></div>
+          <div class="f"><label for="lv" data-en="Launcher capacity to this orbit">Capacità del lanciatore</label><input id="lv" inputmode="decimal"><span class="u">kg</span></div>
+        </div>
+        <div class="pnl">
+          <h2 data-en="Power by unit">Potenza per apparato</h2>
+          <p class="why" data-en="Share of the time each unit is on, in sunlight and in eclipse. Empty means always on.">Quota del tempo in cui ogni apparato è acceso, alla luce e in eclissi. Vuoto vuol dire sempre acceso.</p>
+          <table class="bt" id="t-pw">
+            <thead><tr><th data-en="Unit">Apparato</th><th class="r w4">W</th><th class="r w4" data-en="sun %">luce %</th><th class="r w4" data-en="ecl. %">eclissi %</th><th class="wx"><span class="vh" data-en="Remove">Togli</span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="acts"><button class="btn sm" type="button" id="add-pw" data-en="Add a row">Aggiungi una riga</button><button class="btn sm" type="button" id="csv-pw" data-en="Download CSV">Scarica CSV</button></div>
+          <div class="f"><label for="pmar" data-en="System margin">Margine di sistema</label><input id="pmar" inputmode="decimal"><span class="u">%</span></div>
+          <div class="out" id="out-pw"></div>
+          <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="usePw" data-en="Use Pd and Pe in Power">Usa Pd e Pe in Energia</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="m-info" hidden>
+    <div class="info">
+      <div class="pnl">
+        <h2 data-en="Eclipse and β angle">Eclissi e angolo β</h2>
+        <p data-en="Circular orbit of radius r = R⊕ + h, period T = 2π √(r³/μ). The Earth's shadow is a cylinder of radius R⊕ on the side away from the Sun.">Orbita circolare di raggio r = R⊕ + h, periodo T = 2π √(r³/μ). L'ombra della Terra è un cilindro di raggio R⊕ dalla parte opposta al Sole.</p>
+        <p class="fx">cos(φ/2) = √(h² + 2 R⊕ h) / (r cos β)</p>
+        <p data-en="φ is the arc of the orbit in shadow: Te = T·φ/360°, Td = T − Te. If |β| reaches β* = arcsin(R⊕/r) the orbit never enters the shadow.">φ è l'arco d'orbita in ombra: Te = T·φ/360°, Td = T − Te. Se |β| arriva a β* = arcsin(R⊕/r) l'orbita non entra mai in ombra.</p>
+        <p data-en="β from the date: β = arcsin(ŝ·ĥ), with ĥ = (sin Ω sin i, −cos Ω sin i, cos i) and ŝ the Sun direction (Vallado, algorithm 29, about 0.01°), at 12:00 UTC. The node turns because of the Earth's flattening, Ω̇ = −1.5 n J₂ (R⊕/r)² cos i: the chart of β over a year includes it, and the page counts the orbits with an eclipse to estimate the battery cycles. A satellite from the catalogue brings its node to the chosen date with the same rate.">β dalla data: β = arcsin(ŝ·ĥ), con ĥ = (sin Ω sin i, −cos Ω sin i, cos i) e ŝ la direzione del Sole (Vallado, algoritmo 29, circa 0,01°), a mezzogiorno UTC. Il nodo ruota per lo schiacciamento della Terra, Ω̇ = −1,5 n J₂ (R⊕/r)² cos i: il grafico di β nell'anno ne tiene conto, e la pagina conta le orbite con eclissi per stimare i cicli della batteria. Un satellite del catalogo porta il suo nodo alla data scelta con la stessa velocità.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Solar arrays (SMAD §11.4)">Pannelli solari (SMAD §11.4)</h2>
+        <p class="fx">Psa = (Pe·Te/Xe + Pd·Td/Xd) / Td</p>
+        <p data-en="Xe and Xd are the efficiencies of the paths arrays → battery → loads and arrays → loads: 0.65 and 0.85 with direct energy transfer, 0.60 and 0.80 with a peak-power tracker.">Xe e Xd sono i rendimenti dei percorsi pannelli → batteria → carichi e pannelli → carichi: 0,65 e 0,85 con il trasferimento diretto, 0,60 e 0,80 con l'inseguitore del punto di massima potenza.</p>
+        <p class="fx">PBOL = η · 1361 W/m² · Id · cos θ · PEOL = PBOL (1 − d)ᴺ · A = Psa / PEOL</p>
+        <p data-en="1361 W/m² is the mean solar flux at 1 AU; N is the mission life in years. Id = 0.77 is SMAD's typical inherent degradation (assembly, temperature, shadows; range 0.49–0.88). With arrays turning about an axis normal to the orbit the worst incidence is θ = |β|. Cells: silicon 14.8 % and 3.75 %/yr, gallium arsenide 18.5 % and 2.75 %/yr (SMAD); triple junction 29.5 % (AZUR 3G30-Adv, NASA SOA 2026, table 3-1) and 0.5 %/yr, a typical low-orbit value that depends on the radiation dose. Array mass = A · η · 1361 · Id / specific power; small spacecraft cluster around 30 W/kg (NASA SOA 2026, fig. 3.3).">1361 W/m² è il flusso solare medio a 1 UA; N è la durata della missione in anni. Id = 0,77 è il degrado intrinseco tipico di SMAD (montaggio, temperatura, ombre; fra 0,49 e 0,88). Con pannelli che ruotano su un asse perpendicolare all'orbita l'incidenza peggiore è θ = |β|. Celle: silicio 14,8 % e 3,75 %/anno, arseniuro di gallio 18,5 % e 2,75 %/anno (SMAD); tripla giunzione 29,5 % (AZUR 3G30-Adv, NASA SOA 2026, tabella 3-1) e 0,5 %/anno, valore tipico in orbita bassa che dipende dalla dose di radiazione. Massa dei pannelli = A · η · 1361 · Id / potenza specifica; i piccoli satelliti si raccolgono attorno a 30 W/kg (NASA SOA 2026, fig. 3.3).</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Battery">Batteria</h2>
+        <p class="fx">Cr = Pe · Te / (DoD · N · n)</p>
+        <p data-en="N batteries share the eclipse load; n = 0.9 is the battery-to-load efficiency (SMAD). The depth of discharge comes from the cycles: the page interpolates on the logarithm of the cycles between these points and keeps the end value outside them.">N batterie si dividono il carico dell'eclissi; n = 0,9 è il rendimento fra batteria e carichi (SMAD). La profondità di scarica viene dai cicli: la pagina interpola nel logaritmo dei cicli fra questi punti e fuori tiene il valore estremo.</p>
+        <table class="tbl"><thead><tr><th data-en="Chemistry">Chimica</th><th class="num" data-en="Cycles">Cicli</th><th class="num">DoD</th><th data-en="Source">Fonte</th></tr></thead><tbody>
+          <tr><td data-en="lithium-ion">ioni di litio</td><td class="num">60 000</td><td class="num">20 %</td><td>Saft VES 180, 2008</td></tr>
+          <tr><td data-en="lithium-ion">ioni di litio</td><td class="num" data-en="≈ 1,600 (18 years GEO)">≈ 1 600 (18 anni GEO)</td><td class="num">80 %</td><td>Saft VES 180, 2008</td></tr>
+          <tr><td data-en="nickel-hydrogen">nichel-idrogeno</td><td class="num">30 000</td><td class="num">40 %</td><td>NASA GSFC PD-ED-1109</td></tr>
+          <tr><td data-en="nickel-hydrogen">nichel-idrogeno</td><td class="num">1 000</td><td class="num">60 %</td><td>NASA GSFC PD-ED-1109</td></tr>
+        </tbody></table>
+        <p data-en="Energy over time: in steps of T/360 the page follows the battery's energy. In sunlight the arrays give Psa (or what the area you typed gives); the loads take Pd/Xd and the rest recharges the battery with efficiency Xe/n, so an orbit breaks even when the arrays are the computed ones. In shadow the battery gives Pe/n. With the battery full the extra power is shunted.">Energia nel tempo: a passi di T/360 la pagina segue l'energia della batteria. Alla luce i pannelli danno Psa (o quanto dà l'area che hai scritto); i carichi prendono Pd/Xd e il resto ricarica la batteria con rendimento Xe/n, così un'orbita va in pari quando i pannelli sono quelli calcolati. In ombra la batteria cede Pe/n. A batteria piena la potenza in più si disperde.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Single-node thermal">Termica a un nodo</h2>
+        <p class="fx">α S As + α a S Aa + ε q Ai + Q = ε σ A T⁴</p>
+        <p data-en="One node at one temperature, in equilibrium. S solar flux, a albedo, q Earth infrared, Q internal heat, A radiating area, As area seen by the Sun. Ai and Aa are the effective areas towards the Earth: for each face, the integral over the visible Earth cap of the cosine of the angle with the face (spherical, Lambertian Earth); for albedo each point also counts the cosine of the Sun's zenith angle there. For the sphere Ai = A (1 − cos ρ)/2 with sin ρ = R⊕/r, for a face towards the Earth F = sin²ρ (Howell's catalogue of view factors); the albedo factor agrees within 0.5 % with SMAD's Ka = 0.664 + 0.521ρ − 0.203ρ².">Un solo nodo alla stessa temperatura, in equilibrio. S flusso solare, a albedo, q infrarosso della Terra, Q calore interno, A area che irraggia, As area vista dal Sole. Ai e Aa sono le aree efficaci verso la Terra: per ogni faccia, l'integrale sulla calotta di Terra visibile del coseno dell'angolo con la faccia (Terra sferica e lambertiana); per l'albedo ogni punto conta anche il coseno dell'angolo zenitale del Sole lì. Per la sfera Ai = A (1 − cos ρ)/2 con sin ρ = R⊕/r, per una faccia rivolta alla Terra F = sin²ρ (catalogo dei fattori di vista di Howell); il fattore per l'albedo coincide entro lo 0,5 % con Ka = 0,664 + 0,521ρ − 0,203ρ² di SMAD.</p>
+        <p data-en="Hot case: Sun 1414 W/m², albedo 0.35, infrared 258 W/m², at the point of the orbit where the spacecraft absorbs most. Cold case: 1322 W/m², 0.25, 216 W/m², at the point where it absorbs least (in eclipse, if there is one). Gilmore gives the Sun at perihelion and aphelion; SMAD gives albedo 0.30 ± 0.05 and infrared 237 ± 21 W/m².">Caso caldo: Sole 1414 W/m², albedo 0,35, infrarosso 258 W/m², nel punto dell'orbita dove il satellite assorbe di più. Caso freddo: 1322 W/m², 0,25, 216 W/m², nel punto dove assorbe di meno (in eclissi, se c'è). Gilmore dà il Sole al perielio e all'afelio; SMAD dà albedo 0,30 ± 0,05 e infrarosso 237 ± 21 W/m².</p>
+        <p data-en="With mass and specific heat: m c dT/dt = Qabs(t) + Q − ε σ A T⁴, solved in steps of T/720 with the radiative term linearised (stable even with small masses), after a few orbits to settle. Coatings, beginning-of-life values: Henninger, NASA RP-1121 (1984); with the years α grows.">Con massa e calore specifico: m c dT/dt = Qass(t) + Q − ε σ A T⁴, risolta a passi di T/720 con il termine radiativo linearizzato (stabile anche con masse piccole), dopo alcune orbite di assestamento. Rivestimenti, valori di inizio vita: Henninger, NASA RP-1121 (1984); con gli anni α cresce.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Budgets and margins">Bilanci e margini</h2>
+        <p data-en="Maturity margins per unit (ESA, Margin philosophy for science assessment studies, SRE-PA/2011.097, 2012): 5 % if it is ready (categories A and B of ECSS-E-HB-10-02A), 10 % with minor changes (C), 20 % if new or heavily changed (D). On top of the dry mass with these margins goes a 20 % system margin. Power: 20 % system margin on the nominal power.">Margini di maturità per apparato (ESA, Margin philosophy for science assessment studies, SRE-PA/2011.097, 2012): 5 % se è già pronto (categorie A e B di ECSS-E-HB-10-02A), 10 % con piccole modifiche (C), 20 % se è nuovo o molto modificato (D). Sopra la massa a secco con questi margini va un margine di sistema del 20 %. Potenza: margine di sistema del 20 % sulla potenza nominale.</p>
+        <p data-en="Δv: 5 % on manoeuvres computed precisely, 100 % on orbit keeping estimated for the whole life (ESA). Propellant from the rocket equation, starting from the dry mass with margins, plus 2 % residuals:">Δv: 5 % sulle manovre calcolate con precisione, 100 % sul mantenimento dell'orbita stimato per tutta la vita (ESA). Propellente con l'equazione del razzo dalla massa a secco con i margini, più il 2 % di residui:</p>
+        <p class="fx">mp = 1,02 · ms · (e^(Δv / (Isp g₀)) − 1)</p>
+        <p data-en="«Estimate the subsystems» splits the dry mass with SMAD's typical shares (1999, appendix A), in % of the dry mass:">«Stima i sottosistemi» divide la massa a secco con le quote tipiche di SMAD (1999, appendice A), in % della massa a secco:</p>
+        <table class="tbl"><thead><tr><th></th><th class="num" data-en="no prop.">senza prop.</th><th class="num" data-en="LEO">bassa</th><th class="num" data-en="high">alta</th><th class="num" data-en="planet.">planet.</th></tr></thead><tbody id="smadT"></tbody></table>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Assumptions and limits">Ipotesi e limiti</h2>
+        <ul>
+          <li data-en="Circular orbits, spherical Earth.">Orbite circolari, Terra sferica.</li>
+          <li data-en="Cylindrical shadow: no penumbra (a few seconds per pass in low orbit, more when β nears β*) and no atmosphere widening it.">Ombra cilindrica: niente penombra (pochi secondi a passaggio in orbita bassa, di più quando β si avvicina a β*) e niente atmosfera che la allarga.</li>
+          <li data-en="β stays fixed over the three orbits of the charts.">β resta fisso nelle tre orbite dei grafici.</li>
+          <li data-en="Thermal: one node, no internal conduction. With MLI the node is the outer layer: the inside temperature depends on the blanket's conductance, not modelled here. Cube: one face always towards the Earth; plate: always square to the Sun.">Termica: un nodo solo, niente conduzione interna. Con l'MLI il nodo è lo strato esterno: la temperatura dentro dipende dalla conduttanza della coperta, che qui non c'è. Cubo: una faccia sempre verso la Terra; piastra: sempre perpendicolare al Sole.</li>
+          <li data-en="Cost and risk: the page does not estimate cost, because cost models rest on industry data that are not here. Technical risk enters through the margins: the newer a unit, the more margin it carries.">Costi e rischi: la pagina non stima i costi, perché i modelli di costo si basano su dati di settore che qui non ci sono. Il rischio tecnico entra con i margini: più un apparato è nuovo, più margine porta.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Sources">Fonti</h2>
+        <ul>
+          <li>Wertz, Larson, <i>Space Mission Analysis and Design</i>, 1999: §11.4, §11.5, app. A.</li>
+          <li>Gilmore, <i>Spacecraft Thermal Control Handbook</i>, vol. I, 2002.</li>
+          <li>Vallado, <i>Fundamentals of Astrodynamics and Applications</i>, 2013: alg. 29.</li>
+          <li>ESA, <i>Margin philosophy for science assessment studies</i>, SRE-PA/2011.097, 2012.</li>
+          <li>ECSS-E-HB-10-02A, <i>Verification guidelines</i>, 2010; ECSS-E-ST-20C, <i>Electrical and electronic</i>.</li>
+          <li>Henninger, <i>Solar absorptance and thermal emittance of some common spacecraft thermal-control coatings</i>, NASA RP-1121, 1984.</li>
+          <li>NASA, <i>Small Spacecraft Technology State of the Art</i>, Power, 2026.</li>
+          <li>NASA GSFC, PD-ED-1109, <i>Ni-H2 spacecraft battery handling and storage practice</i>; Saft, VES 180, 2008.</li>
+          <li>Howell, <i>A catalog of radiation heat transfer configuration factors</i>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* Keplario · laboratorio: funzioni comuni a tutte le pagine di calcolo.
+   K.bar(...)       barra in alto con Cielo, le sei materie e la lingua
+   K.en, K.t(it,en) lingua (stessa scelta dell'app: #en/#it, ?lang=, localStorage «atlante-lingua», lingua del browser)
+   K.num(id)        legge un campo: null se vuoto, NaN se non è un numero (accetta virgola, spazi, 1e-3, −)
+   K.fmt, K.sig     numeri all'italiana o all'inglese (spazio per le migliaia)
+   K.der(id, x)     mostra in verde, dentro un campo lasciato vuoto, il valore che la pagina ha ricavato
+   K.rows(el, ...)  righe di risultati; K.msg(el, testo) avvisi
+   K.live(el, fn)   ricalcola a ogni modifica; K.keep(ids) ricorda i dati nell'indirizzo (#a=…&e=…)
+   K.sat(el, fn)    «parti da un satellite reale»: cerca nel catalogo data/active.txt e dà gli elementi medi del TLE
+   K.earth(THREE)   Terra realistica (giorno, notte, riflesso del mare, nuvole, atmosfera)
+   K.chart(el, ...) grafico a linee con assi, legenda e lettura al passaggio del puntatore */
+'use strict';
+const K = (() => {
+  const $ = id => typeof id === 'string' ? document.getElementById(id) : id;
+
+  /* ---------- lingua ---------- */
+  const lang = (() => {
+    const h = (location.hash || '').slice(1);
+    if (h === 'en' || h === 'it') return h;
+    const q = (location.search.match(/[?&]lang=(en|it)\b/) || [])[1]; if (q) return q;
+    try { const s = localStorage.getItem('atlante-lingua'); if (s === 'en' || s === 'it') return s; } catch (e) {}
+    return /^it\b/i.test(navigator.language || 'it') ? 'it' : 'en';
+  })();
+  const en = lang === 'en';
+  const t = (it, e) => en ? e : it;
+  function applyLang(root) {
+    document.documentElement.lang = lang;
+    if (!en) return;
+    (root || document).querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-en'); });
+    for (const a of ['title', 'aria-label', 'placeholder', 'content', 'alt'])
+      (root || document).querySelectorAll('[data-en-' + a + ']').forEach(el => el.setAttribute(a, el.getAttribute('data-en-' + a)));
+  }
+
+  /* ---------- barra in alto ---------- */
+  const SUBJ = [
+    ['orbite', 'Orbite e manovre', 'Orbits and manoeuvres'],
+    ['assetto', 'Assetto e controllo', 'Attitude and control'],
+    ['propulsione', 'Propulsione e lanciatori', 'Propulsion and launchers'],
+    ['strutture', 'Strutture e materiali', 'Structures and materials'],
+    ['comunicazioni', 'Comunicazioni e navigazione', 'Communications and navigation'],
+    ['sistemi', 'Sistemi e missione', 'Systems and mission'],
+  ];
+  const sky = () => en ? 'en/' : './';
+  function bar(cur) {
+    const satQ = (location.search.match(/[?&](sat=\d+)/) || [])[1], q = satQ ? '?' + satQ : '';
+    const h = document.createElement('header'); h.className = 'kb';
+    h.innerHTML = '<div class="kb-in"><a class="kb-home" href="' + sky() + '">Keplario</a>' +
+      '<a class="kb-sky" href="' + sky() + '#cielo">' + t('Cielo', 'Sky') + '</a><span class="kb-sep" aria-hidden="true"></span>' +
+      '<nav class="kb-nav" aria-label="' + t('Laboratorio', 'Lab') + '">' +
+      SUBJ.map(s => '<a href="' + s[0] + '.html' + q + '"' + (s[0] === cur ? ' aria-current="page"' : '') + '>' + (en ? s[2] : s[1]) + '</a>').join('') +
+      '</nav><button class="btn sm kb-lang" type="button" title="' + (en ? 'Italiano' : 'English') + '">' + (en ? 'IT' : 'EN') + '</button></div>';
+    document.body.prepend(h);
+    h.querySelector('.kb-lang').onclick = () => {
+      try { localStorage.setItem('atlante-lingua', en ? 'it' : 'en'); } catch (e) {}
+      const u = new URL(location.href); u.searchParams.delete('lang'); if (u.hash === '#en' || u.hash === '#it') u.hash = '';
+      location.replace(u.href);
+    };
+    const cn = h.querySelector('[aria-current=page]'); if (cn && cn.scrollIntoView) setTimeout(() => cn.scrollIntoView({ block: 'nearest', inline: 'center' }), 0);
+    const f = document.createElement('footer'); f.className = 'foot';
+    f.innerHTML = '<span>' + t('Strumento didattico: non usarlo per operazioni di volo.', 'A learning tool: not for flight operations.') + '</span>' +
+      '<a href="' + sky() + '">' + t('Torna al cielo', 'Back to the sky') + '</a><a href="LICENZE.txt">' + t('Licenze', 'Licences') + '</a>';
+    document.body.append(f);
+  }
+  function init(cur) { applyLang(); bar(cur); }
+
+  /* ---------- numeri ---------- */
+  function num(id) {
+    const el = $(id); if (!el) return null;
+    let v = String(el.value).trim(); if (v === '') return null;
+    v = v.replace(/[\s  ']/g, '').replace(/−/g, '-').replace(/[×x]10\^?/i, 'e');
+    // separatore decimale: con punto e virgola insieme vale l'ultimo dei due (1.234,5 e 1,234.5);
+    // da soli, un punto o una virgola sono decimali (0.366 e 0,366); ripetuti sono migliaia (1.234.567)
+    const dot = v.lastIndexOf('.'), com = v.lastIndexOf(',');
+    if (dot >= 0 && com >= 0) v = dot > com ? v.replace(/,/g, '') : v.replace(/\./g, '').replace(',', '.');
+    else if ((v.match(/\./g) || []).length > 1) v = v.replace(/\./g, '');
+    else if ((v.match(/,/g) || []).length > 1) v = v.replace(/,/g, '');
+    else v = v.replace(',', '.');
+    const x = Number(v); return Number.isFinite(x) ? x : NaN;
+  }
+  const DEC = en ? '.' : ',';
+  function group(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmt(x, d) {
+    if (x == null || !Number.isFinite(x)) return '—';
+    d = d == null ? 2 : d;
+    let s = Math.abs(x).toFixed(d); const p = s.split('.');
+    const neg = x < 0 && Number(s) !== 0;
+    return (neg ? '−' : '') + group(p[0]) + (p[1] ? DEC + p[1] : '');
+  }
+  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function sig(x, n) {     // n cifre significative; potenze di dieci fuori da 10⁻³…10⁷
+    if (x == null || !Number.isFinite(x)) return '—';
+    n = n || 4; if (x === 0) return '0';
+    const ax = Math.abs(x), e = Math.floor(Math.log10(ax));
+    if (e < -3 || e > 7) {
+      const m = x / Math.pow(10, e);
+      return fmt(m, n - 1).replace(new RegExp('\\' + DEC + '?0+$'), '') + '·10' + String(e).split('').map(c => SUP[c]).join('');
+    }
+    return fmt(x, Math.max(0, n - 1 - e));
+  }
+  const plain = (x, d) => (x == null || !Number.isFinite(x)) ? '' : fmt(x, d).replace(/ /g, ' ');
+
+  /* ---------- campi ricavati e campi in conflitto ---------- */
+  function der(id, x, d) {
+    const el = $(id); if (!el) return;
+    if (el.dataset.ph === undefined) el.dataset.ph = el.placeholder || '';
+    if (el.value.trim() !== '') return;
+    const ok = x != null && Number.isFinite(x);
+    el.placeholder = ok ? (typeof d === 'string' ? d : (d == null ? sig(x, 5) : plain(x, d))) : el.dataset.ph;
+    el.classList.toggle('der', ok);
+  }
+  function clear(scope) {
+    (scope ? $(scope) : document).querySelectorAll('input').forEach(el => {
+      if (el.dataset.ph !== undefined) el.placeholder = el.dataset.ph;
+      el.classList.remove('der', 'bad');
+    });
+  }
+  function bad(id, on) { const el = $(id); if (el) el.classList.toggle('bad', on !== false); }
+  const given = id => { const el = $(id); return !!el && el.value.trim() !== ''; };
+
+  /* ---------- risultati e avvisi ---------- */
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // voce: ['#', 'Titolo'] oppure [etichetta, valore, unità, nota, classe]  (valore già formattato)
+  function rows(el, list) {
+    $(el).innerHTML = list.filter(Boolean).map(r => r[0] === '#' ? '<h3>' + r[1] + '</h3>' :
+      '<div class="row' + (r[4] ? ' ' + r[4] : '') + '"><span>' + r[0] + '</span><span class="v">' + r[1] + (r[2] ? '<small>' + r[2] + '</small>' : '') + '</span>' +
+      (r[3] ? '<span class="n">' + r[3] + '</span>' : '') + '</div>').join('');
+  }
+  function msg(el, text, kind) { $(el).innerHTML = text ? '<p class="msg' + (kind ? ' ' + kind : '') + '">' + text + '</p>' : ''; }
+
+  /* ---------- ricalcolo e memoria nell'indirizzo ---------- */
+  function live(scope, fn, ms) {
+    let tm = 0; const go = () => { clearTimeout(tm); tm = setTimeout(fn, ms == null ? 160 : ms); };
+    $(scope).addEventListener('input', go); $(scope).addEventListener('change', go); return go;
+  }
+  let keepIds = [], keepExtra = {};
+  function keep(ids, extra) {          // salva i campi compilati nell'indirizzo, così il calcolo si può condividere
+    keepIds = ids; keepExtra = extra || {};
+    const h = (location.hash || '').slice(1);
+    if (h && h.includes('=')) {
+      const p = new URLSearchParams(h);
+      ids.forEach(id => { const el = $(id); if (!el || !p.has(id)) return; if (el.type === 'checkbox') el.checked = p.get(id) === '1'; else el.value = p.get(id); });
+      return p;
+    }
+    return null;
+  }
+  function save(extra) {
+    const p = new URLSearchParams();
+    Object.entries(Object.assign({}, keepExtra, extra || {})).forEach(([k, v]) => { if (v != null && v !== '') p.set(k, v); });
+    keepIds.forEach(id => { const el = $(id); if (!el) return; if (el.type === 'checkbox') { if (el.checked) p.set(id, '1'); } else if (el.value.trim() !== '') p.set(id, el.value.trim()); });
+    const s = p.toString(); try { history.replaceState(null, '', location.pathname + location.search + (s ? '#' + s : '')); } catch (e) {}
+  }
+  function fill(map) { Object.entries(map).forEach(([id, v]) => { const el = $(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }); }
+  function wipe(scope) { $(scope).querySelectorAll('input:not([type=checkbox]):not([type=range]):not([data-keep])').forEach(el => { el.value = ''; }); clear(scope); }
+
+  /* ---------- costanti e utilità di meccanica orbitale ---------- */
+  const MU = 398600.4418, RE = 6378.137, J2 = 1.08262668e-3, D2R = Math.PI / 180, G0 = 9.80665, OMEGA_E = 7.2921159e-5;
+  function kepler(M, e) { let E = e < 0.8 ? M : Math.PI; for (let k = 0; k < 50; k++) { const d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E)); E -= d; if (Math.abs(d) < 1e-13) break; } return E; }
+  function nuFromM(M, e) { const E = kepler(((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), e); return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)); }
+  function gmst(date) {   // tempo siderale medio di Greenwich, rad (IAU 1982)
+    const jd = date.getTime() / 86400000 + 2440587.5, T = (jd - 2451545) / 36525;
+    let s = 67310.54841 + (876600 * 3600 + 8640184.812866) * T + 0.093104 * T * T - 6.2e-6 * T * T * T;
+    return ((s % 86400 + 86400) % 86400) / 86400 * 2 * Math.PI;
+  }
+  // perifocale → inerziale (ECI). Angoli in radianti.
+  function pqw2eci(x, y, i, raan, argp) {
+    const cw = Math.cos(argp), sw = Math.sin(argp), ci = Math.cos(i), si = Math.sin(i), co = Math.cos(raan), so = Math.sin(raan);
+    const x1 = x * cw - y * sw, y1 = x * sw + y * cw, y2 = y1 * ci, z2 = y1 * si;
+    return [x1 * co - y2 * so, x1 * so + y2 * co, z2];
+  }
+
+  /* ---------- satelliti reali dal catalogo dell'app ---------- */
+  let CAT = null;
+  function catalog() {
+    if (CAT) return CAT;
+    CAT = fetch('data/active.txt').then(r => { if (!r.ok) throw new Error('catalogo'); return r.text(); }).then(txt => {
+      const L = txt.split(/\r?\n/), out = [];
+      for (let k = 0; k < L.length - 2; k++) {
+        if (L[k + 1].startsWith('1 ') && L[k + 2].startsWith('2 ') && !L[k].startsWith('1 ') && !L[k].startsWith('2 ')) {
+          out.push({ name: L[k].trim().replace(/^0 /, ''), l1: L[k + 1], l2: L[k + 2], norad: +L[k + 1].slice(2, 7) }); k += 2;
+        }
+      }
+      return out;
+    });
+    CAT.catch(() => { CAT = null; });
+    return CAT;
+  }
+  function elements(s) {   // elementi medi del TLE (non osculanti): bastano per i calcoli del laboratorio
+    const l1 = s.l1, l2 = s.l2;
+    const i = +l2.slice(8, 16), raan = +l2.slice(17, 25), e = +('0.' + l2.slice(26, 33).trim()), argp = +l2.slice(34, 42), M = +l2.slice(43, 51), nrev = +l2.slice(52, 63);
+    const yy = +l1.slice(18, 20), day = +l1.slice(20, 32), year = yy < 57 ? 2000 + yy : 1900 + yy;
+    const epoch = new Date(Date.UTC(year, 0, 1) + (day - 1) * 86400000);
+    const n = nrev * 2 * Math.PI / 86400, a = Math.cbrt(MU / (n * n));
+    const nu = nuFromM(M * D2R, e) / D2R;
+    return { name: s.name, norad: s.norad, i, raan, e, argp, M, nu: (nu + 360) % 360, a, n, revDay: nrev, epoch, hp: a * (1 - e) - RE, ha: a * (1 + e) - RE, T: 2 * Math.PI / n };
+  }
+  const POP = [25544, 20580, 48274, 40697, 41866, 49260, 43013, 39084];
+  let satN = 0;
+  function sat(host, onPick) {
+    host = $(host); host.classList.add('sat'); const id = 'sat' + (++satN);
+    host.innerHTML = '<label class="vh" for="' + id + 'Q">' + t('Cerca un satellite', 'Search for a satellite') + '</label>' +
+      '<input id="' + id + 'Q" type="search" autocomplete="off" spellcheck="false" placeholder="' + t('Nome o numero NORAD, es. ISS', 'Name or NORAD number, e.g. ISS') + '" role="combobox" aria-expanded="false" aria-controls="' + id + 'L">' +
+      '<ul id="' + id + 'L" role="listbox" hidden></ul><p class="satnote">' + t('Oppure inserisci i tuoi numeri qui sotto.', 'Or type your own numbers below.') + '</p>';
+    const q = host.querySelector('input'), ul = host.querySelector('ul'), note = host.querySelector('.satnote');
+    let list = [], sel = -1;
+    const close = () => { ul.hidden = true; q.setAttribute('aria-expanded', 'false'); sel = -1; };
+    const draw = () => {
+      ul.innerHTML = list.map((s, k) => '<li role="option" id="' + id + 'O' + k + '" aria-selected="' + (k === sel) + '" data-k="' + k + '"><span>' + esc(s.name) + '</span><small>' + s.norad + '</small></li>').join('');
+      ul.hidden = !list.length; q.setAttribute('aria-expanded', String(!!list.length));
+      if (sel >= 0) q.setAttribute('aria-activedescendant', id + 'O' + sel); else q.removeAttribute('aria-activedescendant');
+    };
+    const search = () => catalog().then(cat => {
+      const v = q.value.trim().toLowerCase();
+      if (!v) list = POP.map(n => cat.find(s => s.norad === n)).filter(Boolean);
+      else if (/^\d+$/.test(v)) list = cat.filter(s => String(s.norad).startsWith(v)).slice(0, 12);
+      else { const a = cat.filter(s => s.name.toLowerCase().startsWith(v)), b = cat.filter(s => !s.name.toLowerCase().startsWith(v) && s.name.toLowerCase().includes(v)); list = a.concat(b).slice(0, 12); }
+      sel = -1; draw();
+    }).catch(() => { note.textContent = t('Catalogo non disponibile: inserisci i dati a mano.', 'Catalogue not available: type the data by hand.'); });
+    const pick = s => {
+      close(); q.value = s.name; const el = elements(s);
+      note.innerHTML = t('Elementi medi del TLE del ', 'Mean TLE elements, epoch ') + el.epoch.toISOString().slice(0, 16).replace('T', ' ') + ' UTC · <a href="' + sky() + '#sat-' + s.norad + '">' + t('vedilo nel cielo', 'see it in the sky') + '</a>';
+      onPick(el);
+    };
+    q.addEventListener('focus', search); q.addEventListener('input', search);
+    q.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { sel = Math.min(list.length - 1, sel + 1); draw(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); draw(); e.preventDefault(); }
+      else if (e.key === 'Enter') { if (list[sel >= 0 ? sel : 0]) pick(list[sel >= 0 ? sel : 0]); e.preventDefault(); }
+      else if (e.key === 'Escape') close();
+    });
+    ul.addEventListener('mousedown', e => { const li = e.target.closest('li'); if (li) { e.preventDefault(); pick(list[+li.dataset.k]); } });
+    q.addEventListener('blur', () => setTimeout(close, 120));
+    // ?sat=25544 nell'indirizzo (arriva dalla scheda di un satellite nel cielo)
+    const want = +((location.search.match(/[?&]sat=(\d+)/) || [])[1] || 0);
+    if (want) catalog().then(cat => { const s = cat.find(x => x.norad === want); if (s) pick(s); }).catch(() => {});
+    return { pick };
+  }
+
+  /* ---------- Terra realistica (three.js r128) ---------- */
+  function earth(THREE, R, opt) {
+    R = R || 1; opt = opt || {};
+    const TL = new THREE.TextureLoader(), tx = n => { const x = TL.load('tex/' + n + '.jpg'); x.anisotropy = 8; return x; };
+    const sun = (opt.sun || new THREE.Vector3(5, 2.5, 4)).clone().normalize();
+    const g = new THREE.Group();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { day: { value: tx('day') }, night: { value: tx('night') }, spec: { value: tx('spec') }, sun: { value: sun } },
+      vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+      fragmentShader: 'uniform sampler2D day,night,spec; uniform vec3 sun; varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vec3 n=normalize(vN); vec3 L=normalize((viewMatrix*vec4(sun,0.)).xyz); float d=dot(n,L); float k=smoothstep(-0.12,0.18,d); vec3 dc=texture2D(day,vUv).rgb; vec3 nc=texture2D(night,vUv).rgb*1.4; vec3 c=mix(nc,dc*(0.25+0.95*max(d,0.)),k); float sp=texture2D(spec,vUv).r; vec3 h=normalize(L+vV); c+=sp*pow(max(dot(n,h),0.),48.)*0.45*k; float f=pow(1.-max(dot(n,vV),0.),3.); c+=vec3(.25,.5,1.)*f*0.3*(0.2+k); gl_FragColor=vec4(c,1.); }'
+    });
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), mat); g.add(ball);
+    const cm = new THREE.MeshPhongMaterial({ transparent: true, opacity: 0.5, depthWrite: false });
+    TL.load('tex/clouds.jpg', x => { cm.alphaMap = x; cm.needsUpdate = true; });
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(R * 1.008, 96, 72), cm); g.add(clouds);
+    const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 64, 48), new THREE.ShaderMaterial({
+      transparent: true, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+      fragmentShader: 'varying vec3 vN; void main(){ float i=pow(0.72-dot(vN,vec3(0.,0.,1.)),3.); gl_FragColor=vec4(.3,.55,1.,1.)*i*0.42; }'
+    }));
+    g.add(atm);
+    return { group: g, ball, clouds, setSun(v) { mat.uniforms.sun.value.copy(v).normalize(); } };
+  }
+  function stars(THREE, n, r) {
+    n = n || 1400; r = r || 80;
+    const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    for (let k = 0; k < n; k++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * 6.283, s = Math.sqrt(1 - u * u), rr = r * (1 + Math.random() * 0.4);
+      pos.set([rr * s * Math.cos(a), rr * u, rr * s * Math.sin(a)], k * 3);
+      const b = 0.45 + Math.random() * 0.55; col.set([b, b, b * (0.92 + Math.random() * 0.12)], k * 3);
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return new THREE.Points(g, new THREE.PointsMaterial({ size: r * 0.0018, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
+  }
+  // ECI (km) → coordinate three.js con l'asse y in alto e il raggio terrestre come unità
+  const v3 = (THREE, p, unit) => new THREE.Vector3(p[0] / (unit || RE), p[2] / (unit || RE), -p[1] / (unit || RE));
+  // scena pronta: renderer, camera, controlli, ridimensionamento, ciclo di disegno che si ferma fuori dallo schermo
+  function scene3(THREE, host, opt) {
+    host = $(host); opt = opt || {};
+    const cv = document.createElement('canvas'); host.prepend(cv);
+    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(opt.fov || 38, 1, 0.01, 2000);
+    scene.add(new THREE.AmbientLight(0x8a8a9a, opt.ambient == null ? 0.9 : opt.ambient));
+    const light = new THREE.DirectionalLight(0xfff1e0, 1.5); light.position.set(5, 2.5, 4); scene.add(light);
+    let controls = null;
+    if (THREE.OrbitControls && opt.controls !== false) { controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = false; }
+    const size = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+    if (window.ResizeObserver) new ResizeObserver(size).observe(host); else addEventListener('resize', size);
+    size();
+    let vis = true, hooks = [];
+    if (window.IntersectionObserver) new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(host);
+    let last = performance.now();
+    (function loop(now) {
+      requestAnimationFrame(loop);
+      if (!vis || document.hidden) { last = now; return; }
+      const dt = Math.min(0.1, (now - last) / 1000); last = now;
+      hooks.forEach(f => f(dt, now));
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    })(last);
+    return { THREE, renderer, scene, camera, controls, light, cv, size, onFrame(f) { hooks.push(f); } };
+  }
+  const has3D = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } };
+
+  /* ---------- grafici a linee ---------- */
+  const C = { cy: '#35d4f2', gr: '#58e07f', vi: '#a995ff', ic: '#cfe3f5', am: '#ffb224', tx3: '#85919d' };
+  function ticks(lo, hi, n) {
+    if (!(hi > lo)) { hi = lo + 1; }
+    const span = hi - lo, step0 = span / (n || 5), mag = Math.pow(10, Math.floor(Math.log10(step0))), r = step0 / mag;
+    const step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag, out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    return { out, step };
+  }
+  function tickFmt(v, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e6 || (Math.abs(v) < 1e-3 && v !== 0) ? sig(v, 2) : fmt(v, Math.min(d, 6)); }
+  // o = { title, x: [...], series: [{ name, y: [...], color, dash }], xLabel, yLabel, yFmt(v), xFmt(v), marks: [{ x, label }], yMin, yMax, h }
+  function chart(host, o) {
+    host = $(host); host.classList.add('chart');
+    const draw = () => {
+      const W = Math.max(280, host.clientWidth - 16), H = o.h || 230, L = 56, Rm = 14, T = 10, B = 34;
+      const xs = o.x, all = [];
+      o.series.forEach(s => s.y.forEach(v => { if (Number.isFinite(v)) all.push(v); }));
+      let y0 = o.yMin != null ? o.yMin : Math.min(...all), y1 = o.yMax != null ? o.yMax : Math.max(...all);
+      if (y0 === y1) { y0 -= 1; y1 += 1; }
+      const pad = (y1 - y0) * 0.06; if (o.yMin == null) y0 -= pad; if (o.yMax == null) y1 += pad;
+      const x0 = xs[0], x1 = xs[xs.length - 1];
+      const X = v => L + (v - x0) / (x1 - x0 || 1) * (W - L - Rm), Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+      const ty = ticks(y0, y1, 5), tx = ticks(x0, x1, Math.max(3, Math.floor(W / 110)));
+      let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(o.title || '') + '">';
+      ty.out.forEach(v => { if (v < y0 || v > y1) return; s += '<line class="gd" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(v) : tickFmt(v, ty.step)) + '</text>'; });
+      tx.out.forEach(v => { if (v < x0 || v > x1) return; s += '<line class="gd" y1="' + T + '" y2="' + (H - B) + '" x1="' + X(v) + '" x2="' + X(v) + '" opacity=".6"/><text x="' + X(v) + '" y="' + (H - B + 15) + '" text-anchor="middle">' + (o.xFmt ? o.xFmt(v) : tickFmt(v, tx.step)) + '</text>'; });
+      s += '<line class="ax" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + (H - B) + '" y2="' + (H - B) + '"/>';
+      if (o.xLabel) s += '<text x="' + (W - Rm) + '" y="' + (H - 4) + '" text-anchor="end">' + esc(o.xLabel) + '</text>';
+      if (o.yLabel) s += '<text x="' + 4 + '" y="' + (T + 2) + '" text-anchor="start" dominant-baseline="hanging" opacity="0">' + '</text>';
+      (o.marks || []).forEach(m => { if (m.x < x0 || m.x > x1) return; s += '<line x1="' + X(m.x) + '" x2="' + X(m.x) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="' + (m.color || C.tx3) + '" stroke-dasharray="3 3"/><text x="' + (X(m.x) + 4) + '" y="' + (T + 11) + '" style="fill:' + (m.color || C.tx3) + '">' + esc(m.label || '') + '</text>'; });
+      (o.bands || []).forEach(b => { s += '<rect x="' + X(b.x0) + '" width="' + Math.max(0, X(b.x1) - X(b.x0)) + '" y="' + T + '" height="' + (H - T - B) + '" fill="' + (b.color || '#fff') + '" opacity="' + (b.op || 0.06) + '"/>'; });
+      o.series.forEach(se => {
+        let d = '', pen = false;
+        se.y.forEach((v, k) => { if (!Number.isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(xs[k]).toFixed(1) + ' ' + Y(Math.max(y0, Math.min(y1, v))).toFixed(1); pen = true; });
+        s += '<path d="' + d + '" fill="none" stroke="' + (se.color || C.cy) + '" stroke-width="2" stroke-linejoin="round"' + (se.dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+      });
+      s += '<line class="hx" y1="' + T + '" y2="' + (H - B) + '" stroke="' + C.ic + '" stroke-opacity=".5" visibility="hidden"/>';
+      o.series.forEach((se, k) => { s += '<circle data-k="' + k + '" r="4" fill="' + (se.color || C.cy) + '" stroke="#000" stroke-width="2" visibility="hidden"/>'; });
+      s += '<rect x="' + L + '" y="' + T + '" width="' + (W - L - Rm) + '" height="' + (H - T - B) + '" fill="transparent" style="cursor:crosshair"/></svg>';
+      const head = '<div class="ttl"><b>' + esc(o.title || '') + '</b>' + (o.yLabel ? '<span>' + esc(o.yLabel) + '</span>' : '') +
+        (o.series.length > 1 ? o.series.map(se => '<span style="color:' + (se.color || C.cy) + '"><i></i><span style="color:var(--tx2)">' + esc(se.name) + '</span></span>').join('') : '') + '</div>';
+      host.innerHTML = head + s + '<div class="tip" hidden></div>';
+      const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), hx = svg.querySelector('.hx'), dots = svg.querySelectorAll('circle'), hit = svg.querySelector('rect:last-of-type');
+      const show = ev => {
+        const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+        const xv = x0 + (px - L) / (W - L - Rm) * (x1 - x0);
+        let k = 0, best = Infinity; xs.forEach((v, j) => { const d = Math.abs(v - xv); if (d < best) { best = d; k = j; } });
+        hx.setAttribute('x1', X(xs[k])); hx.setAttribute('x2', X(xs[k])); hx.setAttribute('visibility', 'visible');
+        let html = '<span style="color:var(--tx2)">' + (o.xName ? esc(o.xName) + ' ' : '') + (o.xFmt ? o.xFmt(xs[k]) : sig(xs[k], 4)) + '</span>';
+        o.series.forEach((se, j) => { const v = se.y[k]; const c = dots[j]; if (Number.isFinite(v)) { c.setAttribute('cx', X(xs[k])); c.setAttribute('cy', Y(Math.max(y0, Math.min(y1, v)))); c.setAttribute('visibility', 'visible'); } else c.setAttribute('visibility', 'hidden');
+          html += '<span style="color:' + (se.color || C.cy) + '">' + (o.series.length > 1 ? esc(se.name) + ' ' : '') + (o.yFmt ? o.yFmt(v) : sig(v, 4)) + (o.unit ? ' ' + esc(o.unit) : '') + '</span>'; });
+        tip.innerHTML = html; tip.hidden = false;
+        const hr = host.getBoundingClientRect(), tw = tip.offsetWidth, cx = ev.clientX - hr.left;
+        tip.style.left = Math.min(hr.width - tw - 6, Math.max(6, cx + 12)) + 'px'; tip.style.top = (ev.clientY - hr.top - 46) + 'px';
+      };
+      const hide = () => { tip.hidden = true; hx.setAttribute('visibility', 'hidden'); dots.forEach(c => c.setAttribute('visibility', 'hidden')); };
+      hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show); hit.addEventListener('pointerleave', hide);
+    };
+    draw();
+    if (!host._ro && window.ResizeObserver) { let w = host.clientWidth; host._ro = new ResizeObserver(() => { if (host._draw && Math.abs(host.clientWidth - w) > 4) { w = host.clientWidth; host._draw(); } }); host._ro.observe(host); }
+    host._draw = draw;
+  }
+
+  function unchart(host) { host = $(host); if (!host) return; host._draw = null; host.innerHTML = ''; }   // toglie un grafico (non si ridisegna più)
+
+  /* ---------- salvare i risultati ---------- */
+  function csv(name, head, data) {
+    const sep = en ? ',' : ';', dec = v => typeof v === 'number' ? (en ? String(v) : String(v).replace('.', ',')) : '"' + String(v).replace(/"/g, '""') + '"';
+    const txt = [head.map(dec).join(sep)].concat(data.map(r => r.map(dec).join(sep))).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + txt], { type: 'text/csv' })); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ---------- schede di modo ---------- */
+  function tabs(host, onChange) {     // <div class="seg" role="tablist"><button role="tab" data-m="..." aria-controls="...">
+    host = $(host); const bs = [...host.querySelectorAll('[role=tab]')];
+    const set = m => { bs.forEach(b => { const on = b.dataset.m === m; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; const p = $(b.getAttribute('aria-controls')); if (p) p.hidden = !on; }); onChange && onChange(m); };
+    host.addEventListener('click', e => { const b = e.target.closest('[role=tab]'); if (b) set(b.dataset.m); });
+    host.addEventListener('keydown', e => { const k = bs.indexOf(document.activeElement); if (k < 0) return; let j = k; if (e.key === 'ArrowRight') j = (k + 1) % bs.length; else if (e.key === 'ArrowLeft') j = (k - 1 + bs.length) % bs.length; else return; bs[j].focus(); set(bs[j].dataset.m); e.preventDefault(); });
+    return { set, get: () => (bs.find(b => b.getAttribute('aria-selected') === 'true') || bs[0]).dataset.m };
+  }
+
+  return { $, lang, en, t, init, applyLang, SUBJ, sky, num, fmt, sig, plain, der, clear, bad, given, esc, rows, msg, live, keep, save, fill, wipe,
+    MU, RE, J2, D2R, G0, OMEGA_E, kepler, nuFromM, gmst, pqw2eci, catalog, elements, sat, earth, stars, v3, scene3, has3D, C, chart, unchart, ticks, csv, tabs };
+})();
+</script>
+<script>
+'use strict';
+K.init('sistemi');
+const { $, t, num, fmt } = K;
+const D2R = K.D2R, SIGMA = 5.670374419e-8, S0 = 1361, DAY = 86400, YR = 365.25, NS = 'http://www.w3.org/2000/svg';
+
+/* ---------- valori di riferimento (fonti nella scheda «Come funziona») ---------- */
+const CELLS = { tj: { eta: 29.5, dg: 0.5 }, ga: { eta: 18.5, dg: 2.75 }, si: { eta: 14.8, dg: 3.75 } };
+const REG = { mppt: { Xe: 0.60, Xd: 0.80 }, det: { Xe: 0.65, Xd: 0.85 } };
+const DODT = { li: [[1600, 80], [60000, 20]], nih2: [[1000, 60], [30000, 40]] };
+const COAT = { wp: [0.17, 0.92], bp: [0.95, 0.87], osr: [0.07, 0.79], mli: [0.38, 0.67], al: [0.16, 0.03] };
+const LIM = { el: [-20, 50], bat: [0, 30] };
+const SMAD = {
+  names: [['Carico utile', 'Payload'], ['Struttura e meccanismi', 'Structure and mechanisms'], ['Controllo termico', 'Thermal control'], ['Potenza (con i cavi)', 'Power (incl. harness)'], ['Telemetria e comandi', 'TT&C'], ['Calcolatore di bordo', 'On-board processing'], ['Assetto', 'Attitude control'], ['Propulsione', 'Propulsion'], ['Altro (bilanciamento, lancio)', 'Other (balance, launch)']],
+  np: [41, 20, 2, 19, 2, 5, 8, 0, 3], leo: [31, 27, 2, 21, 2, 5, 6, 3, 3], heo: [32, 24, 4, 17, 4, 3, 6, 7, 3], pl: [15, 25, 6, 21, 7, 4, 6, 13, 3],
+  prop: { np: 0, leo: 27, heo: 72, pl: 110 },
+};
+
+/* =================== orbita, eclissi, Sole =================== */
+function eclipseOf(h, bDeg) {      // ombra cilindrica, orbita circolare
+  const r = K.RE + h, T = 2 * Math.PI * Math.sqrt(r * r * r / K.MU), ab = Math.abs(bDeg);
+  const bstar = Math.asin(Math.min(1, K.RE / r)) / D2R, c = Math.sqrt(h * h + 2 * K.RE * h) / (r * Math.cos(ab * D2R));
+  const half = ab >= bstar || !(c < 1) ? 0 : Math.acos(c) / D2R, frac = half / 180;
+  return { h, r, T, bstar, half, frac, Te: frac * T, Td: (1 - frac) * T };
+}
+function sunDir(ms) {              // Vallado, algoritmo 29: versore equatoriale del Sole, distanza in UA
+  const T = (ms / 864e5 + 2440587.5 - 2451545) / 36525, M = (357.5291092 + 35999.05034 * T) * D2R;
+  const lam = (280.460 + 36000.771 * T + 1.914666471 * Math.sin(M) + 0.019994643 * Math.sin(2 * M)) * D2R, eps = (23.439291 - 0.0130042 * T) * D2R;
+  return { x: Math.cos(lam), y: Math.cos(eps) * Math.sin(lam), z: Math.sin(eps) * Math.sin(lam), r: 1.000140612 - 0.016708617 * Math.cos(M) - 0.000139589 * Math.cos(2 * M) };
+}
+function betaOf(iDeg, Odeg, ms) {
+  const s = sunDir(ms), i = iDeg * D2R, O = Odeg * D2R;
+  return Math.asin(Math.max(-1, Math.min(1, s.x * Math.sin(O) * Math.sin(i) - s.y * Math.cos(O) * Math.sin(i) + s.z * Math.cos(i)))) / D2R;
+}
+const raanDot = (a, e, iDeg) => -1.5 * Math.sqrt(K.MU / (a * a * a)) * K.J2 * Math.pow(K.RE / (a * (1 - e * e)), 2) * Math.cos(iDeg * D2R);   // rad/s
+const omegaAt = (el, ms) => ((el.raan + raanDot(el.a, el.e, el.i) / D2R * (ms - el.epoch.getTime()) / 1000) % 360 + 360) % 360;
+
+/* =================== energia (SMAD §11.4) =================== */
+function arrayOf(o) {
+  const Psa = (o.Pe * o.Te / o.Xe + o.Pd * o.Td / o.Xd) / o.Td;
+  const P0 = o.eta * S0, Pbol = P0 * o.Id * Math.cos(o.th * D2R), Ld = Math.pow(1 - o.dg, o.life), Peol = Pbol * Ld, A = Psa / Peol;
+  return { Psa, P0, Pbol, Ld, Peol, A, Pn: A * P0 * o.Id, M: A * P0 * o.Id / o.spw };
+}
+const battOf = (Pe, Te, dod, N, n) => Pe * (Te / 3600) / (dod * N * n);      // Wh per batteria
+function dodOf(chem, cyc) {
+  const [a, b] = DODT[chem];
+  if (cyc <= a[0]) return { dod: a[1], out: false };
+  if (cyc >= b[0]) return { dod: b[1], out: cyc > b[0] * 1.05 };
+  return { dod: a[1] + Math.log(cyc / a[0]) / Math.log(b[0] / a[0]) * (b[1] - a[1]), out: false };
+}
+function energySim(o) {            // tre orbite a partire dal mezzogiorno orbitale, batteria piena
+  const N = 1080, dt = 3 * o.T / N, ec = o.Xe / o.n, r = { t: [], pa: [], pl: [], pb: [], soc: [], empty: false };
+  let E = o.Ecap;
+  for (let k = 0; k <= N; k++) {
+    const tt = k * dt, isDark = x => o.half > 0 && Math.abs((x / o.T * 360) % 360 - 180) < o.half;
+    const pbat = dark => { if (dark) return -o.Pe / o.n; const sur = o.Parr - o.Pd / o.Xd; return sur >= 0 ? sur * ec : -(o.Pd - o.Parr * o.Xd) / o.n; };
+    const dark = isDark(tt), Pb0 = pbat(dark);
+    r.t.push(tt / 60); r.pa.push(dark ? 0 : o.Parr); r.pl.push(dark ? o.Pe : o.Pd); r.pb.push(Pb0 > 0 && E >= o.Ecap - 1e-9 ? 0 : Pb0); r.soc.push(100 * E / o.Ecap);
+    for (let j = 0; j < 20; j++) {        // 20 sottopassi: i bordi dell'eclissi cadono nel punto giusto
+      let Pb = pbat(isDark(tt + (j + 0.5) * dt / 20)); if (Pb > 0 && E >= o.Ecap - 1e-9) Pb = 0;
+      E = Math.min(o.Ecap, E + Pb * dt / 20 / 3600);
+      if (E < 0) { E = 0; r.empty = true; }
+    }
+  }
+  return r;
+}
+
+/* =================== termica a un nodo =================== */
+function capDirs(H, ne, nf) {      // direzioni dal satellite verso la Terra a parità di angolo solido; satellite in (0,0,H), R⊕ = 1
+  const c0 = Math.sqrt(Math.max(0, 1 - 1 / (H * H))), n = ne * nf, D = new Float64Array(3 * n), P = new Float64Array(3 * n);
+  let k = 0;
+  for (let a = 0; a < ne; a++) {
+    const c = 1 - (a + 0.5) * (1 - c0) / ne, s = Math.sqrt(1 - c * c), tt = H * c - Math.sqrt(Math.max(0, H * H * c * c - (H * H - 1)));
+    for (let b = 0; b < nf; b++, k++) {
+      const f = (b + 0.5) / nf * 2 * Math.PI, dx = s * Math.cos(f), dy = s * Math.sin(f);
+      D.set([dx, dy, -c], 3 * k); P.set([tt * dx, tt * dy, H - tt * c], 3 * k);
+    }
+  }
+  return { D, P, n, w: (1 - c0) / ne * 2 * Math.PI / nf };
+}
+function geomOf(shape, L) {
+  if (shape === 'sph') return { shape, Arad: Math.PI * L * L, Ap: Math.PI * L * L / 4 };
+  return { shape, Arad: (shape === 'plate' ? 2 : 6) * L * L, Af: L * L };
+}
+const sunL = (u, b) => [-Math.cos(b) * Math.sin(u), Math.sin(b), Math.cos(b) * Math.cos(u)];   // Sole in LVLH: x lungo la traccia, y normale, z zenit
+const inShadow = (u, b, H) => { const c = Math.cos(u) * Math.cos(b); return c < 0 && H * H * (1 - c * c) < 1; };
+const sunArea = (g, s) => g.shape === 'sph' ? g.Ap : g.shape === 'plate' ? g.Af : g.Af * (Math.abs(s[0]) + Math.abs(s[1]) + Math.abs(s[2]));
+const CUBE = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+function thermTables(H, bDeg, g, nu) {   // aree efficaci verso la Terra (infrarosso e albedo) lungo l'orbita, m²
+  const C = capDirs(H, 20, 64), b = bDeg * D2R, ir = new Float64Array(nu), alb = new Float64Array(nu);
+  for (let j = 0; j < nu; j++) {
+    const s = sunL(j / nu * 2 * Math.PI, b), nn = g.shape === 'cube' ? CUBE : g.shape === 'plate' ? [s, [-s[0], -s[1], -s[2]]] : null;
+    let fi = 0, fa = 0;
+    for (let k = 0; k < C.n; k++) {
+      const k3 = 3 * k, cs = C.P[k3] * s[0] + C.P[k3 + 1] * s[1] + C.P[k3 + 2] * s[2];
+      let cn = 0.25;
+      if (nn) { cn = 0; for (const n of nn) { const d = n[0] * C.D[k3] + n[1] * C.D[k3 + 1] + n[2] * C.D[k3 + 2]; if (d > 0) cn += d; } }
+      fi += cn; if (cs > 0) fa += cn * cs;
+    }
+    const Ab = nn ? g.Af : g.Arad;
+    ir[j] = Ab * fi * C.w / Math.PI; alb[j] = Ab * fa * C.w / Math.PI;
+  }
+  return { ir, alb, H, b };
+}
+function tabAt(a, u) { const n = a.length, x = ((u / (2 * Math.PI)) % 1 + 1) % 1 * n, j = Math.floor(x), f = x - j; return a[j % n] * (1 - f) + a[(j + 1) % n] * f; }
+function qAt(tab, g, u, env, al, em) {
+  const s = sunL(u, tab.b), lit = !inShadow(u, tab.b, tab.H);
+  const qs = lit ? al * env.S * sunArea(g, s) : 0, qa = al * env.a * env.S * tabAt(tab.alb, u), qi = em * env.q * tabAt(tab.ir, u);
+  return { qs, qa, qi, Q: env.Q, q: qs + qa + qi + env.Q, lit, u };
+}
+function extremes(tab, g, env, al, em, n) {
+  let hi = null, lo = null;
+  for (let j = 0; j < n; j++) { const c = qAt(tab, g, j / n * 2 * Math.PI, env, al, em); if (!hi || c.q > hi.q) hi = c; if (!lo || c.q < lo.q) lo = c; }
+  return { hi, lo };
+}
+const Teq = (q, em, A) => Math.pow(Math.max(0, q) / (em * SIGMA * A), 0.25);
+function transient(tab, g, env, al, em, mc, T0) {   // m c dT/dt = Q(t) − ε σ A T⁴, passo T/720, termine radiativo linearizzato
+  const n = 720, dt = T0 / n, k4 = em * SIGMA * g.Arad, qa = new Float64Array(n);
+  let qm = 0; for (let j = 0; j < n; j++) { qa[j] = qAt(tab, g, j / n * 2 * Math.PI, env, al, em).q; qm += qa[j] / n; }
+  let T = Math.pow(Math.max(qm, 1e-6) / k4, 0.25);
+  const tau = mc / (4 * k4 * T * T * T), warm = Math.min(60, Math.ceil(3 * tau / T0) + 2), r = { t: [], T: [], min: Infinity, max: -Infinity, tau };
+  for (let k = 0; k <= (warm + 3) * n; k++) {
+    if (k >= warm * n) { const c = T - 273.15; r.t.push((k - warm * n) * dt / 60); r.T.push(c); r.min = Math.min(r.min, c); r.max = Math.max(r.max, c); }
+    T += dt * (qa[k % n] - k4 * T ** 4) / (mc + dt * 4 * k4 * T ** 3);
+    if (!(T > 1)) T = 1;
+  }
+  return r;
+}
+
+/* =================== bilanci =================== */
+const pnum = s => K.num({ value: s == null ? '' : String(s) });
+const massTot = (rows, sys) => { let nom = 0, mar = 0; rows.forEach(r => { const m = pnum(r.m); if (m > 0) { nom += m; mar += m * (+r.k) / 100; } }); const d0 = nom + mar, sm = d0 * sys / 100; return { nom, mar, d0, sm, dry: d0 + sm }; };
+const dvRow = r => { const v = pnum(r.dv), x = pnum(r.x), n = x == null ? 1 : x; return v > 0 && n >= 0 ? [v * n, v * n * (1 + (+r.k) / 100)] : [0, 0]; };
+const dvTot = rows => rows.reduce((s, r) => { const d = dvRow(r); return { dv0: s.dv0 + d[0], dv: s.dv + d[1] }; }, { dv0: 0, dv: 0 });
+const propOf = (md, dv, isp, res) => md * (Math.exp(dv / (isp * K.G0)) - 1) * (1 + res / 100);
+const duty = v => v == null || Number.isNaN(v) ? 1 : Math.min(1, Math.max(0, v / 100));
+const pwTot = (rows, mar) => { let d = 0, e = 0; rows.forEach(r => { const p = pnum(r.p); if (p > 0) { d += p * duty(pnum(r.d)); e += p * duty(pnum(r.e)); } }); return { d0: d, e0: e, d: d * (1 + mar / 100), e: e * (1 + mar / 100) }; };
+
+/* =================== utilità della pagina =================== */
+const wr = (x, d) => { let s = (+x).toFixed(d); if (s.includes('.')) s = s.replace(/0+$/, '').replace(/\.$/, ''); return K.en ? s : s.replace('.', ','); };
+function fld(id, def, d, ok, W, why) {      // vuoto → valore tipico in verde; non valido → ambra e messaggio
+  const v = num(id);
+  if (Number.isNaN(v) || (v != null && ok && !ok(v))) { K.bad(id); W.push(why); return null; }
+  if (v == null) { if (def != null) K.der(id, def, d); return def; }
+  return v;
+}
+function say(el, W, I) { $(el).innerHTML = (W.length ? '<p class="msg">' + W.join('<br>') + '</p>' : '') + (I.length ? '<p class="msg info">' + I.join('<br>') + '</p>' : ''); }
+function svgIn(host, label) { let s = host.querySelector('svg.dg'); if (!s) { s = document.createElementNS(NS, 'svg'); s.setAttribute('class', 'dg'); s.setAttribute('role', 'img'); host.prepend(s); } s.setAttribute('aria-label', label); return s; }
+const unchart = id => { if (K.unchart) K.unchart(id); else { const h = $(id); h.innerHTML = ''; h.classList.remove('chart'); h._draw = () => {}; } };
+const sgn = x => (x >= 0 ? '+' : '') + fmt(x, 1);
+const tabs = K.tabs('seg', m => { placeOrbit(m); run(); });
+function placeOrbit(m) { if (m === 'pow' || m === 'th') { const f = $('f-' + m), b = $('orbBox'); if (b.parentNode !== f) f.prepend(b); } }
+
+/* ---------- orbita in comune ---------- */
+let satEl = null, satAuto = '';
+function orbitIn(W, I) {
+  const h = fld('h', null, 0, v => v > 0 && v < 1e6, W, t(`La quota va da 0 a 1 000 000 km.`, `The altitude must be between 0 and 1,000,000 km.`));
+  const b = fld('beta', null, 1, v => v >= -90 && v <= 90, W, t(`β va da −90° a 90°.`, `β must be between −90° and 90°.`));
+  const i = fld('inc', null, 2, v => v >= 0 && v <= 180, W, t(`L'inclinazione va da 0° a 180°.`, `The inclination must be between 0° and 180°.`));
+  const O = fld('raan', null, 2, null, W, t(`Il nodo Ω deve essere un numero di gradi.`, `The node Ω must be a number of degrees.`));
+  const ds = $('date').value, ms = ds ? Date.parse(ds + 'T12:00:00Z') : NaN, dateMs = Number.isFinite(ms) ? ms : null;
+  let bDate = null;
+  if (i != null && O != null && dateMs != null) bDate = betaOf(i, O, dateMs);
+  else if (i != null || O != null || dateMs != null) I.push(t(`Per ricavare β dalla data servono inclinazione, nodo e data.`, `To work out β from the date the page needs inclination, node and date.`));
+  const hint = $('bhint');
+  if (h == null) { hint.textContent = ''; if (!W.length) I.unshift(t(`Dai la quota dell'orbita.`, `Give the orbit altitude.`)); return null; }
+  let beta, src;
+  if (b != null) {
+    beta = b; src = 'given';
+    if (bDate != null && Math.abs(bDate - b) > 0.5) { K.bad('beta'); W.push(t(`β scritto (${fmt(b, 1)}°) e β dalla data (${fmt(bDate, 1)}°) non coincidono: la pagina usa quello scritto. Svuota β per usare la data.`, `The β you typed (${fmt(b, 1)}°) and the β from the date (${fmt(bDate, 1)}°) differ: the page uses the one typed. Empty β to use the date.`)); }
+  } else if (bDate != null) { beta = bDate; src = 'date'; K.der('beta', bDate, 1); }
+  else { beta = 0; src = 'zero'; K.der('beta', 0, 0); }
+  $('betaR').value = String(beta);
+  hint.textContent = src === 'date' ? t(`β dal Sole del ${ds} a mezzogiorno UTC.`, `β from the Sun on ${ds} at 12:00 UTC.`) : src === 'zero' ? t(`Senza β né data la pagina usa β = 0°, il caso con l'eclissi più lunga.`, `With no β and no date the page uses β = 0°, the case with the longest eclipse.`) : '';
+  return { h, beta, src, i, O, dateMs, bDate };
+}
+
+/* =================== Energia =================== */
+const PV = { st: null, ph: 0, play: !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), vis: true, last: 0 };
+function runPow() {
+  K.clear('f-pow'); const W = [], I = [], R = [];
+  const o = orbitIn(W, I);
+  const P = (id, nm) => fld(id, null, 1, v => v >= 0, W, t(`${nm} deve essere una potenza di 0 W o più.`, `${nm} must be a power of 0 W or more.`));
+  const Pd = P('Pd', 'Pd'), Pe = P('Pe', 'Pe');
+  const reg = REG[$('reg').value] || REG.mppt, cell = CELLS[$('cell').value] || CELLS.tj, chem = $('chem').value === 'nih2' ? 'nih2' : 'li';
+  const eta = fld('eta', cell.eta, 1, v => v > 0 && v <= 100, W, t(`Il rendimento delle celle va da 0 a 100 %.`, `Cell efficiency must be between 0 and 100 %.`));
+  const Id = fld('Id', 0.77, 2, v => v > 0 && v <= 1, W, t(`Il degrado intrinseco Id va da 0 a 1.`, `Inherent degradation Id must be between 0 and 1.`));
+  const th = fld('th', o ? Math.abs(o.beta) : 0, 1, v => v >= 0 && v < 89, W, t(`L'incidenza θ va da 0° a 89°: oltre i pannelli non ricevono luce.`, `Incidence θ must be between 0° and 89°: beyond that the arrays get no light.`));
+  const dg = fld('dg', cell.dg, 2, v => v >= 0 && v < 100, W, t(`La perdita per anno va da 0 a 100 %.`, `The loss per year must be between 0 and 100 %.`));
+  const life = fld('life', null, 1, v => v > 0 && v <= 50, W, t(`La durata della missione va da 0 a 50 anni.`, `Mission life must be between 0 and 50 years.`));
+  const spw = fld('spw', 30, 0, v => v > 0, W, t(`La potenza specifica deve essere sopra 0 W/kg.`, `Specific power must be above 0 W/kg.`));
+  const Ag = fld('Aa', null, 2, v => v > 0, W, t(`L'area dei pannelli deve essere sopra 0 m².`, `Array area must be above 0 m².`));
+  const nb = fld('nb', 1, 0, v => v >= 1 && Number.isInteger(v), W, t(`Il numero di batterie è un intero da 1 in su.`, `The number of batteries is a whole number from 1 up.`));
+  const nt = fld('nt', 0.9, 2, v => v > 0 && v <= 1, W, t(`Il rendimento n va da 0 a 1.`, `Efficiency n must be between 0 and 1.`));
+  const vb = fld('vb', 28, 0, v => v > 0, W, t(`La tensione del bus deve essere sopra 0 V.`, `Bus voltage must be above 0 V.`));
+  const capG = fld('cap', null, 0, v => v > 0, W, t(`La capacità deve essere sopra 0 Wh.`, `Capacity must be above 0 Wh.`));
+  let E = null, A = null, Cr = null, dod = null, sim = null, yr = null;
+  if (o) {
+    E = eclipseOf(o.h, o.beta);
+    R.push(['#', t('Eclissi', 'Eclipse')], [t(`Periodo dell'orbita`, 'Orbital period'), fmt(E.T / 60, 2), 'min'],
+      [t('β critico β*', 'Critical β*'), fmt(E.bstar, 1), '°', t(`con |β| oltre β* l'orbita resta sempre al Sole`, 'with |β| beyond β* the orbit stays in sunlight')]);
+    if (E.half > 0) R.push([t(`Semiangolo d'eclissi φ/2`, 'Eclipse half-angle φ/2'), fmt(E.half, 1), '°'],
+      [t(`Durata dell'eclissi Te`, 'Eclipse duration Te'), fmt(E.Te / 60, 1), 'min', t('frazione in ombra ', 'fraction in shadow ') + fmt(E.frac, 3), 'key'],
+      [t('Luce Td', 'Daylight Td'), fmt(E.Td / 60, 1), 'min'],
+      [t('Eclissi al giorno', 'Eclipses per day'), fmt(DAY / E.T, 2), '', fmt(YR * DAY / E.T, 0) + t(` all'anno con questo β`, ' per year at this β')]);
+    else R.push([t(`Durata dell'eclissi Te`, 'Eclipse duration Te'), '0', 'min', t('con |β| ≥ β* il satellite non entra mai in ombra', 'with |β| ≥ β* the spacecraft never enters the shadow'), 'key']);
+    if (o.bDate != null && o.i != null) {     // β nei giorni che seguono, con il nodo che ruota
+      const days = Math.ceil(Math.max(1, life || 1) * YR), Od = raanDot(E.r, 0, o.i) / D2R, b = [];
+      for (let k = 0; k <= days; k++) b.push(betaOf(o.i, o.O + Od * k * DAY, o.dateMs + k * DAY * 1000));
+      let bmin = 90, bmax = 0, nd = 0; b.forEach((v, k) => { if (k <= 365) { bmin = Math.min(bmin, Math.abs(v)); bmax = Math.max(bmax, Math.abs(v)); } if (k < days && Math.abs(v) < E.bstar) nd++; });
+      const wst = eclipseOf(o.h, bmin);
+      yr = { b: b.slice(0, 366), nd, cyc: nd * DAY / E.T, Od: Od * DAY };
+      R.push([t(`Eclissi più lunga nell'anno`, 'Longest eclipse in the year'), fmt(wst.Te / 60, 1), 'min', t(`a |β| = ${fmt(bmin, 1)}° (|β| arriva fino a ${fmt(bmax, 1)}°); per dimensionare sul caso peggiore scrivi β = ${fmt(bmin, 1)}°`, `at |β| = ${fmt(bmin, 1)}° (|β| reaches ${fmt(bmax, 1)}°); to size for the worst case type β = ${fmt(bmin, 1)}°`)],
+        [t('Rotazione del nodo', 'Node drift'), fmt(yr.Od, 3), t('°/giorno', '°/day'), 'J₂']);
+    }
+  }
+  if (E && Pd != null && Pe != null && life != null && eta != null && Id != null && th != null && dg != null && spw != null) {
+    A = arrayOf({ Pd, Pe, Te: E.Te, Td: E.Td, Xe: reg.Xe, Xd: reg.Xd, eta: eta / 100, Id, th, dg: dg / 100, life, spw });
+    K.der('Aa', A.A, 2);
+    R.push(['#', t('Pannelli solari', 'Solar arrays')],
+      [t('Potenza richiesta Psa', 'Required power Psa'), fmt(A.Psa, 1), 'W', `(Pe·Te/Xe + Pd·Td/Xd)/Td, Xe ${fmt(reg.Xe, 2)}, Xd ${fmt(reg.Xd, 2)}`, 'key'],
+      [t('A inizio vita, per m²', 'Beginning of life, per m²'), fmt(A.Pbol, 1), 'W/m²', `η · ${fmt(S0, 0)} W/m² · Id · cos θ, θ = ${fmt(th, 1)}°`],
+      [t('Perdita in vita Ld', 'Lifetime loss Ld'), fmt(A.Ld, 3), '', `(1 − ${fmt(dg, 2)} %)^${fmt(life, 1)}`],
+      [t('A fine vita, per m²', 'End of life, per m²'), fmt(A.Peol, 1), 'W/m²'],
+      [t('Area dei pannelli', 'Array area'), fmt(A.A, 2), 'm²', null, 'key'],
+      [t('Massa dei pannelli', 'Array mass'), fmt(A.M, 1), 'kg', t(`${fmt(A.Pn, 0)} W a inizio vita con il Sole perpendicolare ÷ ${fmt(spw, 0)} W/kg`, `${fmt(A.Pn, 0)} W at beginning of life with the Sun square on ÷ ${fmt(spw, 0)} W/kg`)]);
+    if (Ag != null && Ag < A.A * 0.995) { K.bad('Aa'); W.push(t(`Con ${fmt(Ag, 2)} m² i pannelli danno ${fmt(Ag * A.Peol, 0)} W a fine vita: ne servono ${fmt(A.Psa, 0)} W, cioè ${fmt(A.A, 2)} m². Il grafico mostra la batteria che non si ricarica.`, `With ${fmt(Ag, 2)} m² the arrays give ${fmt(Ag * A.Peol, 0)} W at end of life: ${fmt(A.Psa, 0)} W are needed, that is ${fmt(A.A, 2)} m². The chart shows the battery not recharging.`)); }
+  } else if (E) I.push(t(`Dai Pd, Pe e la durata della missione per dimensionare pannelli e batteria.`, `Give Pd, Pe and the mission life to size arrays and battery.`));
+  if (E && Pe != null && life != null && nb != null && nt != null && vb != null) {
+    const cycD = yr ? yr.cyc * (1 / Math.max(1, life || 1)) * life : (E.half > 0 ? YR * DAY / E.T * life : 0);
+    const cyc = fld('cyc', Math.round(cycD), 0, v => v >= 0, W, t(`I cicli sono un numero da 0 in su.`, `Cycles must be a number from 0 up.`));
+    if (cyc != null) {
+      const dt = dodOf(chem, Math.max(cyc, 1));
+      dod = fld('dod', Math.round(dt.dod * 10) / 10, 1, v => v > 0 && v <= 100, W, t(`La profondità di scarica va da 0 a 100 %.`, `Depth of discharge must be between 0 and 100 %.`));
+      if (dod != null) {
+        Cr = E.Te > 0 ? battOf(Pe, E.Te, dod / 100, nb, nt) : 0;
+        if (Cr > 0) K.der('cap', Cr, 0);
+        const chemN = chem === 'li' ? t('ioni di litio', 'lithium-ion') : t('nichel-idrogeno', 'nickel-hydrogen');
+        R.push(['#', t('Batteria', 'Battery')],
+          [t('Cicli nella missione', 'Cycles in the mission'), fmt(cyc, 0), '', yr ? t(`orbite con eclissi in ${fmt(life, 1)} anni, con β che cambia`, `orbits with an eclipse in ${fmt(life, 1)} years, with β changing`) : t(`eclissi in ${fmt(life, 1)} anni con β fisso`, `eclipses in ${fmt(life, 1)} years at fixed β`)],
+          [t('Profondità di scarica', 'Depth of discharge'), fmt(dod, 1), '%', t(`tabella per ${chemN}: ${fmt(dt.dod, 1)} %`, `table for ${chemN}: ${fmt(dt.dod, 1)} %`) + (dt.out ? t(' (oltre i cicli della tabella)', ' (beyond the table\'s cycles)') : ''), dod > dt.dod + 0.5 ? 'warn' : ''],
+          [t(`Energia data in un'eclissi`, 'Energy given per eclipse'), fmt(Pe * E.Te / 3600 / nt, 1), 'Wh', 'Pe·Te/n'],
+          [t('Capacità di ogni batteria Cr', 'Capacity of each battery Cr'), fmt(Cr, 0), 'Wh', fmt(Cr / vb, 1) + ' Ah ' + t('a ', 'at ') + fmt(vb, 0) + ' V' + (nb > 1 ? t(`, ${fmt(nb, 0)} batterie`, `, ${fmt(nb, 0)} batteries`) : ''), 'key']);
+        if (dod > dt.dod + 0.5) W.push(t(`Una scarica del ${fmt(dod, 1)} % per ${fmt(cyc, 0)} cicli è più profonda di quanto regge la tabella (${fmt(dt.dod, 1)} %): la batteria invecchia prima.`, `A ${fmt(dod, 1)} % discharge over ${fmt(cyc, 0)} cycles is deeper than the table allows (${fmt(dt.dod, 1)} %): the battery ages faster.`));
+        if (E.Te === 0) I.push(t(`Senza eclissi la batteria serve solo per il lancio e i picchi di carico.`, `With no eclipse the battery is needed only for launch and load peaks.`));
+        if (capG != null && Cr > 0 && capG < Cr * 0.995) { K.bad('cap'); W.push(t(`Con ${fmt(capG, 0)} Wh la scarica arriva al ${fmt(dod * Cr / capG, 1)} %: per restare al ${fmt(dod, 1)} % servono ${fmt(Cr, 0)} Wh.`, `With ${fmt(capG, 0)} Wh the discharge reaches ${fmt(dod * Cr / capG, 1)} %: to stay at ${fmt(dod, 1)} % you need ${fmt(Cr, 0)} Wh.`)); }
+      }
+    }
+  }
+  if (A) {
+    const Ecap = (capG != null ? capG : Cr || 0) * nb;
+    if (Ecap > 0 || E.half === 0) {
+      sim = energySim({ T: E.T, half: E.half, Parr: Ag != null ? Ag * A.Peol : A.Psa, Pd, Pe, Xd: reg.Xd, Xe: reg.Xe, n: nt, Ecap: Ecap > 0 ? Ecap : 1 });
+      if (Ecap > 0) { const s1 = sim.soc[Math.round(1080 / 3) - 1], s3 = sim.soc[1080]; if (sim.empty) W.push(t(`La batteria si svuota: i carichi restano senza energia.`, `The battery runs flat: the loads lose power.`)); else if (s3 < s1 - 1) W.push(t(`La batteria non torna carica a ogni orbita: i pannelli non bastano.`, `The battery does not recharge every orbit: the arrays are too small.`)); }
+    }
+  }
+  K.rows('out-pow', R); say('msg-pow', W, I);
+  const bands = []; if (E && E.half > 0) for (let k = 0; k < 3; k++) { const c = (k + 0.5) * E.T / 60, w = E.Te / 120; bands.push({ x0: c - w, x1: c + w, color: K.C.vi, op: 0.12 }); }
+  if (sim) {
+    K.chart('ch-pw', { title: t('Potenza in tre orbite', 'Power over three orbits'), x: sim.t, series: [{ name: t('pannelli', 'arrays'), y: sim.pa, color: K.C.cy }, { name: t('carichi', 'loads'), y: sim.pl, color: K.C.vi }, { name: t('batteria, + in carica', 'battery, + charging'), y: sim.pb, color: K.C.ic }], xLabel: t('tempo, min', 'time, min'), yLabel: 'W', unit: 'W', xName: 't', bands });
+    if (E.half > 0 && Cr > 0) K.chart('ch-soc', { title: t('Stato di carica della batteria', 'Battery state of charge'), x: sim.t, series: [{ name: t('stato di carica', 'state of charge'), y: sim.soc, color: K.C.cy }, { name: t('minimo di progetto', 'design minimum'), y: sim.t.map(() => 100 - dod), color: K.C.ic, dash: true }], xLabel: t('tempo, min', 'time, min'), yLabel: '%', unit: '%', xName: 't', yMax: 100, bands });
+    else unchart('ch-soc');
+  } else { unchart('ch-pw'); unchart('ch-soc'); }
+  if (yr) { const d = yr.b.map((v, k) => k); K.chart('ch-beta', { title: t('β nei 365 giorni dalla data', 'β over the 365 days from the date'), x: d, series: [{ name: 'β', y: yr.b, color: K.C.cy }, { name: 'β*', y: d.map(() => E.bstar), color: K.C.ic, dash: true }, { name: '−β*', y: d.map(() => -E.bstar), color: K.C.ic, dash: true }], xLabel: t('giorni', 'days'), yLabel: '°', unit: '°', xName: t('giorno', 'day') }); }
+  else unchart('ch-beta');
+  PV.st = E ? { E, beta: o.beta, sim: sim && Cr > 0 ? sim : null } : null; drawPow();
+}
+function drawPow() {
+  const host = $('view-pow'), W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const svg = svgIn(host, t(`Orbita vista dall'alto con l'ombra della Terra e, nel riquadro, vista di lato con l'angolo β`, `Orbit seen from above with the Earth's shadow and, in the inset, side view with the β angle`));
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const st = PV.st; PV.g = null;
+  if (!st) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" class="mut">' + t(`Dai la quota dell'orbita per vederla qui.`, 'Give the orbit altitude to see it here.') + '</text>'; return; }
+  const E = st.E, sb = Math.sin(Math.abs(st.beta) * D2R), sq = H > W * 0.9;
+  const inW = Math.round(sq ? W * 0.44 : Math.min(W * 0.3, 250)), inH = Math.round(inW * 0.64), ix = 10, iy = 10;
+  const cx = W * (sq ? 0.57 : 0.56), cy = H * (sq ? 0.6 : 0.5), R = sq ? Math.min(W, H) * 0.3 : Math.min(W * 0.34, H * 0.39), rE = R * K.RE / E.r;
+  const P = u => [cx - R * Math.cos(u), cy + R * Math.sin(u)], f1 = v => v.toFixed(1);
+  PV.L = { cx, cy, R };
+  let s = '<defs><clipPath id="icl"><rect x="' + ix + '" y="' + iy + '" width="' + inW + '" height="' + inH + '" rx="6"/></clipPath></defs>';
+  for (let y = 6; y < H; y += 15) s += '<line class="ray" x1="0" x2="' + W + '" y1="' + y + '" y2="' + y + '"/>';
+  s += sb < 0.02 ? '<rect class="shd" x="' + f1(cx) + '" y="' + f1(cy - rE) + '" width="' + f1(W - cx + 4) + '" height="' + f1(2 * rE) + '"/>'
+    : '<path class="shd" d="M' + f1(cx) + ' ' + f1(cy - rE) + 'A' + f1(Math.min(rE / sb, 1e5)) + ' ' + f1(rE) + ' 0 0 1 ' + f1(cx) + ' ' + f1(cy + rE) + 'Z"/>';
+  if ((R + 12) * sb < rE * 0.9 && cx + R + 50 < W) s += '<text x="' + f1(cx + R + 10) + '" y="' + f1(cy - 8) + '" class="mut">' + t('ombra', 'shadow') + '</text>';
+  s += '<circle class="en" cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(rE) + '"/><path class="ed" d="M' + f1(cx) + ' ' + f1(cy - rE) + 'A' + f1(rE) + ' ' + f1(rE) + ' 0 0 0 ' + f1(cx) + ' ' + f1(cy + rE) + 'A' + f1(Math.max(0.1, rE * sb)) + ' ' + f1(rE) + ' 0 0 0 ' + f1(cx) + ' ' + f1(cy - rE) + 'Z"/>';
+  s += '<text x="' + f1(cx) + '" y="' + f1(cy + 4) + '" text-anchor="middle" class="mut">' + t('Terra', 'Earth') + '</text>';
+  s += '<circle class="orb" cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(R) + '"/>';
+  if (E.half > 0) { let d = ''; for (let k = 0; k <= 60; k++) { const p = P((180 - E.half + 2 * E.half * k / 60) * D2R); d += (k ? 'L' : 'M') + f1(p[0]) + ' ' + f1(p[1]); } s += '<path class="ecl" d="' + d + '"/>'; }
+  const pa = P(270 * D2R); s += '<path d="M' + f1(pa[0] - 6) + ' ' + f1(pa[1]) + 'l9 -5v10z" fill="#35d4f2"/>';
+  const sx = 18, sy = cy; s += '<circle cx="' + sx + '" cy="' + f1(sy) + '" r="7" fill="none" stroke="#cfe3f5"/>';
+  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; s += '<line x1="' + f1(sx + 10 * Math.cos(a)) + '" y1="' + f1(sy + 10 * Math.sin(a)) + '" x2="' + f1(sx + 13 * Math.cos(a)) + '" y2="' + f1(sy + 13 * Math.sin(a)) + '" stroke="#cfe3f5"/>'; }
+  s += '<text x="' + sx + '" y="' + f1(sy + 28) + '" text-anchor="middle">' + t('Sole', 'Sun') + '</text>';
+  s += '<g id="scg" class="on"><rect class="pn" x="-2" y="-16" width="4" height="11"/><rect class="pn" x="-2" y="5" width="4" height="11"/><rect class="bd" x="-4.5" y="-4.5" width="9" height="9" rx="1"/></g>';
+  // riquadro di lato: il Sole è inclinato di β sul piano dell'orbita, l'ombra è una fascia larga 2 R⊕
+  const icx = ix + inW / 2, icy = iy + inH / 2 + 6, Lh = Math.min(inW / 2 - 18, (inH / 2 - 16) * E.r / K.RE), ie = Lh * K.RE / E.r, bb = st.beta * D2R;
+  const sd = [-Math.cos(bb), -Math.sin(bb)], pd = [-sd[1], sd[0]], q = (a, b) => f1(icx + a * sd[0] + b * pd[0]) + ' ' + f1(icy + a * sd[1] + b * pd[1]);
+  s += '<rect class="ins" x="' + ix + '" y="' + iy + '" width="' + inW + '" height="' + inH + '" rx="6"/><g clip-path="url(#icl)">';
+  for (let k = -14; k <= 14; k++) s += '<line class="ray" x1="' + q(400, k * 9).replace(' ', '" y1="') + '" x2="' + q(-400, k * 9).replace(' ', '" y2="') + '"/>';
+  s += '<path class="shd" d="M' + q(0, -ie) + 'L' + q(-500, -ie) + 'L' + q(-500, ie) + 'L' + q(0, ie) + 'Z"/>';
+  s += '<circle class="en" cx="' + f1(icx) + '" cy="' + f1(icy) + '" r="' + f1(ie) + '"/>';
+  s += '<path class="ed" d="M' + q(0, -ie) + 'A' + f1(ie) + ' ' + f1(ie) + ' 0 0 1 ' + q(0, ie) + 'Z"/>';
+  s += '<line x1="' + f1(icx) + '" y1="' + f1(icy) + '" x2="' + f1(icx + 400 * sd[0]) + '" y2="' + f1(icy + 400 * sd[1]) + '" stroke="#cfe3f5" stroke-dasharray="3 3" stroke-opacity=".7"/>';
+  s += '<line x1="' + f1(icx - Lh) + '" x2="' + f1(icx + Lh) + '" y1="' + f1(icy) + '" y2="' + f1(icy) + '" stroke="#35d4f2" stroke-width="1.5"/>';
+  if (E.half > 0) s += '<line x1="' + f1(icx + Lh * Math.cos(E.half * D2R)) + '" x2="' + f1(icx + Lh) + '" y1="' + f1(icy) + '" y2="' + f1(icy) + '" stroke="#a995ff" stroke-width="4"/>';
+  if (Math.abs(st.beta) >= 1) { const ra = ie + 14; s += '<path d="M' + f1(icx - ra) + ' ' + f1(icy) + 'A' + ra + ' ' + ra + ' 0 0 ' + (st.beta > 0 ? 1 : 0) + ' ' + f1(icx + ra * sd[0]) + ' ' + f1(icy + ra * sd[1]) + '" fill="none" stroke="#cfe3f5"/><text x="' + f1(icx - (ra + 9) * Math.cos(bb / 2)) + '" y="' + f1(icy - (ra + 9) * Math.sin(bb / 2) + 4) + '" text-anchor="middle">β</text>'; }
+  s += '</g><text x="' + (ix + 8) + '" y="' + (iy + 15) + '" class="mut">' + t('di lato', 'side view') + '</text>';
+  s += '<text x="' + (ix + 8) + '" y="' + (iy + inH - 8) + '">β ' + fmt(st.beta, 1) + '° · β* ' + fmt(E.bstar, 1) + '°</text>';
+  const tx = W - 12, ty = sq ? 58 : H - 66, gw = 64;
+  s += '<text id="ps1" x="' + tx + '" y="' + ty + '" text-anchor="end"></text><text id="ps2" x="' + tx + '" y="' + (ty + 16) + '" text-anchor="end"></text>';
+  if (st.sim) s += '<rect x="' + (tx - gw) + '" y="' + (ty + 24) + '" width="' + gw + '" height="9" fill="none" stroke="#414b57"/><rect id="pgb" x="' + (tx - gw) + '" y="' + (ty + 24) + '" width="0" height="9" fill="#58e07f"/><text id="ps3" x="' + (tx - gw - 6) + '" y="' + (ty + 33) + '" text-anchor="end"></text>';
+  if (!sq) s += '<text x="' + tx + '" y="' + (ty + 52) + '" text-anchor="end" class="mut">' + (E.half > 0 ? t(`eclissi ${fmt(E.Te / 60, 1)} min su ${fmt(E.T / 60, 1)}`, `eclipse ${fmt(E.Te / 60, 1)} min of ${fmt(E.T / 60, 1)}`) : t('niente eclissi', 'no eclipse')) + '</text>';
+  svg.innerHTML = s;
+  PV.g = svg.querySelector('#scg'); PV.s1 = svg.querySelector('#ps1'); PV.s2 = svg.querySelector('#ps2'); PV.s3 = svg.querySelector('#ps3'); PV.gb = svg.querySelector('#pgb'); PV.gw = gw;
+  placeSat();
+}
+function placeSat() {
+  const st = PV.st, L = PV.L; if (!st || !PV.g) return;
+  const fr = PV.ph % 1, u = fr * 2 * Math.PI, dark = st.E.half > 0 && Math.abs(fr * 360 - 180) < st.E.half;
+  PV.g.setAttribute('transform', 'translate(' + (L.cx - L.R * Math.cos(u)).toFixed(1) + ' ' + (L.cy + L.R * Math.sin(u)).toFixed(1) + ')');
+  PV.g.setAttribute('class', dark ? 'off' : 'on');
+  PV.s1.textContent = dark ? t('in ombra', 'in shadow') : t('alla luce', 'in sunlight'); PV.s1.setAttribute('class', dark ? 'st-off' : 'st-on');
+  PV.s2.textContent = 't ' + fmt(PV.ph * st.E.T / 60, 1) + ' min';
+  if (st.sim && PV.gb) { const soc = st.sim.soc[Math.min(st.sim.soc.length - 1, Math.round(PV.ph / 3 * (st.sim.soc.length - 1)))]; PV.gb.setAttribute('width', (Math.max(0, soc) / 100 * PV.gw).toFixed(1)); PV.s3.textContent = t('batteria ', 'battery ') + fmt(soc, 0) + ' %'; }
+}
+function animPow(now) {
+  requestAnimationFrame(animPow);
+  const dt = Math.min(0.1, (now - (PV.last || now)) / 1000); PV.last = now;
+  if (!PV.st || !PV.g || document.hidden || !PV.vis || $('m-pow').hidden || !PV.play) return;
+  PV.ph = (PV.ph + dt / 12) % 3; placeSat();
+}
+
+/* =================== Termica =================== */
+const TV = { st: null, mode: 'hot' };
+function runTh() {
+  K.clear('f-th'); const W = [], I = [], R = [];
+  const o = orbitIn(W, I), shape = ['cube', 'sph', 'plate'].includes($('shape').value) ? $('shape').value : 'cube';
+  $('dimL').textContent = shape === 'sph' ? t('Diametro', 'Diameter') : shape === 'plate' ? t('Lato della piastra', 'Plate side') : t('Lato', 'Side');
+  const cp = COAT[$('coat').value], f01 = (id, def, nm) => fld(id, def, 2, v => v > 0 && v <= 1, W, t(`${nm} va da 0 a 1.`, `${nm} must be between 0 and 1.`));
+  const al = f01('al', cp ? cp[0] : null, 'α'), em = f01('em', cp ? cp[1] : null, 'ε');
+  const L = fld('dim', null, 2, v => v > 0 && v < 1000, W, t(`La misura deve essere sopra 0 m.`, `The size must be above 0 m.`));
+  const pos = (id, def, d, nm) => fld(id, def, d, v => v >= 0, W, t(`${nm}: serve un numero da 0 in su.`, `${nm}: a number from 0 up is needed.`));
+  const qh = pos('qh', 0, 0, t('Calore interno', 'Internal heat')), qc = pos('qc', 0, 0, t('Calore interno', 'Internal heat'));
+  const Sh = pos('sh', 1414, 0, t('Luce del Sole', 'Sunlight')), Sc = pos('sc', 1322, 0, t('Luce del Sole', 'Sunlight'));
+  const ah = fld('ah', 0.35, 2, v => v >= 0 && v <= 1, W, t(`L'albedo va da 0 a 1.`, 'Albedo must be between 0 and 1.')), ac = fld('ac', 0.25, 2, v => v >= 0 && v <= 1, W, t(`L'albedo va da 0 a 1.`, 'Albedo must be between 0 and 1.'));
+  const ih = pos('irh', 258, 0, t('Infrarosso', 'Infrared')), ic = pos('irc', 216, 0, t('Infrarosso', 'Infrared'));
+  const m = fld('ms', null, 1, v => v > 0, W, t(`La massa deve essere sopra 0 kg.`, 'Mass must be above 0 kg.'));
+  const c = fld('cp', m != null ? 900 : null, 0, v => v > 0, W, t(`Il calore specifico deve essere sopra 0.`, 'Specific heat must be above 0.'));
+  const lp = LIM[$('lim').value];
+  const tmin = fld('tmin', lp ? lp[0] : null, 0, null, W, t(`Il minimo deve essere un numero.`, 'The minimum must be a number.')), tmax = fld('tmax', lp ? lp[1] : null, 0, null, W, t(`Il massimo deve essere un numero.`, 'The maximum must be a number.'));
+  if (tmin != null && tmax != null && tmin >= tmax) { K.bad('tmin'); W.push(t(`Il minimo (${fmt(tmin, 0)} °C) deve stare sotto il massimo (${fmt(tmax, 0)} °C).`, `The minimum (${fmt(tmin, 0)} °C) must be below the maximum (${fmt(tmax, 0)} °C).`)); }
+  if (!o || al == null || em == null || L == null || [qh, qc, Sh, Sc, ah, ac, ih, ic].some(v => v == null)) {
+    if (o && L == null && !W.length) I.push(t(`Dai la misura del satellite.`, 'Give the size of the spacecraft.'));
+    if (o && (al == null || em == null) && !W.length) I.push(t(`Scegli un rivestimento o scrivi α ed ε.`, 'Pick a coating or type α and ε.'));
+    K.rows('out-th', []); unchart('ch-th'); say('msg-th', W, I); TV.st = null; drawTh(); return;
+  }
+  const E = eclipseOf(o.h, o.beta), H = E.r / K.RE, g = geomOf(shape, L), tab = thermTables(H, o.beta, g, 120);
+  const hot = { S: Sh, a: ah, q: ih, Q: qh }, cold = { S: Sc, a: ac, q: ic, Q: qc };
+  const xh = extremes(tab, g, hot, al, em, 720).hi, xc = extremes(tab, g, cold, al, em, 720).lo;
+  const Th = Teq(xh.q, em, g.Arad), Tc = Teq(xc.q, em, g.Arad);
+  let amax = 0; for (let j = 0; j < 360; j++) amax = Math.max(amax, sunArea(g, sunL(j * D2R, o.beta * D2R)));
+  const rho = Math.asin(1 / H), Fs = tabAt(tab.ir, xh.u) / g.Arad;
+  R.push(['#', t('Geometria', 'Geometry')], [t('Area che irraggia', 'Radiating area'), fmt(g.Arad, 3), 'm²'], [t('Area vista dal Sole, al massimo', 'Area seen by the Sun, at most'), fmt(amax, 3), 'm²'],
+    [t('Fattore di vista verso la Terra', 'View factor to Earth'), fmt(Fs, 3), '', shape === 'sph' ? '(1 − cos ρ)/2, ρ = ' + fmt(rho / D2R, 1) + '°' : t('media sulle facce, pesata sulle aree', 'average over the faces, weighted by area')]);
+  const qrows = (x, Q) => [[t('Sole assorbito', 'Absorbed sunlight'), fmt(x.qs, 1), 'W'], [t('Albedo assorbito', 'Absorbed albedo'), fmt(x.qa, 1), 'W'], [t('Infrarosso della Terra', 'Earth infrared'), fmt(x.qi, 1), 'W'], [t('Calore interno', 'Internal heat'), fmt(Q, 1), 'W']];
+  R.push(['#', t('Caso caldo', 'Hot case')], ...qrows(xh, qh), [t('Temperatura', 'Temperature'), fmt(Th - 273.15, 1), '°C', fmt(Th, 1) + ' K · ' + t(`equilibrio nel punto più caldo dell'orbita`, 'equilibrium at the hottest point of the orbit'), 'key']);
+  R.push(['#', t('Caso freddo', 'Cold case')], ...qrows(xc, qc), [t('Temperatura', 'Temperature'), fmt(Tc - 273.15, 1), '°C', fmt(Tc, 1) + ' K · ' + (xc.lit ? t(`equilibrio nel punto più freddo dell'orbita, al Sole: niente eclissi`, 'equilibrium at the coldest point of the orbit, in sunlight: no eclipse') : t('equilibrio in eclissi', 'equilibrium in eclipse')), 'key']);
+  let hi = Th - 273.15, lo = Tc - 273.15, trH = null, trC = null;
+  if (m != null && c != null) {
+    trH = transient(tab, g, hot, al, em, m * c, E.T); trC = transient(tab, g, cold, al, em, m * c, E.T); hi = trH.max; lo = trC.min;
+    R.push(['#', t(`Lungo l'orbita, con la massa termica`, 'Along the orbit, with the thermal mass')], [t('Caso caldo', 'Hot case'), fmt(trH.min, 1) + ' … ' + fmt(trH.max, 1), '°C'], [t('Caso freddo', 'Cold case'), fmt(trC.min, 1) + ' … ' + fmt(trC.max, 1), '°C'],
+      [t('Costante di tempo', 'Time constant'), fmt(trH.tau / 60, 0), 'min', 'm c / (4 ε σ A T³)']);
+    const bands = []; if (E.half > 0) for (let k = 0; k < 3; k++) { const cc = (k + 0.5) * E.T / 60, w = E.Te / 120; bands.push({ x0: cc - w, x1: cc + w, color: K.C.vi, op: 0.12 }); }
+    const ser = [{ name: t('caso caldo', 'hot case'), y: trH.T, color: K.C.cy }, { name: t('caso freddo', 'cold case'), y: trC.T, color: K.C.vi }];
+    if (tmin != null && tmax != null) ser.push({ name: t('massimo', 'maximum'), y: trH.t.map(() => tmax), color: K.C.ic, dash: true }, { name: t('minimo', 'minimum'), y: trH.t.map(() => tmin), color: K.C.ic, dash: true });
+    K.chart('ch-th', { title: t('Temperatura in tre orbite', 'Temperature over three orbits'), x: trH.t, series: ser, xLabel: t('tempo, min', 'time, min'), yLabel: '°C', unit: '°C', xName: 't', bands });
+  } else { unchart('ch-th'); I.push(t(`Dai la massa per vedere come cambia la temperatura lungo l'orbita.`, 'Give the mass to see how the temperature changes along the orbit.')); }
+  if (tmin != null && tmax != null && tmin < tmax) {
+    const src = trH ? t('lungo l\'orbita', 'along the orbit') : t('in equilibrio', 'in equilibrium');
+    R.push(['#', t('Rispetto ai limiti', 'Against the limits')], [t('Margine sul massimo', 'Margin to the maximum'), sgn(tmax - hi), '°C', src, tmax - hi < 0 ? 'warn' : ''], [t('Margine sul minimo', 'Margin to the minimum'), sgn(lo - tmin), '°C', src, lo - tmin < 0 ? 'warn' : '']);
+    if (hi > tmax) W.push(t(`Troppo caldo: ${fmt(hi, 1)} °C contro un massimo di ${fmt(tmax, 0)} °C. Prova un rivestimento con α/ε più basso o più area che irraggia.`, `Too hot: ${fmt(hi, 1)} °C against a maximum of ${fmt(tmax, 0)} °C. Try a coating with lower α/ε or more radiating area.`));
+    if (lo < tmin) W.push(t(`Troppo freddo: ${fmt(lo, 1)} °C contro un minimo di ${fmt(tmin, 0)} °C. Prova più calore interno (riscaldatori), un α/ε più alto` + (trH ? '' : ' o dai la massa: la massa termica smorza gli estremi') + '.', `Too cold: ${fmt(lo, 1)} °C against a minimum of ${fmt(tmin, 0)} °C. Try more internal heat (heaters), a higher α/ε` + (trH ? '' : ' or give the mass: thermal mass damps the extremes') + '.'));
+  }
+  K.rows('out-th', R); say('msg-th', W, I);
+  TV.st = { shape, hot: Object.assign({ T: Th, out: em * SIGMA * g.Arad * Th ** 4 }, xh), cold: Object.assign({ T: Tc, out: em * SIGMA * g.Arad * Tc ** 4 }, xc) };
+  drawTh();
+}
+function drawTh() {
+  const host = $('view-th'), W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const svg = svgIn(host, t('Bilancio di calore del satellite', 'Heat balance of the spacecraft')); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const st = TV.st;
+  if (!st) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" class="mut">' + t('Dai orbita, rivestimento e misura per vedere il bilancio.', 'Give orbit, coating and size to see the balance.') + '</text>'; return; }
+  const c = TV.mode === 'cold' ? st.cold : st.hot, f1 = v => v.toFixed(1), mn = Math.min(W, H);
+  const bx = W * 0.52, by = H * 0.45, bs = mn * 0.11, eTop = H * 0.84, Rb = Math.max(W, H) * 2;
+  const mk = (id, col) => '<marker id="' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="' + col + '"/></marker>';
+  const ar = (x1, y1, x2, y2, col, mid, dash) => '<line x1="' + f1(x1) + '" y1="' + f1(y1) + '" x2="' + f1(x2) + '" y2="' + f1(y2) + '" stroke="' + col + '" stroke-width="2" marker-end="url(#' + mid + ')"' + (dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+  const lab = (x, y, a, name, w) => '<text x="' + f1(x) + '" y="' + f1(y) + '" text-anchor="' + a + '">' + name + ' <tspan class="v">' + fmt(w, 0) + ' W</tspan></text>';
+  let s = '<defs>' + mk('mic', '#cfe3f5') + mk('mvi', '#a995ff') + mk('mcy', '#35d4f2') + '</defs>';
+  s += '<circle class="en" cx="' + f1(bx) + '" cy="' + f1(eTop + Rb) + '" r="' + f1(Rb) + '"/><text x="' + f1(bx) + '" y="' + f1(H - 12) + '" text-anchor="middle" class="mut">' + t('Terra', 'Earth') + '</text>';
+  const sx = Math.max(28, W * 0.1), sy = Math.max(30, H * 0.14), lit = c.qs > 0, scol = lit ? '#cfe3f5' : '#414b57';
+  s += '<circle cx="' + f1(sx) + '" cy="' + f1(sy) + '" r="9" fill="none" stroke="' + scol + '"/>';
+  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; s += '<line x1="' + f1(sx + 12 * Math.cos(a)) + '" y1="' + f1(sy + 12 * Math.sin(a)) + '" x2="' + f1(sx + 16 * Math.cos(a)) + '" y2="' + f1(sy + 16 * Math.sin(a)) + '" stroke="' + scol + '"/>'; }
+  let dx = sx - bx, dy = sy - by; const dl = Math.hypot(dx, dy); dx /= dl; dy /= dl;
+  if (st.shape === 'sph') s += '<circle class="body" cx="' + f1(bx) + '" cy="' + f1(by) + '" r="' + f1(bs) + '"/>';
+  else if (st.shape === 'cube') s += '<rect class="body" x="' + f1(bx - bs) + '" y="' + f1(by - bs) + '" width="' + f1(2 * bs) + '" height="' + f1(2 * bs) + '" rx="2"/>';
+  else s += '<rect class="body" x="' + f1(bx - 4) + '" y="' + f1(by - bs * 1.2) + '" width="8" height="' + f1(bs * 2.4) + '" transform="rotate(' + f1(Math.atan2(dy, dx) / D2R) + ' ' + f1(bx) + ' ' + f1(by) + ')"/>';
+  const inner = st.shape === 'plate' ? [bx - bs * 1.3, by + bs * 1.5, 'end'] : [bx, by + 4, 'middle'];
+  s += '<text x="' + f1(inner[0]) + '" y="' + f1(inner[1]) + '" text-anchor="' + inner[2] + '">' + t('dentro', 'inside') + ' <tspan class="v">' + fmt(c.Q, 0) + ' W</tspan></text>';
+  if (lit) { s += ar(sx - dx * 20, sy - dy * 20, bx + dx * (bs + 8), by + dy * (bs + 8), '#cfe3f5', 'mic'); s += lab((sx + bx) / 2 + 10, (sy + by) / 2 - 12, 'start', t('Sole', 'Sun'), c.qs); }
+  else s += '<text x="' + f1(sx + 22) + '" y="' + f1(sy + 4) + '" class="mut">' + t('dietro la Terra', 'behind the Earth') + '</text>';
+  const ex = W * 0.17;
+  s += ar(bx - ex, eTop - 6, bx - bs * 0.55, by + bs + 8, '#a995ff', 'mvi') + lab(bx - ex - 4, eTop - 14, 'end', 'albedo', c.qa);
+  s += ar(bx + ex, eTop - 6, bx + bs * 0.55, by + bs + 8, '#a995ff', 'mvi', true) + lab(bx + ex + 4, eTop - 14, 'start', t('infrarosso', 'infrared'), c.qi);
+  const ol = mn * 0.12;
+  s += ar(bx + bs + 8, by, bx + bs + 8 + ol, by, '#35d4f2', 'mcy') + ar(bx, by - bs - 8, bx, by - bs - 8 - ol * 0.8, '#35d4f2', 'mcy') + ar(bx + bs * 0.75 + 6, by - bs * 0.75 - 6, bx + bs * 0.75 + 6 + ol * 0.6, by - bs * 0.75 - 6 - ol * 0.6, '#35d4f2', 'mcy');
+  s += lab(bx + bs + 14 + ol, by + 4, 'start', t('emette', 'emits'), c.out);
+  s += '<text x="' + f1(bx - bs - 18) + '" y="' + f1(by + 2) + '" text-anchor="end" class="big">' + fmt(c.T - 273.15, 1) + ' °C</text><text x="' + f1(bx - bs - 18) + '" y="' + f1(by + 20) + '" text-anchor="end" class="mut">' + fmt(c.T, 1) + ' K · ' + (TV.mode === 'cold' ? t('caso freddo', 'cold case') : t('caso caldo', 'hot case')) + '</text>';
+  svg.innerHTML = s;
+}
+function setTh(m) { TV.mode = m; $('thHot').setAttribute('aria-pressed', String(m === 'hot')); $('thCold').setAttribute('aria-pressed', String(m === 'cold')); drawTh(); }
+
+/* =================== Bilanci =================== */
+let MASS = [], DV = [], PW = [], BV = null;
+const FM = ['n', 'm', 'k'], FD = ['n', 'dv', 'x', 'k'], FP = ['n', 'p', 'd', 'e'], MAT = ['5', '10', '20'], DVM = ['5', '100', '0'];
+const blank = k => k === 'mass' ? { n: '', m: '', k: '20' } : k === 'dv' ? { n: '', dv: '', x: '1', k: '5' } : { n: '', p: '', d: '', e: '' };
+const ser = (a, f) => a.map(r => f.map(k => String(r[k] == null ? '' : r[k]).replace(/[~*]/g, '-')).join('*')).join('~');
+const des = (s, f) => s.split('~').map(x => { const p = x.split('*'), r = {}; f.forEach((k, j) => { r[k] = p[j] || ''; }); return r; });
+const inp = (i, f, v, cls, lab, ph) => '<input class="' + cls + '" data-i="' + i + '" data-f="' + f + '" value="' + K.esc(v == null ? '' : v) + '" aria-label="' + K.esc(lab) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (cls === 'n' ? ' inputmode="decimal"' : '') + '>';
+const sel = (i, f, v, opts, lab) => '<select data-i="' + i + '" data-f="' + f + '" aria-label="' + K.esc(lab) + '">' + opts.map(o => '<option value="' + o + '"' + (o === v ? ' selected' : '') + '>' + o + '</option>').join('') + '</select>';
+const xb = (k, i) => '<button class="x" type="button" data-del="' + k + '" data-i="' + i + '" title="' + t('Togli la riga', 'Remove the row') + '" aria-label="' + t('Togli la riga ', 'Remove row ') + (i + 1) + '">×</button>';
+function renderTables() {
+  $('t-mass').tBodies[0].innerHTML = MASS.map((r, i) => '<tr><td>' + inp(i, 'n', r.n, 't', t('Sottosistema ', 'Subsystem ') + (i + 1), t('nome', 'name')) + '</td><td>' + inp(i, 'm', r.m, 'n', t('Massa, kg', 'Mass, kg')) + '</td><td>' + sel(i, 'k', r.k, MAT, t('Margine di maturità', 'Maturity margin')) + '</td><td class="c hm" data-o="' + i + '"></td><td>' + xb('mass', i) + '</td></tr>').join('');
+  $('t-dv').tBodies[0].innerHTML = DV.map((r, i) => '<tr><td>' + inp(i, 'n', r.n, 't', t('Manovra ', 'Manoeuvre ') + (i + 1), t('nome', 'name')) + '</td><td>' + inp(i, 'dv', r.dv, 'n', 'Δv, m/s') + '</td><td>' + inp(i, 'x', r.x, 'n', t('Volte', 'Times'), '1') + '</td><td>' + sel(i, 'k', r.k, DVM, t('Margine', 'Margin')) + '</td><td class="c hm" data-o="' + i + '"></td><td>' + xb('dv', i) + '</td></tr>').join('');
+  $('t-pw').tBodies[0].innerHTML = PW.map((r, i) => '<tr><td>' + inp(i, 'n', r.n, 't', t('Apparato ', 'Unit ') + (i + 1), t('nome', 'name')) + '</td><td>' + inp(i, 'p', r.p, 'n', t('Potenza, W', 'Power, W')) + '</td><td>' + inp(i, 'd', r.d, 'n', t('Acceso alla luce, %', 'On in sunlight, %'), '100') + '</td><td>' + inp(i, 'e', r.e, 'n', t('Acceso in eclissi, %', 'On in eclipse, %'), '100') + '</td><td>' + xb('pw', i) + '</td></tr>').join('');
+}
+const ARR = { mass: () => MASS, dv: () => DV, pw: () => PW };
+[['t-mass', 'mass'], ['t-dv', 'dv'], ['t-pw', 'pw']].forEach(([id, k]) => {
+  const tb = $(id).tBodies[0];
+  const on = e => { const el = e.target, a = ARR[k](), r = a[+el.dataset.i]; if (!r || !el.dataset.f) return; r[el.dataset.f] = el.value; };
+  tb.addEventListener('input', on); tb.addEventListener('change', on);
+  tb.addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; const a = ARR[k](); a.splice(+b.dataset.i, 1); if (!a.length) a.push(blank(k)); renderTables(); run(); });
+});
+const PAL = ['#35d4f2', '#cfe3f5', '#a995ff', '#1aa9c7', '#8fb2cc', '#7d68e0', '#86e6f8', '#e9f2fb', '#cbbfff', '#127f96', '#6c8aa3', '#5e4bb8'];
+const ink = hex => { const n = parseInt(hex.slice(1), 16), l = (0.2126 * (n >> 16 & 255) + 0.7152 * (n >> 8 & 255) + 0.0722 * (n & 255)) / 255; return l > 0.5 ? '#000' : '#fff'; };
+const PAT = '<defs><pattern id="hm" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#000"/><line x1="0" y1="0" x2="0" y2="6" stroke="#85919d" stroke-width="2.4"/></pattern><pattern id="hs" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="6" height="6" fill="#000"/><line x1="0" y1="0" x2="0" y2="6" stroke="#cfe3f5" stroke-width="1.6"/></pattern></defs>';
+function drawBar() {
+  if (!BV) return;
+  const host = $('mbar'), W = Math.max(280, host.clientWidth), H = 78, y0 = 24, bh = 30, { segs, lv } = BV;
+  const tot = segs.reduce((s, g) => s + g.kg, 0), top = Math.max(tot, lv || 0) * 1.03 || 1, X = v => 1 + v / top * (W - 2), f1 = v => v.toFixed(1);
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + t('Massa al lancio per voce', 'Launch mass by item') + '">' + PAT, x = 0, ci = 0;
+  segs.forEach((g, k) => {
+    g.fill = g.pat ? 'url(#' + g.pat + ')' : g.solid || PAL[ci++ % PAL.length];
+    const x0 = X(x), x1 = X(x + g.kg); x += g.kg;
+    s += '<rect x="' + f1(x0) + '" y="' + y0 + '" width="' + f1(Math.max(0, x1 - x0 - 1)) + '" height="' + bh + '" fill="' + g.fill + '"' + (g.pat || g.solid ? ' stroke="#85919d"' : '') + '/>';
+    if (x1 - x0 > 16) s += '<text x="' + f1((x0 + x1) / 2) + '" y="' + (y0 + bh / 2 + 4) + '" text-anchor="middle" style="fill:' + (g.pat || g.solid ? '#e6eaee' : ink(g.fill)) + '">' + (k + 1) + '</text>';
+  });
+  const tk = K.ticks(0, top, Math.max(3, Math.floor(W / 90)));
+  tk.out.forEach(v => { if (v > top) return; s += '<line x1="' + f1(X(v)) + '" x2="' + f1(X(v)) + '" y1="' + (y0 + bh) + '" y2="' + (y0 + bh + 5) + '" stroke="#414b57"/><text x="' + f1(Math.min(W - 14, Math.max(6, X(v)))) + '" y="' + (y0 + bh + 18) + '" text-anchor="middle">' + fmt(v, 0) + '</text>'; });
+  s += '<text x="' + (W - 1) + '" y="' + (y0 + bh + 18) + '" text-anchor="end">kg</text>';
+  if (lv) { const xl = X(lv), right = xl > W * 0.6; s += '<line x1="' + f1(xl) + '" x2="' + f1(xl) + '" y1="6" y2="' + (y0 + bh + 6) + '" stroke="#e6eaee" stroke-width="2"/><text x="' + f1(xl + (right ? -6 : 6)) + '" y="15" text-anchor="' + (right ? 'end' : 'start') + '" style="fill:#e6eaee">' + t('lanciatore ', 'launcher ') + fmt(lv, 0) + ' kg</text>'; }
+  host.innerHTML = s + '</svg>';
+  $('mleg').innerHTML = segs.map((g, k) => '<li><b>' + (k + 1) + '</b><svg width="12" height="12" aria-hidden="true"><rect width="12" height="12" fill="' + g.fill + '"' + (g.pat || g.solid ? ' stroke="#85919d"' : '') + '/></svg><span>' + K.esc(g.n) + '</span><em>' + fmt(g.kg, 1) + ' kg · ' + fmt(100 * g.kg / (tot || 1), 1) + ' %</em></li>').join('');
+}
+function runBud() {
+  K.clear('m-bud'); const W = [], I = [];
+  const sys = fld('msys', 20, 0, v => v >= 0 && v <= 100, W, t(`Il margine di sistema va da 0 a 100 %.`, 'The system margin must be between 0 and 100 %.'));
+  const isp = fld('isp', null, 0, v => v > 0 && v < 1e5, W, t(`L'impulso specifico deve essere sopra 0 s.`, 'Specific impulse must be above 0 s.'));
+  const res = fld('res', 2, 1, v => v >= 0 && v <= 50, W, t(`Il propellente residuo va da 0 a 50 %.`, 'Residual propellant must be between 0 and 50 %.'));
+  const lv = fld('lv', null, 1, v => v > 0, W, t(`La capacità del lanciatore deve essere sopra 0 kg.`, 'Launcher capacity must be above 0 kg.'));
+  const pmar = fld('pmar', 20, 0, v => v >= 0 && v <= 100, W, t(`Il margine di potenza va da 0 a 100 %.`, 'The power margin must be between 0 and 100 %.'));
+  fld('pay', null, 1, v => v > 0, W, t(`Il carico utile deve essere sopra 0 kg.`, 'The payload must be above 0 kg.'));
+  let badCell = false;
+  document.querySelectorAll('#m-bud .bt input.n').forEach(el => { const v = pnum(el.value), b = Number.isNaN(v) || v < 0 || (el.dataset.f !== 'm' && el.dataset.f !== 'dv' && el.dataset.f !== 'p' && el.dataset.f !== 'x' && v > 100); el.classList.toggle('bad', b); badCell = badCell || b; });
+  if (badCell) W.push(t(`Una cella della tabella non va: masse, Δv e potenze sono numeri da 0 in su, le quote di accensione vanno da 0 a 100 %.`, 'A table cell is wrong: masses, Δv and powers are numbers from 0 up, on-time shares go from 0 to 100 %.'));
+  const mt = massTot(MASS, sys == null ? 20 : sys), dv = dvTot(DV);
+  $('t-mass').querySelectorAll('td[data-o]').forEach(td => { const r = MASS[+td.dataset.o], m = pnum(r.m); td.textContent = m > 0 ? fmt(m * (1 + (+r.k) / 100), 1) : ''; });
+  $('t-dv').querySelectorAll('td[data-o]').forEach(td => { const d = dvRow(DV[+td.dataset.o]); td.textContent = d[1] > 0 ? fmt(d[1], 1) : ''; });
+  const mp = isp != null && mt.dry > 0 ? propOf(mt.dry, dv.dv, isp, res == null ? 2 : res) : null, wet = mt.dry + (mp || 0);
+  if (mt.dry > 0 && isp == null && dv.dv > 0 && !W.length) I.push(t(`Dai l'impulso specifico per avere il propellente.`, 'Give the specific impulse to get the propellant.'));
+  if (!(mt.dry > 0)) I.push(t(`Scrivi le masse dei sottosistemi, oppure il carico utile e «Stima i sottosistemi».`, 'Type the subsystem masses, or the payload and «Estimate the subsystems».'));
+  const segs = [];
+  MASS.forEach((r, i) => { const m = pnum(r.m); if (m > 0) segs.push({ n: r.n || t('riga ', 'row ') + (i + 1), kg: m }); });
+  if (mt.mar > 0) segs.push({ n: t('margini di maturità', 'maturity margins'), kg: mt.mar, pat: 'hm' });
+  if (mt.sm > 0) segs.push({ n: t('margine di sistema', 'system margin'), kg: mt.sm, pat: 'hs' });
+  if (mp > 0) segs.push({ n: t('propellente', 'propellant'), kg: mp, solid: '#2c3a48' });
+  BV = { segs, lv }; drawBar();
+  K.rows('out-b1', [['#', t('Massa a secco', 'Dry mass')], [t('Somma degli apparati', 'Sum of the units'), fmt(mt.nom, 1), 'kg'], [t('Margini di maturità', 'Maturity margins'), fmt(mt.mar, 1), 'kg', mt.nom > 0 ? fmt(100 * mt.mar / mt.nom, 1) + ' %' : null],
+    [t('Margine di sistema', 'System margin'), fmt(mt.sm, 1), 'kg', fmt(sys == null ? 20 : sys, 0) + t(' % della massa con i margini di maturità', ' % of the mass with maturity margins')], [t('Massa a secco con i margini', 'Dry mass with margins'), fmt(mt.dry, 1), 'kg', null, 'key']]);
+  K.rows('out-b2', [['#', t('Propellente e lancio', 'Propellant and launch')], [t('Δv con i margini', 'Δv with margins'), fmt(dv.dv, 1), 'm/s', t('senza margini ', 'without margins ') + fmt(dv.dv0, 1) + ' m/s'],
+    [t('Propellente', 'Propellant'), mp != null ? fmt(mp, 1) : '—', 'kg', mp != null ? 'Isp ' + fmt(isp, 0) + ' s, ' + t('residui ', 'residuals ') + fmt(res == null ? 2 : res, 1) + ' %' : t(`serve l'impulso specifico`, 'needs the specific impulse')],
+    [t('Massa al lancio', 'Launch mass'), fmt(wet, 1), 'kg', null, 'key'],
+    lv != null ? [t('Margine sul lanciatore', 'Launcher margin'), sgn(lv - wet), 'kg', fmt(100 * (lv - wet) / lv, 1) + t(' % della capacità', ' % of the capacity'), lv - wet < 0 ? 'warn key' : 'key'] : null]);
+  if (lv != null && wet > lv) W.push(t(`Il satellite pesa ${fmt(wet, 1)} kg, ${fmt(wet - lv, 1)} kg più di quanto porta il lanciatore.`, `The spacecraft weighs ${fmt(wet, 1)} kg, ${fmt(wet - lv, 1)} kg more than the launcher carries.`));
+  const pw = pwTot(PW, pmar == null ? 20 : pmar);
+  K.rows('out-pw', [[t('Alla luce Pd', 'In sunlight Pd'), fmt(pw.d, 1), 'W', t('senza margine ', 'without margin ') + fmt(pw.d0, 1) + ' W', 'key'], [t('In eclissi Pe', 'In eclipse Pe'), fmt(pw.e, 1), 'W', t('senza margine ', 'without margin ') + fmt(pw.e0, 1) + ' W', 'key']]);
+  $('usePw').disabled = !(pw.d > 0);
+  say('msg-bud', W, I);
+}
+const r1 = v => Math.round(v * 10) / 10;
+function csvMass() { const s = num('msys'), mt = massTot(MASS, s == null ? 20 : s); K.csv(t('bilancio-massa.csv', 'mass-budget.csv'), [t('Sottosistema', 'Subsystem'), t('Massa (kg)', 'Mass (kg)'), t('Margine (%)', 'Margin (%)'), t('Con margine (kg)', 'With margin (kg)')], MASS.filter(r => pnum(r.m) > 0).map(r => [r.n, pnum(r.m), +r.k, r1(pnum(r.m) * (1 + r.k / 100))]).concat([[t('Somma', 'Sum'), r1(mt.nom), '', r1(mt.d0)], [t('Margine di sistema', 'System margin'), '', s == null ? 20 : s, r1(mt.sm)], [t('Massa a secco con i margini', 'Dry mass with margins'), '', '', r1(mt.dry)]])); }
+function csvDv() { const d = dvTot(DV); K.csv(t('bilancio-dv.csv', 'dv-budget.csv'), [t('Manovra', 'Manoeuvre'), 'Δv (m/s)', t('Volte', 'Times'), t('Margine (%)', 'Margin (%)'), t('Totale (m/s)', 'Total (m/s)')], DV.filter(r => dvRow(r)[1] > 0).map(r => [r.n, pnum(r.dv), pnum(r.x) == null ? 1 : pnum(r.x), +r.k, r1(dvRow(r)[1])]).concat([[t('Totale', 'Total'), '', '', '', r1(d.dv)]])); }
+function csvPw() { const m = num('pmar'), p = pwTot(PW, m == null ? 20 : m); K.csv(t('bilancio-potenza.csv', 'power-budget.csv'), [t('Apparato', 'Unit'), t('Potenza (W)', 'Power (W)'), t('Alla luce (%)', 'In sunlight (%)'), t('In eclissi (%)', 'In eclipse (%)')], PW.filter(r => pnum(r.p) > 0).map(r => [r.n, pnum(r.p), pnum(r.d) == null ? 100 : pnum(r.d), pnum(r.e) == null ? 100 : pnum(r.e)]).concat([[t('Media con il margine', 'Average with margin'), '', r1(p.d), r1(p.e)]])); }
+
+/* =================== esempi, avvio =================== */
+const nm = (it, en) => t(it, en);
+function exOrbit() { K.fill({ h: '550', beta: '', inc: wr(97.59, 2), raan: wr(247.5, 1), date: '2026-06-21' }); satEl = null; const q = document.querySelector('#sat input'); if (q) q.value = ''; }
+function exPow() { exOrbit(); K.fill({ Pd: '84', Pe: '70', eta: '', Id: '', th: '', dg: '', life: '5', spw: '', Aa: '', cyc: '', dod: '', nb: '', nt: '', vb: '', cap: '', reg: 'mppt', cell: 'tj', chem: 'li' }); }
+function exTh() { exOrbit(); K.fill({ coat: 'mli', al: '', em: '', shape: 'cube', dim: wr(0.6, 1), qh: '84', qc: '58', sh: '', sc: '', ah: '', ac: '', irh: '', irc: '', ms: '170', cp: '', lim: 'el', tmin: '', tmax: '' }); }
+function exBud() {
+  MASS = [[nm('Carico utile (camera)', 'Payload (camera)'), 40, 20], [nm('Struttura e meccanismi', 'Structure and mechanisms'), 33, 10], [nm('Controllo termico', 'Thermal control'), 3, 5], [nm('Potenza (pannelli, batteria, cavi)', 'Power (arrays, battery, harness)'), 26, 10], [nm('Telemetria e comandi', 'TT&C'), 4, 5], [nm('Calcolatore di bordo', 'On-board computer'), 5, 5], [nm('Assetto', 'Attitude control'), 8, 10], [nm('Propulsione, a secco', 'Propulsion, dry'), 5, 10], [nm('Bilanciamento e altro', 'Balance mass and other'), 4, 20]].map(r => ({ n: r[0], m: String(r[1]), k: String(r[2]) }));
+  DV = [[nm(`Correzione dell'iniezione`, 'Injection correction'), 30, 1, 5], [nm('Mantenimento della quota, per anno', 'Altitude keeping, per year'), 12, 5, 100], [nm('Rientro: perigeo a 50 km', 'Re-entry: perigee to 50 km'), 143, 1, 5]].map(r => ({ n: r[0], dv: String(r[1]), x: String(r[2]), k: String(r[3]) }));
+  PW = [[nm('Strumento (camera)', 'Payload (camera)'), 60, 30, 0], [nm('Calcolatore di bordo', 'On-board computer'), 8, '', ''], [nm('Ricevitore dei comandi', 'Command receiver'), 4, '', ''], [nm('Trasmettitore dei dati', 'Data transmitter'), 40, 15, 15], [nm('Assetto (ruote e sensori)', 'Attitude (wheels and sensors)'), 25, '', ''], [nm('Riscaldatori', 'Heaters'), 15, 20, 60], [nm('Gestione della potenza', 'Power conditioning'), 6, '', '']].map(r => ({ n: r[0], p: String(r[1]), d: String(r[2]), e: String(r[3]) }));
+  K.fill({ pay: '', mtyp: 'leo', msys: '', isp: '220', res: '', lv: '250', pmar: '' }); renderTables();
+}
+function run() {
+  const m = tabs.get();
+  if (m === 'pow') runPow(); else if (m === 'th') runTh(); else if (m === 'bud') runBud();
+  K.save({ m, mb: ser(MASS, FM), dv: ser(DV, FD), pw: ser(PW, FP) });
+}
+function pickSat(el) {
+  satEl = el;
+  if (!$('date').value) $('date').value = new Date().toISOString().slice(0, 10);
+  K.fill({ h: wr(el.a - K.RE, 1), beta: '', inc: wr(el.i, 2), raan: wr(omegaAt(el, Date.parse($('date').value + 'T12:00:00Z')), 2) });
+  satAuto = $('raan').value; run();
+}
+$('smadT').innerHTML = SMAD.names.map((n, k) => '<tr><td>' + t(n[0], n[1]) + '</td>' + ['np', 'leo', 'heo', 'pl'].map(c => '<td class="num">' + SMAD[c][k] + '</td>').join('') + '</tr>').join('') + '<tr><td>' + t('Propellente', 'Propellant') + '</td>' + ['np', 'leo', 'heo', 'pl'].map(c => '<td class="num">' + SMAD.prop[c] + '</td>').join('') + '</tr>';
+K.sat('sat', pickSat);
+K.live(document.querySelector('main'), run, 90);
+$('betaR').addEventListener('input', e => { $('beta').value = wr(+e.target.value, 1); });
+$('date').addEventListener('change', () => { if (!satEl || $('raan').value !== satAuto) return; const ms = Date.parse($('date').value + 'T12:00:00Z'); if (Number.isFinite(ms)) { $('raan').value = wr(omegaAt(satEl, ms), 2); satAuto = $('raan').value; } });
+$('ex-pow').onclick = () => { exPow(); run(); }; $('ex-th').onclick = () => { exTh(); run(); }; $('ex-bud').onclick = () => { exBud(); run(); };
+$('clr-pow').onclick = () => { K.wipe('f-pow'); satEl = null; run(); };
+$('clr-th').onclick = () => { K.wipe('f-th'); satEl = null; run(); };
+$('clr-bud').onclick = () => { K.wipe('m-bud'); MASS = [blank('mass')]; DV = [blank('dv')]; PW = [blank('pw')]; renderTables(); run(); };
+$('add-mass').onclick = () => { MASS.push(blank('mass')); renderTables(); run(); };
+$('add-dv').onclick = () => { DV.push(blank('dv')); renderTables(); run(); };
+$('add-pw').onclick = () => { PW.push(blank('pw')); renderTables(); run(); };
+$('csv-mass').onclick = csvMass; $('csv-dv').onclick = csvDv; $('csv-pw').onclick = csvPw;
+$('est').onclick = () => {
+  const p = num('pay'), col = SMAD[$('mtyp').value] || SMAD.leo;
+  if (!(p > 0)) { K.bad('pay'); say('msg-bud', [t(`Scrivi la massa del carico utile per stimare gli altri sottosistemi.`, 'Type the payload mass to estimate the other subsystems.')], []); return; }
+  const dry = p / (col[0] / 100);
+  MASS = SMAD.names.map((n, k) => ({ n: t(n[0], n[1]), m: wr(k === 0 ? p : dry * col[k] / 100, 1), k: '20' })).filter((r, k) => col[k] > 0);
+  renderTables(); run();
+};
+$('usePw').onclick = () => { const m = num('pmar'), p = pwTot(PW, m == null ? 20 : m); if (!(p.d > 0)) return; $('Pd').value = wr(p.d, 1); $('Pe').value = wr(p.e, 1); tabs.set('pow'); scrollTo(0, 0); };
+$('play').onclick = () => { PV.play = !PV.play; $('play').setAttribute('aria-pressed', String(PV.play)); $('play').textContent = PV.play ? t('Pausa', 'Pause') : t('Avvia', 'Play'); };
+$('thHot').onclick = () => setTh('hot'); $('thCold').onclick = () => setTh('cold');
+if (!PV.play) { $('play').setAttribute('aria-pressed', 'false'); $('play').textContent = t('Avvia', 'Play'); PV.ph = 0.42; }
+if (window.ResizeObserver) { new ResizeObserver(drawPow).observe($('view-pow')); new ResizeObserver(drawTh).observe($('view-th')); let bw = 0; new ResizeObserver(() => { const w = $('mbar').clientWidth; if (Math.abs(w - bw) > 4) { bw = w; drawBar(); } }).observe($('mbar')); }
+if (window.IntersectionObserver) new IntersectionObserver(es => { PV.vis = es[0].isIntersecting; }).observe($('view-pow'));
+const IDS = ['h', 'beta', 'inc', 'raan', 'date', 'Pd', 'Pe', 'reg', 'cell', 'eta', 'Id', 'th', 'dg', 'life', 'spw', 'Aa', 'chem', 'cyc', 'dod', 'nb', 'nt', 'vb', 'cap',
+  'coat', 'al', 'em', 'shape', 'dim', 'qh', 'qc', 'sh', 'sc', 'ah', 'ac', 'irh', 'irc', 'ms', 'cp', 'lim', 'tmin', 'tmax', 'pay', 'mtyp', 'msys', 'isp', 'res', 'lv', 'pmar'];
+const st0 = K.keep(IDS);
+if (st0) {
+  const ld = (k, f, kk, ok) => { const v = st0.get(k); const a = v ? des(v, f) : [blank(kk)]; a.forEach(r => { if (ok && !ok.includes(r.k)) r.k = ok[ok.length === 3 && ok[0] === '5' && ok[1] === '10' ? 2 : 0]; }); return a; };
+  MASS = ld('mb', FM, 'mass', MAT); DV = ld('dv', FD, 'dv', DVM); PW = ld('pw', FP, 'pw');
+} else { exPow(); exTh(); exBud(); }
+renderTables();
+const m0 = st0 && st0.get('m');
+if (['th', 'bud', 'info'].includes(m0)) tabs.set(m0); else { placeOrbit('pow'); run(); }
+requestAnimationFrame(animPow);
+
+/* ---------- prova interna: ?test nell'indirizzo ---------- */
+function selfTest() {
+  const out = [], chk = (name, v, ref, tol) => { const ok = Number.isFinite(v) && Math.abs(v - ref) <= tol; out.push(ok); console.info('selfTest', ok ? 'ok' : 'NO', name, '=', +v.toPrecision(7), '| atteso', ref, '±', tol); };
+  const e = eclipseOf(400, 0);
+  chk('400 km: periodo, min', e.T / 60, 92.56, 0.01);
+  chk('400 km, β 0: semiangolo φ/2, °', e.half, 70.22, 0.01);
+  chk('400 km, β 0: frazione in ombra', e.frac, 0.3901, 0.0005);
+  chk('400 km, β 0: Te, min', e.Te / 60, 36.11, 0.01);
+  chk('400 km: β*, °', e.bstar, 70.22, 0.01);
+  chk('400 km, β 70,5° oltre β*: Te, min', eclipseOf(400, 70.5).Te / 60, 0, 0);
+  const s = sunDir(Date.UTC(2006, 3, 2));
+  chk('Sole 2/4/2006 0h UTC, x UA (Vallado es. 5-1)', s.x * s.r, 0.9771945, 2e-5);
+  chk('Sole, y UA', s.y * s.r, 0.1924424, 2e-5);
+  chk('Sole, z UA', s.z * s.r, 0.0834308, 2e-5);
+  const eq = Date.UTC(2026, 2, 20, 14, 46);
+  chk('β all\'equinozio, i 90°, Ω 90°', betaOf(90, 90, eq), 90, 0.1);
+  chk('β all\'equinozio, i 90°, Ω 0°', betaOf(90, 0, eq), 0, 0.1);
+  const gs = geomOf('sph', 1), tf = thermTables(1e6, 0, gs, 12);
+  chk('sfera lontana dalla Terra, α = ε, 1361 W/m²: T, K', Teq(qAt(tf, gs, 0, { S: 1361, a: 0.3, q: 237, Q: 0 }, 0.5, 0.5).q, 0.5, gs.Arad), 278.32, 0.05);
+  const H4 = (K.RE + 400) / K.RE, rho = Math.asin(1 / H4), tsp = thermTables(H4, 0, gs, 4), tcu = thermTables(H4, 0, geomOf('cube', 1), 4);
+  chk('400 km: sfera, F = (1 − cos ρ)/2', tsp.ir[0] / Math.PI, (1 - Math.cos(rho)) / 2, 2e-4);
+  chk('400 km: cubo, Σ A·F = sin²ρ + 4(ρ − sin ρ cos ρ)/π, m²', tcu.ir[0], Math.sin(rho) ** 2 + 4 * (rho - Math.sin(rho) * Math.cos(rho)) / Math.PI, 0.005);
+  chk('400 km: albedo della sfera sotto il Sole, rapporto contro Ka di SMAD', tsp.alb[0] / tsp.ir[0], 0.664 + 0.521 * rho - 0.203 * rho * rho, 0.01);
+  const a = arrayOf({ Pd: 100, Pe: 100, Te: e.Te, Td: e.Td, Xe: 0.6, Xd: 0.8, eta: 0.295, Id: 0.77, th: 0, dg: 0.005, life: 5, spw: 30 });
+  chk('Psa, Pd = Pe = 100 W, 400 km, β 0, Xe 0,60, Xd 0,80 (a mano 231,6 W)', a.Psa, 231.6, 0.1);
+  chk('PEOL = 0,295·1361·0,77·0,995⁵, W/m²', a.Peol, 301.5, 0.1);
+  const cr = battOf(100, e.Te, 0.30, 1, 0.9);
+  chk('Cr = 100 W · 36,11 min / (0,30 · 0,9), Wh', cr, 222.9, 0.1);
+  chk('DoD ioni di litio a 9 798 cicli (metà in scala log), %', dodOf('li', Math.sqrt(1600 * 60000)).dod, 50, 1e-9);
+  const sm = energySim({ T: e.T, half: e.half, Parr: a.Psa, Pd: 100, Pe: 100, Xd: 0.8, Xe: 0.6, n: 0.9, Ecap: cr });
+  chk('bilancio nel tempo: minimo di carica = 100 − DoD, %', Math.min(...sm.soc), 70, 0.5);
+  chk('bilancio nel tempo: carica prima della seconda eclissi, %', sm.soc[Math.floor((1.5 * e.T - e.Te / 2) / (3 * e.T / 1080)) - 1], 100, 0.5);
+  const mt = massTot([{ m: '10', k: '5' }, { m: '20', k: '10' }, { m: '30', k: '20' }], 20);
+  chk('margini di maturità: 10,5 + 22 + 36, kg', mt.d0, 68.5, 1e-9);
+  chk('più il 20 % di sistema, kg', mt.dry, 82.2, 1e-9);
+  chk('propellente: 100 kg, 300 m/s, Isp 220 s, kg', propOf(100, 300, 220, 0), 14.92, 0.01);
+  console.info('selfTest', out.every(Boolean) ? 'tutto ok' : 'ci sono errori', out.filter(Boolean).length + '/' + out.length);
+}
+if (/[?&]test\b/.test(location.search)) selfTest();
+</script>
+</body>
+</html>

@@ -47,6 +47,9 @@ def scrivi_sitemap(oggi):
     alt = ('<xhtml:link rel="alternate" hreflang="it" href="%s"/><xhtml:link rel="alternate" hreflang="en" href="%sen/"/>'
            '<xhtml:link rel="alternate" hreflang="x-default" href="%s"/>' % (SITO, SITO, SITO))
     righe = ''.join('  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>daily</changefreq>%s</url>\n' % (u, oggi, alt) for u in (SITO, SITO + 'en/'))
+    # pagine del laboratorio (una sola pagina per le due lingue: la lingua si sceglie nella pagina)
+    lab = [n for n in ('orbite', 'assetto', 'propulsione', 'strutture', 'comunicazioni', 'sistemi') if (RADICE / (n + '.html')).exists()]
+    righe += ''.join('  <url><loc>%s%s.html</loc><lastmod>%s</lastmod><changefreq>monthly</changefreq></url>\n' % (SITO, n, oggi) for n in lab)
     (RADICE / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
                                         'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + righe + '</urlset>\n', encoding='utf-8')
 

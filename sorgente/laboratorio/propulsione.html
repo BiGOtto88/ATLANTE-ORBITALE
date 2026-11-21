@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-en="Propulsion and launchers · Keplario">Propulsione e lanciatori · Keplario</title>
+<meta name="description" content="Equazione del razzo, stadi ottimi e ugello ideale: dai i dati che hai, la pagina ricava il resto e lo disegna." data-en-content="Rocket equation, optimal staging and the ideal nozzle: give the data you have, the page works out the rest and draws it.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/propulsione.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Propulsione e lanciatori · Keplario","description":"Equazione del razzo, stadi ottimi e ugello ideale: dai i dati che hai, la pagina ricava il resto e lo disegna.","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/propulsione.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<!--KIT:CSS-->
+<style>
+/* propulsione: solo quello che il kit non ha */
+.view svg text{font-family:var(--num)}
+.view.wide{aspect-ratio:16/9}
+.stg{display:grid;grid-template-columns:26px repeat(4,minmax(0,1fr));gap:6px;align-items:center;margin:6px 0}
+.stg.hd{margin:12px 0 0;align-items:end}
+.stg.hd span{font-size:12.5px;color:var(--tx3);text-align:right;line-height:1.25;padding-right:2px}
+.stg .sk{font-size:14px;color:var(--tx2);display:flex;align-items:center;gap:5px}
+.stg .sk i,.sw{display:inline-block;width:8px;height:8px;border-radius:2px;flex:none}
+.sw{margin-right:7px}
+.stg input{width:100%;min-width:0;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 7px;font:inherit;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.stg input:hover{border-color:var(--tx3)}
+.stg input:focus{border-color:var(--cy);outline:none;box-shadow:0 0 0 1px var(--cy)}
+.stg input::placeholder{color:var(--tx3);opacity:1}
+.stg input.der::placeholder{color:var(--gr)}
+.stg input.bad{border-color:var(--am);box-shadow:0 0 0 1px var(--am)}
+.stg input[readonly]{border-style:dashed;cursor:default}
+.pre{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin:2px 0 4px}
+.acts + .hint{margin-top:0}
+#m-info{max-width:860px}
+#m-info .pnl p,#m-info .pnl li{max-width:78ch;color:var(--tx2);font-size:14.5px}
+#m-info .pnl ul{margin:6px 0 0;padding-left:20px}
+#m-info .pnl li{margin:4px 0}
+.eq{font-family:var(--num);color:var(--tx)!important;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:9px 12px;margin:10px 0;line-height:1.9;overflow-x:auto}
+.tbl td:first-child{white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+  <div class="ph">
+    <div>
+      <h1 data-en="Propulsion and launchers">Propulsione e lanciatori</h1>
+      <p class="lead" data-en="How much Δv a rocket gives you, how to split it into stages, how the nozzle works. Give the numbers you have: the page works out the rest and draws it.">Quanto Δv ti dà un razzo, come dividerlo in stadi, come lavora l'ugello. Dai i numeri che hai: la pagina ricava gli altri e li disegna.</p>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" data-m="razzo" aria-controls="m-razzo" aria-selected="true" data-en="Rocket">Razzo</button>
+    <button role="tab" data-m="stadi" aria-controls="m-stadi" aria-selected="false" data-en="Staging">Stadi</button>
+    <button role="tab" data-m="ugello" aria-controls="m-ugello" aria-selected="false" data-en="Nozzle">Ugello</button>
+    <button role="tab" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
+  </div>
+
+  <!-- ===================== Razzo ===================== -->
+  <section id="m-razzo" class="lab">
+    <form class="stack" id="fr" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Rocket equation">Equazione del razzo</h2>
+        <p class="why" data-en="Three independent values are enough, for example specific impulse, initial mass and propellant. The empty fields show in green what the page works out.">Bastano tre dati indipendenti, per esempio impulso specifico, massa iniziale e propellente. I campi vuoti mostrano in verde quello che la pagina ricava.</p>
+        <div class="f"><label for="rdv">Δv</label><input id="rdv" inputmode="decimal"><span class="u">m/s</span></div>
+        <div class="f"><label for="risp" data-en="Specific impulse">Impulso specifico</label><input id="risp" inputmode="decimal"><span class="u">s</span></div>
+        <div class="f"><label for="rve" data-en="Exhaust velocity">Velocità di scarico</label><input id="rve" inputmode="decimal"><span class="u">m/s</span></div>
+        <div class="f"><label for="rm0" data-en="Initial mass">Massa iniziale</label><input id="rm0" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f"><label for="rmf" data-en="Final mass">Massa finale</label><input id="rmf" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f"><label for="rmp" data-en="Propellant">Propellente</label><input id="rmp" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f"><label for="rmr" data-en="Mass ratio">Rapporto di massa</label><input id="rmr" inputmode="decimal"><span class="u">m<sub>0</sub>/m<sub>f</sub></span></div>
+        <div class="f"><label for="rzf" data-en="Propellant fraction">Frazione di propellente</label><input id="rzf" inputmode="decimal"><span class="u">%</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Burn">Accensione</h2>
+        <p class="why" data-en="Optional: give the thrust, the mass flow or the burn time. Constant thrust, in vacuum.">Facoltativo: dai la spinta, la portata o la durata. Spinta costante, nel vuoto.</p>
+        <div class="f"><label for="rF" data-en="Thrust">Spinta</label><input id="rF" inputmode="decimal"><span class="u">kN</span></div>
+        <div class="f"><label for="rmd" data-en="Mass flow">Portata</label><input id="rmd" inputmode="decimal"><span class="u">kg/s</span></div>
+        <div class="f"><label for="rtb" data-en="Burn time">Durata</label><input id="rtb" inputmode="decimal"><span class="u">s</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="exr1" data-en="Falcon 9, stage 2">Falcon 9, 2° stadio</button>
+        <button class="btn" type="button" id="exr2" data-en="Delta IV, stage 2">Delta IV, 2° stadio</button>
+        <button class="btn" type="button" id="clrr" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="Examples with indicative values from public data. The final mass includes the payload: 15 t on Falcon 9, 5 t on Delta IV.">Esempi con valori indicativi da dati pubblici. La massa finale comprende il carico utile: 15 t sul Falcon 9, 5 t sul Delta IV.</p>
+    </form>
+    <div>
+      <div id="rmsg"></div>
+      <div class="view" id="rview"><div class="cap"><span style="color:var(--cy)"><i class="dot"></i><span data-en="propellant">propellente</span></span><span style="color:var(--gr)"><i class="dot"></i><span data-en="Δv gained">Δv raggiunto</span></span></div></div>
+      <div class="bar">
+        <button class="btn sm" type="button" id="rplay" data-en="Ignite">Accendi</button>
+        <label class="vh" for="rt" data-en="Burn progress">Avanzamento dell'accensione</label>
+        <input type="range" id="rt" min="0" max="1000" value="0" step="1">
+        <span class="t" id="rtt"></span>
+      </div>
+      <div class="out" id="rout"></div>
+      <div id="rch"></div>
+    </div>
+  </section>
+
+  <!-- ===================== Stadi ===================== -->
+  <section id="m-stadi" class="lab" hidden>
+    <form class="stack" id="fs" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Stages">Stadi</h2>
+        <p class="why" data-en="Stage 1 is the one that lifts off. m<sub>s</sub> is the structure (everything but propellant), m<sub>p</sub> the propellant, ε = m<sub>s</sub> / (m<sub>s</sub> + m<sub>p</sub>).">Lo stadio 1 è quello che parte da terra. m<sub>s</sub> è la struttura (tutto tranne il propellente), m<sub>p</sub> il propellente, ε = m<sub>s</sub> / (m<sub>s</sub> + m<sub>p</sub>).</p>
+        <div class="f nou"><label for="sn" data-en="Number of stages">Numero di stadi</label><select id="sn"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+        <div class="f wide"><label for="smo" data-en="What to calculate">Cosa calcolare</label>
+          <select id="smo"><option value="a" data-en="The Δv, from the stage masses">Il Δv, dalle masse degli stadi</option><option value="b" data-en="The best masses, from the Δv">Le masse migliori, dal Δv</option></select></div>
+        <div class="stg hd" aria-hidden="true"><span></span><span>Isp, s</span><span>ε</span><span>m<sub>s</sub>, t</span><span>m<sub>p</sub>, t</span></div>
+        <div id="stgs"></div>
+        <div class="f"><label for="spl" data-en="Payload">Carico utile</label><input id="spl" inputmode="decimal"><span class="u">t</span></div>
+        <p class="hint" id="shint"></p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Δv to deliver">Δv da dare</h2>
+        <p class="why" data-en="Orbital speed plus losses, minus the help from Earth's rotation when you launch east. You can also type the total directly.">Velocità dell'orbita più le perdite, meno l'aiuto della rotazione terrestre se lanci verso est. Puoi anche scrivere direttamente il totale.</p>
+        <div class="f"><label for="sh" data-en="Orbit altitude">Quota dell'orbita</label><input id="sh" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="sv" data-en="Orbital speed">Velocità dell'orbita</label><input id="sv" inputmode="decimal"><span class="u">m/s</span></div>
+        <div class="f"><label for="sgl" data-en="Gravity losses">Perdite per gravità</label><input id="sgl" inputmode="decimal"><span class="u">m/s</span></div>
+        <div class="f"><label for="sdl" data-en="Drag losses">Perdite aerodinamiche</label><input id="sdl" inputmode="decimal"><span class="u">m/s</span></div>
+        <div class="f"><label for="ssl" data-en="Steering losses">Perdite di pilotaggio</label><input id="ssl" inputmode="decimal"><span class="u">m/s</span></div>
+        <div class="f"><label for="slat" data-en="Launch site latitude">Latitudine della base</label><input id="slat" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="sdv" data-en="Total Δv">Δv totale</label><input id="sdv" inputmode="decimal"><span class="u">m/s</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="exs1">Falcon 9</button>
+        <button class="btn" type="button" id="exs2" data-en="Three optimal stages">Tre stadi ottimi</button>
+        <button class="btn" type="button" id="clrs" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="Indicative values. Falcon 9: public masses of the Full Thrust version, 22.8 t to a 200 km orbit from Cape Canaveral (28.5°). Three stages: kerosene, kerosene and hydrogen, from Kourou (5.2°).">Valori indicativi. Falcon 9: masse pubbliche della versione Full Thrust, 22,8 t in orbita a 200 km da Cape Canaveral (28,5°). Tre stadi: cherosene, cherosene e idrogeno, da Kourou (5,2°).</p>
+    </form>
+    <div>
+      <div id="smsg"></div>
+      <div class="view" id="sview"><div class="cap"><span data-en="Heights to scale: mass on the left, Δv on the right">Altezze in scala: massa a sinistra, Δv a destra</span></div></div>
+      <div class="out" id="sout"><div id="stbl"></div><div id="srows"></div></div>
+      <div id="sch"></div>
+      <p class="note" id="schn"></p>
+    </div>
+  </section>
+
+  <!-- ===================== Ugello ===================== -->
+  <section id="m-ugello" class="lab" hidden>
+    <form class="stack" id="fu" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Combustion chamber">Camera di combustione</h2>
+        <p class="why" data-en="Gas in the chamber. Typical values: γ 1.2–1.25; oxygen and kerosene about 3 600 K and 22 g/mol; oxygen and hydrogen about 3 400 K and 13 g/mol.">Gas in camera. Valori tipici: γ 1,2–1,25; ossigeno e cherosene circa 3 600 K e 22 g/mol; ossigeno e idrogeno circa 3 400 K e 13 g/mol.</p>
+        <div class="f"><label for="ug">γ (c<sub>p</sub>/c<sub>v</sub>)</label><input id="ug" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="upc" data-en="Chamber pressure">Pressione in camera</label><input id="upc" inputmode="decimal"><span class="u">MPa</span></div>
+        <div class="f"><label for="utc" data-en="Chamber temperature">Temperatura in camera</label><input id="utc" inputmode="decimal"><span class="u">K</span></div>
+        <div class="f"><label for="umm" data-en="Molar mass">Massa molare</label><input id="umm" inputmode="decimal"><span class="u">g/mol</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Nozzle">Ugello</h2>
+        <p class="why" data-en="Give the throat area or the thrust (at the ambient pressure below), and the expansion ratio or the exit pressure.">Dai l'area di gola o la spinta (alla pressione esterna qui sotto), e il rapporto d'espansione o la pressione d'uscita.</p>
+        <div class="f"><label for="uat" data-en="Throat area">Area di gola</label><input id="uat" inputmode="decimal"><span class="u">cm²</span></div>
+        <div class="f"><label for="uf" data-en="Thrust">Spinta</label><input id="uf" inputmode="decimal"><span class="u">kN</span></div>
+        <div class="f"><label for="ueps" data-en="Expansion ratio">Rapporto d'espansione</label><input id="ueps" inputmode="decimal"><span class="u">A<sub>e</sub>/A<sub>t</sub></span></div>
+        <div class="f"><label for="upe" data-en="Exit pressure">Pressione d'uscita</label><input id="upe" inputmode="decimal"><span class="u">kPa</span></div>
+        <div class="f"><label for="upa" data-en="Ambient pressure">Pressione esterna</label><input id="upa" inputmode="decimal"><span class="u">kPa</span></div>
+        <div class="pre"><button class="btn sm" type="button" data-pa="101.325" data-en="sea level">livello del mare</button><button class="btn sm" type="button" data-pa="0" data-en="vacuum">vuoto</button></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="exu1" data-en="Merlin 1D, sea level">Merlin 1D, al mare</button>
+        <button class="btn" type="button" id="exu2">Merlin Vacuum</button>
+        <button class="btn" type="button" id="exu3">RL10B-2</button>
+        <button class="btn" type="button" id="clru" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="Indicative values: gases and pressures from public data. The ideal calculation gives a few percent more than the real engine.">Valori indicativi: gas e pressioni da dati pubblici. Il calcolo ideale dà qualche percento in più del motore vero.</p>
+    </form>
+    <div>
+      <div id="umsg"></div>
+      <div class="view wide" id="uview"></div>
+      <div class="out" id="uout"></div>
+      <div id="uch"></div>
+    </div>
+  </section>
+
+  <!-- ===================== Come funziona ===================== -->
+  <section id="m-info" hidden>
+    <div class="stack">
+      <div class="pnl">
+        <h2 data-en="Rocket equation">Equazione del razzo</h2>
+        <p data-en="A rocket speeds up by throwing mass backwards. The Δv it gains depends only on the exhaust velocity and on how much lighter it gets:">Un razzo accelera perché butta massa all'indietro. Il Δv che guadagna dipende solo dalla velocità di scarico e da quanto si alleggerisce:</p>
+        <p class="eq" data-en="Δv = v<sub>e</sub> · ln(m<sub>0</sub> / m<sub>f</sub>)<br>v<sub>e</sub> = I<sub>sp</sub> · g<sub>0</sub>,  g<sub>0</sub> = 9.80665 m/s²<br>m<sub>0</sub> = m<sub>f</sub> + m<sub>p</sub>,  propellant fraction = m<sub>p</sub> / m<sub>0</sub> = 1 − m<sub>f</sub> / m<sub>0</sub>">Δv = v<sub>e</sub> · ln(m<sub>0</sub> / m<sub>f</sub>)<br>v<sub>e</sub> = I<sub>sp</sub> · g<sub>0</sub>,  g<sub>0</sub> = 9,80665 m/s²<br>m<sub>0</sub> = m<sub>f</sub> + m<sub>p</sub>,  frazione di propellente = m<sub>p</sub> / m<sub>0</sub> = 1 − m<sub>f</sub> / m<sub>0</sub></p>
+        <p data-en="With constant thrust F:">Con spinta F costante:</p>
+        <p class="eq">ṁ = F / v<sub>e</sub>,  t<sub>b</sub> = m<sub>p</sub> / ṁ,  I = F · t<sub>b</sub> = m<sub>p</sub> · v<sub>e</sub>,  a = F / m</p>
+        <p data-en="Δv grows faster and faster during the burn: the last kilograms of propellant push a lighter rocket. You can see it when you ignite the engine in the drawing.">Durante l'accensione il Δv cresce sempre più in fretta: gli ultimi chili di propellente spingono un razzo più leggero. Lo vedi quando accendi il motore nel disegno.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Staging">Stadi</h2>
+        <p data-en="Stage k burns carrying the stages above it and the payload m<sub>L</sub>. Then it drops away and its dead weight no longer needs pushing.">Lo stadio k brucia portandosi dietro gli stadi sopra e il carico utile m<sub>L</sub>. Poi si stacca e il suo peso morto non va più spinto.</p>
+        <p class="eq">m<sub>0,k</sub> = m<sub>L</sub> + Σ<sub>j≥k</sub> (m<sub>s,j</sub> + m<sub>p,j</sub>)<br>n<sub>k</sub> = m<sub>0,k</sub> / (m<sub>0,k</sub> − m<sub>p,k</sub>),  Δv = Σ v<sub>e,k</sub> · ln n<sub>k</sub><br>ε<sub>k</sub> = m<sub>s,k</sub> / (m<sub>s,k</sub> + m<sub>p,k</sub>)</p>
+        <p data-en="Equal stages (same I<sub>sp</sub> and ε): the best split gives every stage the same Δv, and the payload fraction is">Stadi uguali (stessi I<sub>sp</sub> ed ε): la ripartizione migliore dà a ogni stadio lo stesso Δv, e la frazione di carico utile è</p>
+        <p class="eq">m<sub>L</sub> / m<sub>0</sub> = [(e<sup>−Δv/(N·v<sub>e</sub>)</sup> − ε) / (1 − ε)]<sup>N</sup></p>
+        <p data-en="Different stages: the split that makes the lift-off mass smallest comes from a Lagrange multiplier η (Curtis, section 11.6). The page finds η by bisection until the stage Δv add up to the target, then works out the masses from the top down:">Stadi diversi: la ripartizione che rende minima la massa al decollo si trova con un moltiplicatore di Lagrange η (Curtis, paragrafo 11.6). La pagina cerca η per bisezione finché i Δv degli stadi sommano quello richiesto, poi calcola le masse dall'alto verso il basso:</p>
+        <p class="eq">n<sub>k</sub> = (v<sub>e,k</sub> · η − 1) / (v<sub>e,k</sub> · ε<sub>k</sub> · η),  Σ v<sub>e,k</sub> · ln n<sub>k</sub> = Δv<br>m<sub>k</sub> = (n<sub>k</sub> − 1) / (1 − n<sub>k</sub> · ε<sub>k</sub>) · m<sub>0,k+1</sub></p>
+        <p data-en="The Δv a launcher must deliver is more than the orbital speed: add the losses (gravity, air, steering) and subtract the speed the launch site already has from Earth's rotation, if you launch east:">Il Δv che un lanciatore deve dare è più della velocità dell'orbita: si aggiungono le perdite (gravità, aria, pilotaggio) e si toglie la velocità che la base ha già per la rotazione della Terra, se lanci verso est:</p>
+        <p class="eq" data-en="Δv = v<sub>orbit</sub> + losses − 465.1 m/s · cos(latitude),  v<sub>orbit</sub> = √(μ / (R<sub>⊕</sub> + h))">Δv = v<sub>orbita</sub> + perdite − 465,1 m/s · cos(latitudine),  v<sub>orbita</sub> = √(μ / (R<sub>⊕</sub> + h))</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Ideal nozzle">Ugello ideale</h2>
+        <p data-en="The gas leaves the chamber almost at rest, speeds up in the converging part, reaches Mach 1 at the throat and goes supersonic in the diverging part. The expansion ratio ε = A<sub>e</sub>/A<sub>t</sub> sets the exit Mach number:">Il gas parte quasi fermo dalla camera, accelera nel convergente, arriva a Mach 1 nella gola e diventa supersonico nel divergente. Il rapporto d'espansione ε = A<sub>e</sub>/A<sub>t</sub> fissa il Mach d'uscita:</p>
+        <p class="eq">A / A<sub>t</sub> = (1/M) · [2/(γ+1) · (1 + (γ−1)/2 · M²)]<sup>(γ+1)/(2(γ−1))</sup></p>
+        <p data-en="Each ε has two solutions, one subsonic and one supersonic: the page takes the supersonic one, with Newton's method kept inside a bisection bracket. Then:">Ogni ε ha due soluzioni, una subsonica e una supersonica: la pagina prende quella supersonica, con il metodo di Newton tenuto dentro un intervallo di bisezione. Poi:</p>
+        <p class="eq" data-en="p/p<sub>c</sub> = (1 + (γ−1)/2 · M²)<sup>−γ/(γ−1)</sup>,  T/T<sub>c</sub> = (1 + (γ−1)/2 · M²)<sup>−1</sup>,  R = 8314.46 / 𝓜<br>v<sub>e</sub> = √(2γ/(γ−1) · R · T<sub>c</sub> · [1 − (p<sub>e</sub>/p<sub>c</sub>)<sup>(γ−1)/γ</sup>])<br>c* = √(R · T<sub>c</sub>) / Γ,  Γ = √γ · (2/(γ+1))<sup>(γ+1)/(2(γ−1))</sup><br>C<sub>F</sub> = Γ · √(2γ/(γ−1) · [1 − (p<sub>e</sub>/p<sub>c</sub>)<sup>(γ−1)/γ</sup>]) + (p<sub>e</sub> − p<sub>a</sub>)/p<sub>c</sub> · ε<br>I<sub>sp</sub> = c* · C<sub>F</sub> / g<sub>0</sub>,  ṁ = p<sub>c</sub> · A<sub>t</sub> / c*,  F = C<sub>F</sub> · p<sub>c</sub> · A<sub>t</sub>">p/p<sub>c</sub> = (1 + (γ−1)/2 · M²)<sup>−γ/(γ−1)</sup>,  T/T<sub>c</sub> = (1 + (γ−1)/2 · M²)<sup>−1</sup>,  R = 8314,46 / 𝓜<br>v<sub>e</sub> = √(2γ/(γ−1) · R · T<sub>c</sub> · [1 − (p<sub>e</sub>/p<sub>c</sub>)<sup>(γ−1)/γ</sup>])<br>c* = √(R · T<sub>c</sub>) / Γ,  Γ = √γ · (2/(γ+1))<sup>(γ+1)/(2(γ−1))</sup><br>C<sub>F</sub> = Γ · √(2γ/(γ−1) · [1 − (p<sub>e</sub>/p<sub>c</sub>)<sup>(γ−1)/γ</sup>]) + (p<sub>e</sub> − p<sub>a</sub>)/p<sub>c</sub> · ε<br>I<sub>sp</sub> = c* · C<sub>F</sub> / g<sub>0</sub>,  ṁ = p<sub>c</sub> · A<sub>t</sub> / c*,  F = C<sub>F</sub> · p<sub>c</sub> · A<sub>t</sub></p>
+        <p data-en="With p<sub>e</sub> = p<sub>a</sub> the nozzle is matched and gives the most thrust at that altitude. With p<sub>e</sub> &lt; p<sub>a</sub> it is over-expanded and the jet narrows; with p<sub>e</sub> &gt; p<sub>a</sub> it is under-expanded and the jet spreads. When p<sub>e</sub> drops below about 0.3 · p<sub>a</sub> (Summerfield criterion) the jet can separate from the wall inside the nozzle: from there on the ideal formulas no longer hold.">Con p<sub>e</sub> = p<sub>a</sub> l'ugello è adattato e dà la spinta massima per quella quota. Con p<sub>e</sub> &lt; p<sub>a</sub> è sovraespanso e il getto si stringe; con p<sub>e</sub> &gt; p<sub>a</sub> è sottoespanso e il getto si allarga. Quando p<sub>e</sub> scende sotto circa 0,3 · p<sub>a</sub> (criterio di Summerfield) il getto si può staccare dalla parete dentro l'ugello: da lì in poi le formule ideali non valgono più.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Assumptions">Ipotesi</h2>
+        <ul>
+          <li data-en="Ideal rocket: perfect gas, steady one-dimensional flow, isentropic (no friction, no heat transfer).">Razzo ideale: gas perfetto, flusso stazionario e unidimensionale, isentropico (niente attrito, niente scambio di calore).</li>
+          <li data-en="Frozen composition and constant γ from chamber to exit.">Composizione congelata e γ costante dalla camera all'uscita.</li>
+          <li data-en="The gas in the chamber is almost at rest: p<sub>c</sub> and T<sub>c</sub> are stagnation values. The jet leaves parallel to the axis.">In camera il gas è quasi fermo: p<sub>c</sub> e T<sub>c</sub> sono valori di ristagno. Il getto esce parallelo all'asse.</li>
+          <li data-en="Impulsive Δv: the rocket equation ignores gravity and air, which only enter as the losses you type in.">Δv impulsivo: l'equazione del razzo non conta gravità e aria, che entrano solo come perdite scritte a mano.</li>
+          <li data-en="Structural coefficient ε fixed, whatever the stage size.">Coefficiente strutturale ε fisso, qualunque sia la taglia dello stadio.</li>
+          <li data-en="Nozzle drawn to scale: chamber with A<sub>c</sub>/A<sub>t</sub> = 3, 30° converging section, 80 % bell approximated by a parabola (Rao). The 1D results depend only on ε, not on the shape.">Ugello disegnato in scala: camera con A<sub>c</sub>/A<sub>t</sub> = 3, convergente a 30°, campana all'80 % approssimata con una parabola (Rao). I risultati 1D dipendono solo da ε, non dalla forma.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Limits">Limiti</h2>
+        <ul>
+          <li data-en="A real engine gives a few percent less than the ideal calculation: incomplete combustion, friction, a jet not fully axial. In the Merlin 1D example the page gives 293 s at sea level, the engine 282 s.">Un motore vero dà qualche percento meno del calcolo ideale: combustione incompleta, attrito, getto non del tutto assiale. Nell'esempio del Merlin 1D la pagina dà 293 s al livello del mare, il motore 282 s.</li>
+          <li data-en="With constant γ the reactions that go on inside the nozzle (shifting equilibrium) are ignored: they are usually worth a few percent of extra Isp.">Con γ costante si ignorano le reazioni che continuano nell'ugello (equilibrio mobile): di solito valgono qualche percento di Isp in più.</li>
+          <li data-en="Gravity, drag and steering losses depend on the trajectory: the values in the examples are typical, not computed.">Le perdite per gravità, aria e pilotaggio dipendono dalla traiettoria: i valori degli esempi sono tipici, non calcolati.</li>
+          <li data-en="The Summerfield criterion is an estimate: where the jet really separates depends on the nozzle shape and on the boundary layer.">Il criterio di Summerfield è una stima: dove si stacca davvero il getto dipende dalla forma dell'ugello e dallo strato limite.</li>
+          <li data-en="Optimal staging ignores interstages, fairing, residual propellant and reserves.">Gli stadi ottimi non contano interstadi, ogiva, propellente residuo e riserve.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Sources">Fonti</h2>
+        <ul>
+          <li data-en="G. P. Sutton, O. Biblarz, <i>Rocket Propulsion Elements</i>, 9th ed., Wiley 2017: ch. 2 (definitions), ch. 3 (nozzle theory), ch. 4 (flight performance and staging).">G. P. Sutton, O. Biblarz, <i>Rocket Propulsion Elements</i>, 9ª ed., Wiley 2017: cap. 2 (definizioni), cap. 3 (teoria dell'ugello), cap. 4 (prestazioni di volo e stadi).</li>
+          <li data-en="P. G. Hill, C. R. Peterson, <i>Mechanics and Thermodynamics of Propulsion</i>, 2nd ed., Addison-Wesley 1992: ch. 3 (one-dimensional flow of a perfect gas), ch. 10 (performance of rocket vehicles), ch. 11 (thrust chambers).">P. G. Hill, C. R. Peterson, <i>Mechanics and Thermodynamics of Propulsion</i>, 2ª ed., Addison-Wesley 1992: cap. 3 (flusso unidimensionale di un gas perfetto), cap. 10 (prestazioni dei veicoli a razzo), cap. 11 (camere di spinta).</li>
+          <li data-en="H. D. Curtis, <i>Orbital Mechanics for Engineering Students</i>, 3rd ed., Elsevier 2014: ch. 11, Rocket vehicle dynamics (section 11.6, optimal staging).">H. D. Curtis, <i>Orbital Mechanics for Engineering Students</i>, 3ª ed., Elsevier 2014: cap. 11, Rocket vehicle dynamics (paragrafo 11.6, stadi ottimi).</li>
+          <li>M. Summerfield, C. R. Foster, W. C. Swan, «Flow separation in overexpanded supersonic exhaust nozzles», <i>Jet Propulsion</i> 24 (1954).</li>
+          <li>G. V. R. Rao, «Exhaust nozzle contour for optimum thrust», <i>Jet Propulsion</i> 28 (1958).</li>
+          <li data-en="Examples: public data from SpaceX (Falcon 9, Merlin), Aerojet Rocketdyne (RL10) and ULA (Delta IV). Indicative values.">Esempi: dati pubblici di SpaceX (Falcon 9, Merlin), Aerojet Rocketdyne (RL10) e ULA (Delta IV). Valori indicativi.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!--KIT:JS-->
+<script>
+'use strict';
+K.init('propulsione');
+const { $, t, sig, fmt } = K;
+const G0 = K.G0, D2R = K.D2R, RU = 8314.462618, VEQ = 465.1;   // R universale J/(kmol·K); velocità dell'equatore m/s
+const NS = 'http://www.w3.org/2000/svg';
+const CO = Object.assign({}, K.C, { ln: '#252b33', ln2: '#414b57', tx: '#e6eaee', tx2: '#9aa5b1', pn2: '#10141a', pn3: '#171c24' });
+const SC = [CO.cy, CO.vi, CO.ic, '#7f8c99'];                     // colori degli stadi 1–4
+const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const tabs = K.tabs('seg', m => { K.save({ m }); if (m === 'razzo') rvAuto(); });
+
+/* ---------- lettura dei campi ----------
+   K.num legge «1.225» come 1225 (punto delle migliaia). Per i campi con un intervallo sensato
+   (γ, ε, pressioni…), se quella lettura esce dall'intervallo provo il punto come separatore decimale. */
+const RANGE = { ug: [1, 2], ueps: [1, 1000], upa: [0, 1000], upe: [0, 50000], upc: [0, 1000], umm: [1, 1000], utc: [100, 10000],
+  risp: [1, 10000], rmr: [1, 1000], rzf: [0, 100], slat: [-90, 90] };
+for (let k = 1; k <= 4; k++) { RANGE['si' + k] = [1, 10000]; RANGE['se' + k] = [0, 1]; }
+function num(id) {
+  const x = K.num(id); if (x == null || Number.isNaN(x)) return x;
+  const r = RANGE[id]; if (!r || (x >= r[0] && x <= r[1])) return x;
+  const raw = String($(id).value).trim().replace(/[\s   ']/g, '').replace(/−/g, '-');
+  if (/^-?\d{1,3}\.\d{3}$/.test(raw)) { const y = Number(raw); if (y >= r[0] && y <= r[1]) return y; }
+  return x;
+}
+const rd = id => { const x = num(id); return Number.isNaN(x) ? null : x; };
+function readIds(ids) { const v = {}, nan = []; ids.forEach(id => { const x = num(id); if (Number.isNaN(x)) { nan.push(id); v[id] = null; } else v[id] = x; }); return { v, nan }; }
+const NAN = () => t('Un valore non è un numero: correggi il campo in ambra.', 'A value is not a number: fix the field marked in amber.');
+const near = (a, b, tol) => Math.abs(a - b) <= (tol || 2e-3) * Math.max(Math.abs(a), Math.abs(b));
+const fv = x => K.en ? String(x) : String(x).replace('.', ',');          // valore da scrivere in un campo
+function fillL(map) { const m = {}; Object.entries(map).forEach(([k, v]) => { m[k] = typeof v === 'string' && /^-?[\d.]+$/.test(v) ? fv(v) : v; }); K.fill(m); }
+const decM = x => x >= 1000 ? 0 : x >= 100 ? 1 : x >= 10 ? 2 : 3;     // decimali per una massa
+const decT = x => x >= 100 ? 1 : x >= 10 ? 2 : 3;
+const f1 = x => (Math.round(x * 10) / 10).toString();
+const TX = (x, y, s, a) => '<text x="' + f1(x) + '" y="' + f1(y) + '" ' + (a || '') + '>' + s + '</text>';
+function svgOf(host) { host = $(host); let s = host.querySelector('svg.dr'); if (!s) { s = document.createElementNS(NS, 'svg'); s.setAttribute('class', 'dr'); s.setAttribute('role', 'img'); host.prepend(s); } return s; }
+function noChart(id) { const h = $(id); h.innerHTML = ''; h.classList.remove('chart'); }
+
+/* Grafico del kit con in più dei punti (cx, cy) disegnati sopra le curve. Ricopia la scala di K.chart. */
+function chartPts(host, o, pts) {
+  K.chart(host, o);
+  const el = $(host), base = el._draw;
+  const add = () => {
+    const svg = el.querySelector('svg'); if (!svg || !pts.length) return;
+    const vb = svg.viewBox.baseVal, W = vb.width, H = vb.height, L = 56, Rm = 14, T = 10, B = 34, all = [];
+    o.series.forEach(s => s.y.forEach(v => { if (Number.isFinite(v)) all.push(v); }));
+    let y0 = o.yMin != null ? o.yMin : Math.min(...all), y1 = o.yMax != null ? o.yMax : Math.max(...all);
+    if (y0 === y1) { y0 -= 1; y1 += 1; }
+    const pad = (y1 - y0) * 0.06; if (o.yMin == null) y0 -= pad; if (o.yMax == null) y1 += pad;
+    const x0 = o.x[0], x1 = o.x[o.x.length - 1], ref = svg.querySelector('.hx');
+    pts.forEach(p => {
+      if (!(p.x >= x0 && p.x <= x1) || !Number.isFinite(p.y)) return;
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', L + (p.x - x0) / (x1 - x0 || 1) * (W - L - Rm));
+      c.setAttribute('cy', T + (1 - (Math.max(y0, Math.min(y1, p.y)) - y0) / (y1 - y0)) * (H - T - B));
+      c.setAttribute('r', 4.5); c.setAttribute('fill', p.color || CO.gr); c.setAttribute('stroke', '#000'); c.setAttribute('stroke-width', 2); c.setAttribute('pointer-events', 'none');
+      svg.insertBefore(c, ref);
+    });
+  };
+  el._draw = () => { base(); add(); };
+  add();
+}
+
+/* ---------- fisica: razzo ideale (Sutton cap. 3) ---------- */
+const PH = {
+  aoa: (M, g) => Math.pow((2 / (g + 1)) * (1 + (g - 1) / 2 * M * M), (g + 1) / (2 * (g - 1))) / M,   // A/A*
+  // Mach dal rapporto d'area: Newton dentro un intervallo di bisezione, ramo supersonico o subsonico
+  mach(eps, g, sup) {
+    if (!(eps >= 1) || !(g > 1)) return NaN;
+    if (eps - 1 < 1e-15) return 1;
+    let lo, hi, M;
+    if (sup) { lo = 1; hi = 2; while (PH.aoa(hi, g) < eps) { lo = hi; hi *= 2; if (hi > 1e6) return NaN; } M = (lo + hi) / 2; }
+    else { lo = 0; hi = 1; M = Math.min(0.9, Math.max(1e-9, Math.pow(2 / (g + 1), (g + 1) / (2 * (g - 1))) / eps)); }
+    for (let it = 0; it < 100; it++) {
+      const A = PH.aoa(M, g), f = A - eps;
+      if ((f > 0) === sup) hi = M; else lo = M;
+      const dA = A * (M * M - 1) / (M * (1 + (g - 1) / 2 * M * M));
+      let Mn = M - f / dA;
+      if (!(Mn > lo && Mn < hi)) Mn = (lo + hi) / 2;
+      if (Math.abs(Mn - M) <= 1e-15 * Math.max(1, M)) { M = Mn; break; }
+      M = Mn;
+    }
+    return M;
+  },
+  pr: (M, g) => Math.pow(1 + (g - 1) / 2 * M * M, -g / (g - 1)),          // p/pc
+  tr: (M, g) => 1 / (1 + (g - 1) / 2 * M * M),                            // T/Tc
+  machP: (r, g) => Math.sqrt(2 / (g - 1) * (Math.pow(r, -(g - 1) / g) - 1)),
+  Gam: g => Math.sqrt(g) * Math.pow(2 / (g + 1), (g + 1) / (2 * (g - 1))),
+  cstar: (g, R, Tc) => Math.sqrt(R * Tc) / PH.Gam(g),
+  ve: (g, R, Tc, r) => Math.sqrt(2 * g / (g - 1) * R * Tc * (1 - Math.pow(r, (g - 1) / g))),
+  cfv: (g, r, eps) => PH.Gam(g) * Math.sqrt(2 * g / (g - 1) * (1 - Math.pow(r, (g - 1) / g))) + r * eps,
+};
+function nozzleCore(p) {      // p: { g, pc (Pa), Tc (K), mm (kg/kmol), eps, pa (Pa) }
+  const R = RU / p.mm, Me = PH.mach(p.eps, p.g, true), r = PH.pr(Me, p.g), cs = PH.cstar(p.g, R, p.Tc);
+  const CFv = PH.cfv(p.g, r, p.eps), CF = CFv - p.pa / p.pc * p.eps;
+  return { g: p.g, R, pc: p.pc, Tc: p.Tc, eps: p.eps, pa: p.pa, Me, prr: r, pe: r * p.pc, Te: p.Tc * PH.tr(Me, p.g), cs, ve: PH.ve(p.g, R, p.Tc, r), CFv, CF, Ispv: cs * CFv / G0, Isp: cs * CF / G0 };
+}
+
+/* ---------- fisica: stadi (Curtis par. 11.5–11.6) ---------- */
+const ST = {
+  fromMasses(c, ms, mp, mL) {
+    const N = c.length, m0 = new Array(N); let above = mL;
+    for (let i = N - 1; i >= 0; i--) { above += ms[i] + mp[i]; m0[i] = above; }
+    const st = c.map((ci, i) => { const n = m0[i] / (m0[i] - mp[i]); return { m0: m0[i], n, dv: ci * Math.log(n) }; });
+    return { st, m0: m0[0], dv: st.reduce((a, x) => a + x.dv, 0) };
+  },
+  // Lagrange con u = 1/η: n_i = (c_i − u)/(c_i ε_i); Σ c_i ln n_i scende con u, quindi bisezione
+  optimum(c, e, dv) {
+    const f = u => c.reduce((s, ci, i) => s + ci * Math.log((ci - u) / (ci * e[i])), 0);
+    const dvMax = f(0); if (!(dv < dvMax)) return { err: 'max', dvMax };
+    const caps = c.map((ci, i) => ci * (1 - e[i])), umax = Math.min(...caps), dvMin = f(umax);
+    if (dv < dvMin) return { err: 'min', dvMin, k: caps.indexOf(umax) };
+    let lo = 0, hi = umax;
+    for (let it = 0; it < 200 && hi - lo > 1e-14 * umax; it++) { const m = (lo + hi) / 2; if (f(m) > dv) lo = m; else hi = m; }
+    const u = (lo + hi) / 2;
+    return { u, eta: 1 / u, n: c.map((ci, i) => (ci - u) / (ci * e[i])) };
+  },
+  masses(n, e, mL) {          // dall'alto verso il basso: m_k = (n_k − 1)/(1 − n_k ε_k) · m_0,k+1
+    const N = n.length, m = new Array(N); let above = mL;
+    for (let i = N - 1; i >= 0; i--) { m[i] = (n[i] - 1) / (1 - n[i] * e[i]) * above; above += m[i]; }
+    return { m, ms: m.map((x, i) => x * e[i]), mp: m.map((x, i) => x * (1 - e[i])), m0: above };
+  },
+  equalPi(c, e, dv, N) { const x = Math.exp(-dv / (N * c)); return x > e ? Math.pow((x - e) / (1 - e), N) : NaN; },
+};
+
+/* ======================= Razzo: Tsiolkovsky e accensione ======================= */
+const RF = ['rdv', 'risp', 'rve', 'rm0', 'rmf', 'rmp', 'rmr', 'rzf'], RB = ['rF', 'rmd', 'rtb'];
+const RK = { rdv: 'dv', risp: 'c', rve: 'c', rm0: 'm0', rmf: 'mf', rmp: 'mp', rmr: 'R', rzf: 'z' };
+const RIN = { risp: x => x * G0, rzf: x => x / 100 }, ROUT = { risp: v => v / G0, rzf: v => v * 100 };
+const RUN = { rdv: ' m/s', risp: ' s', rve: ' m/s', rm0: ' kg', rmf: ' kg', rmp: ' kg', rmr: '', rzf: ' %', rF: ' kN', rmd: ' kg/s', rtb: ' s' };
+const RNM = { rdv: ['Il Δv', 'The Δv'], risp: ['L\'impulso specifico', 'The specific impulse'], rve: ['La velocità di scarico', 'The exhaust velocity'],
+  rm0: ['La massa iniziale', 'The initial mass'], rmf: ['La massa finale', 'The final mass'], rmp: ['Il propellente', 'The propellant mass'],
+  rmr: ['Il rapporto di massa', 'The mass ratio'], rzf: ['La frazione di propellente', 'The propellant fraction'],
+  rF: ['La spinta', 'The thrust'], rmd: ['La portata', 'The mass flow'], rtb: ['La durata', 'The burn time'] };
+const nm = id => t(RNM[id][0], RNM[id][1]);
+const RDEC = { rdv: () => 1, risp: () => 2, rve: () => 1, rm0: decM, rmf: decM, rmp: decM, rmr: () => 4, rzf: () => 2 };
+const conflictMsg = (id, w, d) => nm(id) + t(' non torna con gli altri dati: dovrebbe essere ', ' does not match the other data: it should be ') + fmt(w, d) + RUN[id] + t('. Correggi il valore o svuota il campo.', '. Fix the value or clear the field.');
+
+function rProp(V) {             // dai valori noti ricava gli altri, finché si può
+  for (let it = 0; it < 10; it++) {
+    let ch = false;
+    const set = (k, x) => { if (V[k] == null && Number.isFinite(x)) { V[k] = x; ch = true; } };
+    if (V.z != null && V.z < 1) set('R', 1 / (1 - V.z));
+    if (V.R != null && V.R > 0) set('z', 1 - 1 / V.R);
+    if (V.m0 != null && V.mf != null) { set('mp', V.m0 - V.mf); set('R', V.m0 / V.mf); }
+    if (V.m0 != null && V.mp != null) set('mf', V.m0 - V.mp);
+    if (V.mf != null && V.mp != null) set('m0', V.mf + V.mp);
+    if (V.R != null && V.R > 1) { if (V.mp != null) set('mf', V.mp / (V.R - 1)); if (V.mf != null) set('m0', V.mf * V.R); if (V.m0 != null) set('mf', V.m0 / V.R); }
+    if (V.c != null && V.R != null && V.R > 0) set('dv', V.c * Math.log(V.R));
+    if (V.dv != null && V.R != null && V.R > 1) set('c', V.dv / Math.log(V.R));
+    if (V.dv != null && V.c != null && V.c > 0) set('R', Math.exp(V.dv / V.c));
+    if (!ch) break;
+  }
+}
+function rOk(V) {
+  if (V.R != null && !(V.R > 1)) return false;
+  if (V.z != null && !(V.z > 0 && V.z < 1)) return false;
+  for (const k of ['m0', 'mf', 'mp']) if (V[k] != null && !(V[k] > 0)) return false;
+  if (V.m0 != null && V.mf != null && !(V.m0 > V.mf)) return false;
+  return !(V.c != null && !(V.c > 0)) && !(V.dv != null && !(V.dv > 0));
+}
+function rDom(id, x) {
+  if (id === 'rmr') return x > 1 ? '' : t('Il rapporto di massa deve superare 1.', 'The mass ratio must be greater than 1.');
+  if (id === 'rzf') return x > 0 && x < 100 ? '' : t('La frazione di propellente sta tra 0 e 100 %.', 'The propellant fraction lies between 0 and 100 %.');
+  return x > 0 ? '' : nm(id) + t(' deve essere maggiore di zero.', ' must be greater than zero.');
+}
+function rRangeMsg(id, V) {
+  const kg = x => fmt(x, decM(x)) + ' kg';
+  if (id === 'rmf' && V.m0 != null) return t('La massa finale deve essere minore della massa iniziale, ', 'The final mass must be smaller than the initial mass, ') + kg(V.m0) + '.';
+  if (id === 'rmp' && V.m0 != null) return t('Il propellente deve essere meno della massa iniziale, ', 'The propellant must be less than the initial mass, ') + kg(V.m0) + '.';
+  if (id === 'rm0' && V.mf != null) return t('La massa iniziale deve superare la massa finale, ', 'The initial mass must exceed the final mass, ') + kg(V.mf) + '.';
+  if (id === 'rm0' && V.mp != null) return t('La massa iniziale deve superare il propellente, ', 'The initial mass must exceed the propellant, ') + kg(V.mp) + '.';
+  return nm(id) + t(' non va d\'accordo con gli altri dati: darebbe masse negative o un rapporto di massa sotto 1.', ' does not fit the other data: it would give negative masses or a mass ratio below 1.');
+}
+// Prende i campi nell'ordine: ogni dato che aggiunge informazione entra, quelli in più vengono controllati.
+function rocketSolve(inp) {
+  const V = { dv: null, c: null, m0: null, mf: null, mp: null, R: null, z: null }, errs = [], bad = [];
+  for (const id of RF) {
+    const x = inp[id]; if (x == null) continue;
+    const e = rDom(id, x); if (e) { errs.push(e); bad.push(id); continue; }
+    const k = RK[id], val = RIN[id] ? RIN[id](x) : x;
+    if (V[k] != null) {
+      if (!near(V[k], val)) { const w = ROUT[id] ? ROUT[id](V[k]) : V[k]; errs.push(conflictMsg(id, w, RDEC[id](w))); bad.push(id); }
+      continue;
+    }
+    const W = Object.assign({}, V); W[k] = val; rProp(W);
+    if (!rOk(W)) { errs.push(rRangeMsg(id, V)); bad.push(id); continue; }
+    Object.assign(V, W);
+  }
+  return { V, errs, bad };
+}
+function burnSolve(inp, c, mp) {
+  const B = { F: null, md: null, tb: null }, errs = [], bad = [], MAP = { rF: ['F', 1000], rmd: ['md', 1], rtb: ['tb', 1] };
+  const prop = W => { for (let i = 0; i < 3; i++) {
+    if (W.md == null && W.F != null && c) W.md = W.F / c;
+    if (W.F == null && W.md != null && c) W.F = W.md * c;
+    if (W.tb == null && W.md != null && mp) W.tb = mp / W.md;
+    if (W.md == null && W.tb != null && mp) W.md = mp / W.tb; } };
+  for (const id of RB) {
+    const x = inp[id]; if (x == null) continue;
+    if (!(x > 0)) { errs.push(nm(id) + t(' deve essere maggiore di zero.', ' must be greater than zero.')); bad.push(id); continue; }
+    const [k, f] = MAP[id], val = x * f;
+    if (B[k] != null) { if (!near(B[k], val)) { const w = B[k] / f; errs.push(conflictMsg(id, w, id === 'rmd' ? 3 : id === 'rF' ? 2 : 1)); bad.push(id); } continue; }
+    B[k] = val; prop(B);
+  }
+  return { B, errs, bad };
+}
+const mmss = s => { const r = Math.round(s); return r >= 60 ? Math.floor(r / 60) + ' min ' + (r % 60) + ' s' : ''; };
+const impulse = I => I >= 1e6 ? [sig(I / 1e6, 4), 'MN·s'] : I >= 1e3 ? [sig(I / 1e3, 4), 'kN·s'] : [sig(I, 4), 'N·s'];
+
+function rocketRun() {
+  K.clear('fr');
+  const { v, nan } = readIds(RF.concat(RB));
+  const S = rocketSolve(v), V = S.V, Bs = burnSolve(v, V.c, V.mp), B = Bs.B;
+  RF.forEach(id => { const x = V[RK[id]], w = x == null ? null : (ROUT[id] ? ROUT[id](x) : x); K.der(id, w, w == null ? null : RDEC[id](w)); });
+  K.der('rF', B.F == null ? null : B.F / 1000, B.F >= 1e5 ? 1 : 2); K.der('rmd', B.md, B.md >= 100 ? 2 : 3); K.der('rtb', B.tb, 1);
+  nan.concat(S.bad, Bs.bad).forEach(id => K.bad(id));
+  const errs = (nan.length ? [NAN()] : []).concat(S.errs, Bs.errs);
+  let info = '';
+  if (V.dv == null) info = t('Mancano dati: con due valori tra Δv, impulso specifico e rapporto di massa (o due masse) la pagina ricava il resto.', 'Data missing: with two values among Δv, specific impulse and mass ratio (or two masses) the page works out the rest.');
+  else if (V.m0 == null) info = t('Per avere le masse scrivi anche una massa.', 'To get the masses, type one mass too.');
+  else if (v.rF != null && V.c == null) info = t('Con la spinta serve anche l\'impulso specifico.', 'With the thrust you also need the specific impulse.');
+  K.msg('rmsg', errs.length ? errs.join('<br>') : info, errs.length ? '' : 'info');
+
+  const rows = [];
+  if (V.dv != null) {
+    rows.push(['#', t('Risultato', 'Result')]);
+    rows.push(['Δv', fmt(V.dv, 1), 'm/s', 'v<sub>e</sub> · ln(m<sub>0</sub>/m<sub>f</sub>) = ' + fmt(V.c, 1) + ' m/s × ln ' + fmt(V.R, 4), 'key']);
+    rows.push([t('Impulso specifico', 'Specific impulse'), fmt(V.c / G0, 1), 's', t('velocità di scarico ', 'exhaust velocity ') + fmt(V.c, 1) + ' m/s']);
+    rows.push([t('Rapporto di massa', 'Mass ratio'), fmt(V.R, 3), '', t('il propellente è il ', 'propellant is ') + fmt(V.z * 100, 1) + t(' % della massa iniziale', ' % of the initial mass')]);
+    if (V.m0 != null) rows.push([t('Massa', 'Mass'), fmt(V.m0, decM(V.m0)) + ' → ' + fmt(V.mf, decM(V.mf)), 'kg', t('propellente ', 'propellant ') + fmt(V.mp, decM(V.mp)) + ' kg']);
+    if (B.md != null && B.F != null) {
+      rows.push(['#', t('Accensione', 'Burn')]);
+      rows.push([t('Spinta', 'Thrust'), sig(B.F / 1000, 4), 'kN']);
+      rows.push([t('Portata', 'Mass flow'), sig(B.md, 4), 'kg/s', 'ṁ = F / v<sub>e</sub>']);
+      if (B.tb != null) {
+        rows.push([t('Durata', 'Burn time'), fmt(B.tb, 1), 's', mmss(B.tb)]);
+        const I = impulse(B.F * B.tb); rows.push([t('Impulso totale', 'Total impulse'), I[0], I[1], 'F · t<sub>b</sub> = m<sub>p</sub> · v<sub>e</sub>']);
+      }
+      if (V.m0 != null) {
+        const a0 = B.F / V.m0, af = B.F / V.mf;
+        rows.push([t('Accelerazione all\'accensione', 'Acceleration at ignition'), fmt(a0, 2), 'm/s²', fmt(a0 / G0, 2) + ' g · ' + t('solo spinta, senza gravità né aria', 'thrust only, no gravity or air')]);
+        rows.push([t('Accelerazione allo spegnimento', 'Acceleration at cut-off'), fmt(af, 2), 'm/s²', fmt(af / G0, 2) + ' g']);
+      }
+    }
+    rows.push(['#', t('Sensibilità', 'Sensitivity')]);
+    rows.push([t('Impulso specifico +1 s', 'Specific impulse +1 s'), '+' + fmt(G0 * Math.log(V.R), 1), 'm/s', t('Δv in più', 'extra Δv')]);
+    const mf1 = 1 / V.R, dvb = V.c * Math.log((1.01 * mf1 + 1 - mf1) / (1.01 * mf1)) - V.dv;
+    rows.push([t('Massa finale +1 %', 'Final mass +1 %'), fmt(dvb, 1), 'm/s', (V.mf != null ? '+' + fmt(V.mf * 0.01, decM(V.mf * 0.01)) + ' kg, ' : '') + t('stesso propellente', 'same propellant')]);
+  }
+  K.rows('rout', rows);
+  RV.d = V.c != null && V.R != null ? { ok: true, c: V.c, R: V.R, z: V.z, m0: V.m0, mp: V.mp, F: B.F, tb: B.tb, dv: V.dv } : { ok: false };
+  rvDraw(performance.now()); rvSync();
+  rocketChart(V);
+  K.save({ m: tabs.get() });
+}
+
+function rocketChart(V) {
+  const Rm = V.R != null ? Math.min(200, Math.max(10, Math.ceil(V.R * 1.25))) : 10, xs = [];
+  for (let i = 0; i <= 160; i++) xs.push(1 + (Rm - 1) * i / 160);
+  const ser = [];
+  if (V.c != null) ser.push({ name: t('il tuo, ', 'yours, ') + fmt(V.c / G0, 0) + ' s', y: xs.map(x => V.c * Math.log(x) / 1000), color: CO.cy });
+  ser.push({ name: t('320 s, ossigeno e cherosene', '320 s, oxygen and kerosene'), y: xs.map(x => 320 * G0 * Math.log(x) / 1000), color: CO.vi, dash: true });
+  ser.push({ name: t('450 s, ossigeno e idrogeno', '450 s, oxygen and hydrogen'), y: xs.map(x => 450 * G0 * Math.log(x) / 1000), color: CO.ic, dash: true });
+  chartPts('rch', { title: t('Δv e rapporto di massa', 'Δv and mass ratio'), x: xs, series: ser, xLabel: t('rapporto di massa m0/mf', 'mass ratio m0/mf'), yLabel: 'km/s', unit: 'km/s', xName: 'm0/mf', yMin: 0,
+    marks: V.R != null && V.c != null ? [{ x: V.R, label: t('il tuo', 'yours'), color: CO.gr }] : [] }, V.R != null && V.c != null ? [{ x: V.R, y: V.dv / 1000 }] : []);
+}
+
+/* ---------- vista del razzo: il serbatoio si svuota, il Δv sale ---------- */
+const RV = { frac: 0, play: false, t0: 0, f0: 0, d: { ok: false }, played: false };
+const DUR = 5200;            // millisecondi per un'accensione intera
+function rvDraw(now) {
+  const host = $('rview'), W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const s = svgOf(host); s.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const d = RV.d, f = d.ok ? RV.frac : 0, small = W < 520;
+  const top = 16, bot = H - 42, plumeL = (bot - top) * 0.2, Hr = bot - top - plumeL;
+  const wR = Math.max(26, Math.min(Hr * 0.19, W * 0.15)), xc = Math.round(Math.max(18 + wR * 0.95, W * (small ? 0.17 : 0.15)));
+  const hN = Hr * 0.17, hB = Hr * 0.68, hE = Hr * 0.15, yB = top + hN, yE = yB + hB, yX = yE + hE, xl = xc - wR / 2, xr = xc + wR / 2;
+  let o = '';
+  if (d.ok && f > 0 && f < 1) {          // getto, solo a motore acceso
+    const fl = RV.play ? 0.88 + 0.07 * Math.sin(now / 41) + 0.05 * Math.sin(now / 17) : 0.95, L = plumeL * fl, wb = wR * 0.72;
+    const pl = (w, l) => 'M' + f1(xc - w / 2) + ' ' + f1(yX) + 'Q' + f1(xc - w * 0.62) + ' ' + f1(yX + l * 0.5) + ' ' + f1(xc) + ' ' + f1(yX + l) + 'Q' + f1(xc + w * 0.62) + ' ' + f1(yX + l * 0.5) + ' ' + f1(xc + w / 2) + ' ' + f1(yX) + 'Z';
+    o += '<path d="' + pl(wb, L) + '" fill="' + CO.ic + '" fill-opacity=".16" stroke="' + CO.ic + '" stroke-opacity=".5"/><path d="' + pl(wb * 0.55, L * 0.62) + '" fill="' + CO.cy + '" fill-opacity=".45"/>';
+  }
+  const fin = sg => 'M' + f1(xc + sg * wR / 2) + ' ' + f1(yE - hB * 0.2) + 'L' + f1(xc + sg * wR * 0.86) + ' ' + f1(yE + hE * 0.55) + 'L' + f1(xc + sg * wR / 2) + ' ' + f1(yE + hE * 0.3) + 'Z';
+  o += '<path d="' + fin(-1) + fin(1) + '" fill="' + CO.pn3 + '" stroke="' + CO.ln2 + '"/>';
+  const wt = wR * 0.34, wx = wR * 0.72;
+  o += '<path d="M' + f1(xc - wt / 2) + ' ' + f1(yE) + 'L' + f1(xc - wx / 2) + ' ' + f1(yX) + 'L' + f1(xc + wx / 2) + ' ' + f1(yX) + 'L' + f1(xc + wt / 2) + ' ' + f1(yE) + 'Z" fill="' + CO.pn3 + '" stroke="' + CO.tx3 + '"/>';
+  o += '<rect x="' + f1(xl) + '" y="' + f1(yB) + '" width="' + f1(wR) + '" height="' + f1(hB) + '" fill="' + CO.pn2 + '" stroke="' + CO.tx3 + '"/>';
+  o += '<path d="M' + f1(xl) + ' ' + f1(yB) + 'Q' + f1(xl) + ' ' + f1(top + hN * 0.3) + ' ' + f1(xc) + ' ' + f1(top) + 'Q' + f1(xr) + ' ' + f1(top + hN * 0.3) + ' ' + f1(xr) + ' ' + f1(yB) + 'Z" fill="' + CO.pn2 + '" stroke="' + CO.tx3 + '"/>';
+  const ti = Math.max(4, wR * 0.12), tT = yB + ti, tB = yE - ti, tH = tB - tT, yL = tT + tH * f, tw = wR - 2 * ti;
+  o += '<rect x="' + f1(xl + ti) + '" y="' + f1(tT) + '" width="' + f1(tw) + '" height="' + f1(tH) + '" rx="3" fill="#000" stroke="' + CO.ln2 + '"/>';
+  if (f < 1) o += '<rect x="' + f1(xl + ti) + '" y="' + f1(yL) + '" width="' + f1(tw) + '" height="' + f1(tB - yL) + '" rx="3" fill="' + CO.cy + '" fill-opacity=".5"/><line x1="' + f1(xl + ti) + '" x2="' + f1(xr - ti) + '" y1="' + f1(yL) + '" y2="' + f1(yL) + '" stroke="' + CO.cy + '" stroke-width="1.5"/>';
+  if (!small) o += TX(xr + wR * 0.4 + 8, Math.min(yL + 4, tB), fmt((1 - f) * 100, 0) + ' %', 'font-size="12" fill="' + CO.cy + '"');
+  // letture a destra
+  const xT = Math.max(xr + wR * 0.4 + (small ? 18 : 64), W * (small ? 0.4 : 0.34)), big = small ? 28 : 42, lab = 'font-size="13" fill="' + CO.tx3 + '"', val = 'font-size="13" fill="' + CO.gr + '"';
+  const dvNow = d.ok ? d.c * Math.log(1 / (1 - f * d.z)) : null;
+  let y = top + 14;
+  o += TX(xT, y, 'Δv', 'font-size="13" fill="' + CO.tx2 + '"');
+  y += big + 2;
+  o += TX(xT, y, (d.ok ? fmt(dvNow, 0) : '—') + '<tspan font-size="15" fill="' + CO.tx3 + '" dx="6">m/s</tspan>', 'font-size="' + big + '" fill="' + CO.gr + '"');
+  if (d.ok) {
+    y += 22; o += TX(xT, y, t('su ', 'of ') + fmt(d.dv, 0) + ' m/s', lab);
+    const xv = xT + (small ? 96 : 118), L = [];
+    if (d.tb) L.push([t('tempo', 'time'), fmt(f * d.tb, 1) + ' / ' + fmt(d.tb, 0) + ' s']);
+    L.push([t('propellente', 'propellant'), fmt((1 - f) * 100, 0) + ' %']);
+    const m = d.m0 != null ? d.m0 - f * d.mp : null;
+    if (m != null) L.push([t('massa', 'mass'), fmt(m, decM(m)) + ' kg']);
+    if (d.F && m) L.push([t('accelerazione', 'acceleration'), fmt(d.F / m / G0, 2) + ' g']);
+    y += 10;
+    L.forEach(r => { y += 20; o += TX(xT, y, r[0], lab) + TX(xv, y, r[1], val); });
+    // Δv nel tempo: la curva si disegna mentre il motore brucia
+    const px0 = xT, px1 = W - 24, py0 = y + 34, py1 = bot - 4;
+    if (!small && py1 - py0 > 80 && px1 - px0 > 160) {
+      const n = 90, P = [], X = fr => px0 + (px1 - px0) * fr, Y = dv => py1 - (py1 - py0) * dv / d.dv;
+      for (let i = 0; i <= n; i++) { const fr = i / n; P.push([X(fr), Y(d.c * Math.log(1 / (1 - fr * d.z)))]); }
+      const pth = A => A.map((p, i) => (i ? 'L' : 'M') + f1(p[0]) + ' ' + f1(p[1])).join('');
+      o += '<path d="M' + f1(px0) + ' ' + f1(py0) + 'V' + f1(py1) + 'H' + f1(px1) + '" fill="none" stroke="' + CO.ln2 + '"/>';
+      o += '<path d="' + pth(P) + '" fill="none" stroke="' + CO.ln2 + '" stroke-dasharray="4 4"/>';
+      const kk = Math.floor(f * n); if (f > 0) o += '<path d="' + pth(P.slice(0, kk + 1).concat([[X(f), Y(dvNow)]])) + '" fill="none" stroke="' + CO.cy + '" stroke-width="2"/>';
+      o += '<circle cx="' + f1(X(f)) + '" cy="' + f1(Y(dvNow)) + '" r="4.5" fill="' + CO.gr + '" stroke="#000" stroke-width="2"/>';
+      o += TX(px0 + 8, py0 + 4, t('Δv nel tempo', 'Δv over time'), 'font-size="11.5" fill="' + CO.tx3 + '"');
+      o += TX(px0, py1 + 15, '0', 'font-size="11" fill="' + CO.tx3 + '"') + TX(px1, py1 + 15, d.tb ? fmt(d.tb, 0) + ' s' : t('tutto bruciato', 'all burned'), 'font-size="11" fill="' + CO.tx3 + '" text-anchor="end"');
+    }
+  } else o += TX(xT, y + 26, t('Servono più dati', 'More data needed'), lab);
+  s.innerHTML = o;
+  s.setAttribute('aria-label', d.ok ? t('Razzo con il ', 'Rocket with ') + fmt((1 - f) * 100, 0) + t(' % del propellente; Δv raggiunto ', ' % of its propellant left; Δv gained ') + fmt(dvNow, 0) + ' m/s' : t('Razzo', 'Rocket'));
+}
+function rvSync() {
+  const d = RV.d, b = $('rplay'), r = $('rt');
+  r.value = Math.round(RV.frac * 1000); r.disabled = !d.ok; b.disabled = !d.ok;
+  b.textContent = RV.play ? t('Pausa', 'Pause') : RV.frac >= 1 ? t('Di nuovo', 'Again') : RV.frac > 0 ? t('Riprendi', 'Resume') : t('Accendi', 'Ignite');
+  $('rtt').textContent = !d.ok ? '' : d.tb ? 't = ' + fmt(RV.frac * d.tb, 1) + ' s' : fmt(RV.frac * 100, 0) + t(' % bruciato', ' % burned');
+}
+function rvTick(now) {
+  if (!RV.play) return;
+  RV.frac = Math.min(1, RV.f0 + Math.max(0, now - RV.t0) / DUR);
+  if (RV.frac >= 1) RV.play = false;
+  rvDraw(now); rvSync();
+  if (RV.play) requestAnimationFrame(rvTick);
+}
+function rvPlay() {
+  if (!RV.d.ok) return;
+  if (RV.play) { RV.play = false; rvSync(); return; }
+  if (RV.frac >= 1) RV.frac = 0;
+  RV.play = true; RV.played = true; RV.t0 = performance.now(); RV.f0 = RV.frac;
+  requestAnimationFrame(rvTick);
+}
+function rvAuto() {        // la prima volta che vedi la scheda il motore si accende da solo, una volta
+  if (RV.played || !RV.d.ok) return;
+  if (REDUCED) { RV.played = true; RV.frac = 1; rvDraw(performance.now()); rvSync(); return; }
+  RV.played = true;
+  setTimeout(() => { if (tabs.get() === 'razzo' && !RV.play && RV.frac === 0) rvPlay(); }, 700);
+}
+$('rplay').onclick = rvPlay;
+$('rt').addEventListener('input', () => { RV.play = false; RV.played = true; RV.frac = $('rt').value / 1000; rvDraw(performance.now()); rvSync(); });
+
+/* ======================= Stadi ======================= */
+const SB = ['sh', 'sv', 'sgl', 'sdl', 'ssl', 'slat', 'sdv'], SI = [];
+for (let k = 1; k <= 4; k++) SI.push('si' + k, 'se' + k, 'ss' + k, 'sp' + k);
+$('stgs').innerHTML = [1, 2, 3, 4].map(k => '<div class="stg" id="srow' + k + '"><span class="sk"><i style="background:' + SC[k - 1] + '"></i>' + k + '</span>' +
+  '<input id="si' + k + '" inputmode="decimal" aria-label="' + t('Impulso specifico dello stadio ', 'Specific impulse of stage ') + k + ', s">' +
+  '<input id="se' + k + '" inputmode="decimal" aria-label="' + t('Coefficiente strutturale ε dello stadio ', 'Structural coefficient ε of stage ') + k + '">' +
+  '<input id="ss' + k + '" inputmode="decimal" aria-label="' + t('Massa della struttura dello stadio ', 'Structure mass of stage ') + k + ', t">' +
+  '<input id="sp' + k + '" inputmode="decimal" aria-label="' + t('Massa del propellente dello stadio ', 'Propellant mass of stage ') + k + ', t"></div>').join('');
+const SV = { d: null, last: null };
+
+function budget(errs, bad) {
+  const h = rd('sh'), v = rd('sv'), gl = rd('sgl'), dl = rd('sdl'), sl = rd('ssl'), lat = rd('slat'), dvt = rd('sdv');
+  let vo = null, ho = null;
+  if (h != null) {
+    if (!(h >= 0)) { errs.push(t('La quota dell\'orbita non può essere negativa.', 'The orbit altitude cannot be negative.')); bad.push('sh'); }
+    else { ho = h; vo = Math.sqrt(K.MU / (K.RE + h)) * 1000; if (v != null && !near(v, vo)) { errs.push(t('La velocità dell\'orbita non torna con la quota: a ', 'The orbital speed does not match the altitude: at ') + fmt(h, 0) + t(' km è ', ' km it is ') + fmt(vo, 0) + t(' m/s. Correggi il valore o svuota il campo.', ' m/s. Fix the value or clear the field.')); bad.push('sv'); } }
+  } else if (v != null) {
+    const vmax = Math.sqrt(K.MU / K.RE) * 1000;
+    if (!(v > 0 && v <= vmax)) { errs.push(t('Un\'orbita circolare va al massimo a ', 'A circular orbit goes at most at ') + fmt(vmax, 0) + t(' m/s: per altre missioni scrivi direttamente il Δv totale.', ' m/s: for other missions type the total Δv directly.')); bad.push('sv'); }
+    else { vo = v; ho = K.MU / Math.pow(v / 1000, 2) - K.RE; }
+  }
+  [['sgl', gl], ['sdl', dl], ['ssl', sl]].forEach(([id, x]) => { if (x != null && x < 0) { errs.push(t('Le perdite non possono essere negative.', 'Losses cannot be negative.')); bad.push(id); } });
+  let bonus = 0;
+  if (lat != null) { if (Math.abs(lat) <= 90) bonus = VEQ * Math.cos(lat * D2R); else { errs.push(t('La latitudine sta tra −90° e 90°.', 'Latitude lies between −90° and 90°.')); bad.push('slat'); } }
+  const L = Math.max(0, gl || 0) + Math.max(0, dl || 0) + Math.max(0, sl || 0), sum = vo != null ? vo + L - bonus : null;
+  let req = sum;
+  if (dvt != null) {
+    if (!(dvt > 0)) { errs.push(t('Il Δv totale deve essere maggiore di zero.', 'The total Δv must be greater than zero.')); bad.push('sdv'); req = null; }
+    else { req = dvt; if (sum != null && !near(dvt, sum)) { errs.push(t('Il Δv totale non torna con il bilancio qui sopra: dovrebbe essere ', 'The total Δv does not match the budget above: it should be ') + fmt(sum, 0) + t(' m/s. Correggi il valore o svuota il campo.', ' m/s. Fix the value or clear the field.')); bad.push('sdv'); } }
+  }
+  K.der('sh', ho, 1); K.der('sv', vo, 1); K.der('sdv', req, 0);
+  return { req, vo, L, bonus, lat, typed: dvt != null };
+}
+function stageInputs(N, mode, errs, bad, miss) {
+  const S = [];
+  for (let k = 1; k <= N; k++) {
+    const s = { k, isp: rd('si' + k), e: rd('se' + k), ms: mode === 'a' ? rd('ss' + k) : null, mp: mode === 'a' ? rd('sp' + k) : null }, n0 = errs.length;
+    if (s.isp == null) miss.push(t('l\'impulso specifico dello stadio ', 'the specific impulse of stage ') + k);
+    else if (!(s.isp > 0)) { errs.push(t('L\'impulso specifico dello stadio ', 'The specific impulse of stage ') + k + t(' deve essere maggiore di zero.', ' must be greater than zero.')); bad.push('si' + k); s.isp = null; }
+    if (s.e != null && !(s.e > 0 && s.e < 1)) { errs.push(t('ε dello stadio ', 'ε of stage ') + k + t(' sta tra 0 e 1 (di solito 0,04–0,15).', ' lies between 0 and 1 (usually 0.04–0.15).')); bad.push('se' + k); s.e = null; }
+    ['ms', 'mp'].forEach(p => { if (s[p] != null && !(s[p] > 0)) { errs.push(t('Le masse degli stadi devono essere maggiori di zero.', 'Stage masses must be greater than zero.')); bad.push((p === 'ms' ? 'ss' : 'sp') + k); s[p] = null; } });
+    if (mode === 'a') {
+      if (s.ms != null && s.mp != null) {
+        const eC = s.ms / (s.ms + s.mp);
+        if (s.e != null && !near(s.e, eC, 3e-3)) { errs.push(t('ε dello stadio ', 'ε of stage ') + k + t(' non torna con le masse: dovrebbe essere ', ' does not match the masses: it should be ') + fmt(eC, 4) + t('. Correggi il valore o svuota il campo.', '. Fix the value or clear the field.')); bad.push('se' + k); }
+        s.e = eC;
+      } else if (s.e != null && s.mp != null) s.ms = s.e * s.mp / (1 - s.e);
+      else if (s.e != null && s.ms != null) s.mp = s.ms * (1 - s.e) / s.e;
+      else if (errs.length === n0) miss.push(t('due dati tra ε, struttura e propellente dello stadio ', 'two of ε, structure and propellant for stage ') + k);
+      K.der('se' + k, s.e, 4); K.der('ss' + k, s.ms, s.ms == null ? null : decT(s.ms)); K.der('sp' + k, s.mp, s.mp == null ? null : decT(s.mp));
+    } else if (s.e == null && errs.length === n0) miss.push(t('ε dello stadio ', 'ε of stage ') + k);
+    s.err = errs.length > n0;
+    S.push(s);
+  }
+  return S;
+}
+function toB() {             // nel modo «dal Δv» le masse diventano risultati; ε resta come dato
+  for (let k = 1; k <= 4; k++) {
+    if ($('ss' + k).value.trim() === '' && $('sp' + k).value.trim() === '') continue;
+    const ms = rd('ss' + k), mp = rd('sp' + k);
+    if ($('se' + k).value.trim() === '' && ms > 0 && mp > 0) $('se' + k).value = fv(+(ms / (ms + mp)).toPrecision(4));
+    $('ss' + k).value = ''; $('sp' + k).value = '';
+  }
+}
+function toA() {             // tornando al modo «dalle masse» le masse ottime diventano dati
+  const r = SV.last; if (!r || r.mode !== 'b' || r.rel) return;
+  r.st.forEach((s, i) => { const k = i + 1; $('ss' + k).value = fv(+s.ms.toFixed(decT(s.ms))); $('sp' + k).value = fv(+s.mp.toFixed(decT(s.mp))); $('se' + k).value = ''; });
+}
+$('smo').addEventListener('change', () => { if ($('smo').value === 'a') toA(); else toB(); });
+
+function stagesRun() {
+  K.clear('fs');
+  const N = Math.min(4, Math.max(1, +$('sn').value || 2)), mode = $('smo').value === 'b' ? 'b' : 'a';
+  for (let k = 1; k <= 4; k++) { $('srow' + k).hidden = k > N; $('ss' + k).readOnly = $('sp' + k).readOnly = mode === 'b'; }
+  if (mode === 'b') toB();
+  $('shint').textContent = mode === 'a' ? t('Per ogni stadio dai l\'impulso specifico e due dati tra ε, struttura e propellente.', 'For each stage give the specific impulse and two of ε, structure and propellant.')
+    : t('Per ogni stadio dai impulso specifico ed ε: la pagina trova le masse che rendono minima la massa al decollo.', 'For each stage give specific impulse and ε: the page finds the masses that make the lift-off mass smallest.');
+  const ids = SB.concat(['spl'], SI.filter(id => +id.slice(-1) <= N)), { nan } = readIds(ids);
+  const errs = nan.length ? [NAN()] : [], bad = nan.slice(), miss = [], notes = [];
+  const bud = budget(errs, bad), S = stageInputs(N, mode, errs, bad, miss);
+  let mL = rd('spl');
+  if (mL != null && !(mL >= 0)) { errs.push(t('Il carico utile non può essere negativo.', 'The payload cannot be negative.')); bad.push('spl'); mL = null; }
+  const ready = !miss.length && !S.some(s => s.err);
+  let res = null;
+  if (ready && mode === 'a') {
+    const c = S.map(s => s.isp * G0), R = ST.fromMasses(c, S.map(s => s.ms), S.map(s => s.mp), mL || 0);
+    if (mL == null) notes.push(t('Senza carico utile: è il Δv del razzo vuoto.', 'No payload: this is the Δv of the empty rocket.'));
+    res = { mode, N, st: S.map((s, i) => ({ ms: s.ms, mp: s.mp, n: R.st[i].n, dv: R.st[i].dv })), mL: mL || 0, m0: R.m0, dvTot: R.dv, dvReq: bud.req, pi: (mL || 0) / R.m0 };
+  } else if (ready && mode === 'b') {
+    if (bud.req == null) miss.push(t('il Δv da dare (quota o velocità dell\'orbita, oppure il Δv totale)', 'the Δv to deliver (orbit altitude or speed, or the total Δv)'));
+    else {
+      const c = S.map(s => s.isp * G0), e = S.map(s => s.e), O = ST.optimum(c, e, bud.req);
+      if (O.err === 'max') errs.push(t('Con questi Isp ed ε il Δv massimo, anche senza carico, è ', 'With these Isp and ε the largest Δv, even with no payload, is ') + fmt(O.dvMax, 0) + t(' m/s: per arrivare a ', ' m/s: to reach ') + fmt(bud.req, 0) + t(' m/s aggiungi uno stadio o migliora Isp ed ε.', ' m/s add a stage or improve Isp and ε.'));
+      else if (O.err === 'min') errs.push(t('Con un Δv così basso lo stadio ', 'With such a low Δv stage ') + (O.k + 1) + t(' non servirebbe: togli uno stadio.', ' would not be needed: remove a stage.'));
+      else {
+        const rel = !(mL > 0), M = ST.masses(O.n, e, rel ? 1 : mL);
+        if (rel) notes.push(t('Scrivi il carico utile per avere le masse in tonnellate: intanto sono in percentuale della massa al decollo.', 'Type the payload to get the masses in tonnes: for now they are a percentage of the lift-off mass.'));
+        else S.forEach((s, i) => { K.der('ss' + (i + 1), M.ms[i], decT(M.ms[i])); K.der('sp' + (i + 1), M.mp[i], decT(M.mp[i])); });
+        res = { mode, N, rel, st: O.n.map((n, i) => ({ ms: M.ms[i], mp: M.mp[i], n, dv: c[i] * Math.log(n) })), mL: rel ? 1 : mL, m0: M.m0, dvTot: bud.req, dvReq: bud.req, pi: (rel ? 1 : mL) / M.m0, eta: O.eta,
+          equal: c.every(x => near(x, c[0], 1e-9)) && e.every(x => near(x, e[0], 1e-9)) };
+      }
+    }
+  }
+  bad.forEach(id => K.bad(id));
+  const info = miss.length ? t('Per il calcolo mancano: ', 'Still missing: ') + miss.join('; ') + '.' : notes.join(' ');
+  K.msg('smsg', errs.length ? errs.join('<br>') : info, errs.length ? '' : 'info');
+  SV.last = res; SV.d = res;
+  stagesOut(res, bud); svDraw(); stagesChart(S, bud.req, res, N);
+  K.save({ m: tabs.get() });
+}
+function stagesOut(res, bud) {
+  const brow = () => {
+    if (bud.req == null) return null;
+    const note = !bud.typed && bud.vo != null ? fmt(bud.vo, 0) + ' + ' + fmt(bud.L, 0) + ' − ' + fmt(bud.bonus, 0) + ' m/s ' + t('(orbita + perdite − rotazione', '(orbit + losses − rotation') + (bud.lat != null ? ', 465,1 · cos ' + fmt(bud.lat, 1) + '°)' : ')') : t('scritto da te', 'typed by you');
+    return [t('Δv richiesto', 'Required Δv'), fmt(bud.req, 0), 'm/s', K.en ? note.replace('465,1', '465.1') : note];
+  };
+  if (!res) { $('stbl').innerHTML = ''; K.rows('srows', bud.req != null ? [['#', t('Missione', 'Mission')], brow()] : []); return; }
+  const mt = x => res.rel ? fmt(x / res.m0 * 100, 2) : fmt(x, decT(x)), u = res.rel ? '%' : 't';
+  $('stbl').innerHTML = '<table class="tbl"><thead><tr><th>' + t('Stadio', 'Stage') + '</th><th class="num">' + t('struttura, ', 'structure, ') + u + '</th><th class="num">' + t('propellente, ', 'propellant, ') + u + '</th><th class="num">m<sub>0</sub>/m<sub>f</sub></th><th class="num">Δv, m/s</th></tr></thead><tbody>' +
+    res.st.map((s, i) => '<tr><td><i class="sw" style="background:' + SC[i] + '"></i>' + (i + 1) + '</td><td class="num">' + mt(s.ms) + '</td><td class="num">' + mt(s.mp) + '</td><td class="num">' + fmt(s.n, 3) + '</td><td class="num">' + fmt(s.dv, 0) + '</td></tr>').join('') + '</tbody></table>';
+  const R = [['#', res.mode === 'a' ? t('Razzo', 'Rocket') : t('Stadi ottimi', 'Optimal stages')]];
+  const m0r = res.rel ? null : [t('Massa al decollo', 'Lift-off mass'), fmt(res.m0, decT(res.m0)), 't'];
+  const pir = [t('Frazione di carico utile', 'Payload fraction'), fmt(res.pi * 100, 2), '%', res.rel ? '' : fmt(res.mL, decT(res.mL)) + t(' t di carico su ', ' t of payload out of ') + fmt(res.m0, decT(res.m0)) + ' t'];
+  if (res.mode === 'a') {
+    R.push(['Δv', fmt(res.dvTot, 0), 'm/s', t('somma dei Δv degli stadi', 'sum of the stage Δv'), 'key']);
+    if (res.dvReq != null) {
+      R.push(brow());
+      const m = res.dvTot - res.dvReq;
+      R.push([t('Margine', 'Margin'), (m >= 0 ? '+' : '') + fmt(m, 0), 'm/s', m >= 0 ? t('il razzo ci arriva', 'the rocket makes it') : t('il razzo non ci arriva', 'the rocket falls short'), m < 0 ? 'warn' : '']);
+    }
+    R.push(m0r, pir);
+  } else {
+    if (m0r) { m0r.push(t('la più piccola che porta il carico al Δv richiesto', 'the smallest that takes the payload to the required Δv'), 'key'); R.push(m0r); }
+    R.push(pir, brow());
+    R.push([t('Ripartizione', 'Split'), res.equal ? t('Δv uguale per stadio', 'equal Δv per stage') : 'η = ' + sig(res.eta, 4), res.equal ? '' : 's/m', res.equal ? t('stadi uguali: forma chiusa', 'equal stages: closed form') : t('moltiplicatore di Lagrange', 'Lagrange multiplier')]);
+  }
+  K.rows('srows', R);
+}
+function stagesChart(S, req, res, N) {
+  const ok = S.filter(s => s.isp > 0 && s.e > 0 && s.e < 1), dv = req != null ? req : res ? res.dvTot : null;
+  if (!ok.length || !dv) { noChart('sch'); $('schn').textContent = ''; return; }
+  const isp = ok.reduce((a, s) => a + s.isp, 0) / ok.length, e = ok.reduce((a, s) => a + s.e, 0) / ok.length, c = isp * G0;
+  const xs = [1, 2, 3, 4, 5, 6], ys = xs.map(n => { const p = ST.equalPi(c, e, dv, n); return Number.isFinite(p) ? p * 100 : NaN; });
+  const lead = t('Stadi uguali con Isp ', 'Equal stages with Isp ') + fmt(isp, 0) + t(' s ed ε ', ' s and ε ') + fmt(e, 3) + t(' (medie dei tuoi stadi), per ', ' (averages of your stages), for ') + fmt(dv, 0) + ' m/s';
+  if (!ys.some(Number.isFinite)) { noChart('sch'); $('schn').textContent = lead + t(': nessun numero di stadi ci arriva.', ': no number of stages gets there.'); return; }
+  const first = ys.findIndex(Number.isFinite);
+  chartPts('sch', { title: t('Carico utile e numero di stadi', 'Payload and number of stages'), x: xs, series: [{ name: t('stadi uguali', 'equal stages'), y: ys, color: CO.cy }], xLabel: t('numero di stadi', 'number of stages'),
+    yLabel: t('% della massa al decollo', '% of lift-off mass'), unit: '%', xName: t('stadi', 'stages'), xFmt: v => fmt(v, 0), yMin: 0, marks: [{ x: N, label: t('i tuoi', 'yours'), color: CO.gr }] },
+  res && res.mode === 'b' ? [{ x: N, y: res.pi * 100 }] : []);
+  $('schn').textContent = lead + '.' + (first > 0 ? t(' Con meno di ', ' With fewer than ') + (first + 1) + t(' stadi non ci si arriva.', ' stages it cannot be done.') : '') + (res && res.mode === 'b' && !res.equal ? t(' Il punto verde è la tua soluzione con stadi diversi.', ' The green dot is your solution with different stages.') : '');
+}
+/* ---------- vista degli stadi: colonna delle masse e colonna dei Δv ---------- */
+function spread(L, lo, hi, gap) {
+  L.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < L.length; i++) if (L[i].y - L[i - 1].y < gap) L[i].y = L[i - 1].y + gap;
+  if (L.length && L[L.length - 1].y > hi) { L[L.length - 1].y = hi; for (let i = L.length - 2; i >= 0; i--) if (L[i + 1].y - L[i].y < gap) L[i].y = L[i + 1].y - gap; }
+  if (L.length && L[0].y < lo) { L[0].y = lo; for (let i = 1; i < L.length; i++) if (L[i].y - L[i - 1].y < gap) L[i].y = L[i - 1].y + gap; }
+  return L;
+}
+function svDraw() {
+  const host = $('sview'), W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const s = svgOf(host); s.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const d = SV.d;
+  if (!d) { s.innerHTML = TX(W / 2, H / 2, t('Completa i dati degli stadi per vederli.', 'Complete the stage data to see them.'), 'font-size="13" fill="' + CO.tx3 + '" text-anchor="middle"'); s.setAttribute('aria-label', t('Stadi', 'Stages')); return; }
+  const small = W < 520, fs = small ? 11.5 : 12.5, top = small ? 54 : 44, bot = H - (small ? 46 : 40), nose = Math.min(26, (bot - top) * 0.07), Hs = bot - top - nose;
+  const wA = Math.min(small ? 46 : 70, W * 0.13), xA = W * (small ? 0.36 : 0.3), wB = wA * 0.72, xB = W * (small ? 0.64 : 0.6);
+  const mT = d.mL + d.st.reduce((a, x) => a + x.ms + x.mp, 0), kM = Hs / mT;
+  const dvTop = Math.max(d.dvTot, d.dvReq || 0), kV = Hs / dvTop;
+  const mt = x => d.rel ? fmt(x / d.m0 * 100, 1) + ' %' : fmt(x, x >= 100 ? 0 : 1) + ' t';
+  let o = '', yA = bot, yV = bot;
+  const LA = [], LB = [], blocks = [];
+  d.st.forEach((x, i) => {
+    const h = (x.ms + x.mp) * kM, hs = x.ms * kM, hv = x.dv * kV;
+    blocks.push({ a0: yA - h, a1: yA, hs, b0: yV - hv, b1: yV, col: SC[i] });
+    LA.push({ y: yA - h / 2 + 4, s: (i + 1) + ' · ' + mt(x.ms + x.mp) }); LB.push({ y: yV - hv / 2 + 4, s: fmt(x.dv, 0) + ' m/s', col: SC[i] });
+    yA -= h; yV -= hv;
+  });
+  blocks.forEach(b => { o += '<line x1="' + f1(xA + wA / 2) + '" y1="' + f1(b.a0) + '" x2="' + f1(xB - wB / 2) + '" y2="' + f1(b.b0) + '" stroke="' + b.col + '" stroke-opacity=".45" stroke-dasharray="2 3"/>'; });
+  blocks.forEach(b => {
+    o += '<rect x="' + f1(xA - wA / 2) + '" y="' + f1(b.a0) + '" width="' + f1(wA) + '" height="' + f1(b.a1 - b.a0) + '" fill="' + b.col + '" fill-opacity=".3"/>';
+    o += '<rect x="' + f1(xA - wA / 2) + '" y="' + f1(b.a1 - b.hs) + '" width="' + f1(wA) + '" height="' + f1(b.hs) + '" fill="' + CO.pn3 + '"/>';
+    o += '<rect x="' + f1(xA - wA / 2) + '" y="' + f1(b.a0) + '" width="' + f1(wA) + '" height="' + f1(b.a1 - b.a0) + '" fill="none" stroke="' + b.col + '"/>';
+    o += '<rect x="' + f1(xB - wB / 2) + '" y="' + f1(b.b0) + '" width="' + f1(wB) + '" height="' + f1(b.b1 - b.b0) + '" fill="' + b.col + '" fill-opacity=".3" stroke="' + b.col + '"/>';
+  });
+  const hL = Math.max(3, d.mL * kM);       // carico utile e ogiva
+  o += '<rect x="' + f1(xA - wA / 2) + '" y="' + f1(yA - hL) + '" width="' + f1(wA) + '" height="' + f1(hL) + '" fill="' + CO.tx + '" fill-opacity=".55" stroke="' + CO.tx + '"/>';
+  o += '<path d="M' + f1(xA - wA / 2) + ' ' + f1(yA - hL) + 'Q' + f1(xA - wA / 2) + ' ' + f1(yA - hL - nose * 0.75) + ' ' + f1(xA) + ' ' + f1(yA - hL - nose) + 'Q' + f1(xA + wA / 2) + ' ' + f1(yA - hL - nose * 0.75) + ' ' + f1(xA + wA / 2) + ' ' + f1(yA - hL) + 'Z" fill="' + CO.pn2 + '" stroke="' + CO.tx3 + '"/>';
+  if (d.mL > 0) LA.push({ y: yA - hL / 2 + 4, s: t('carico ', 'payload ') + mt(d.mL) });
+  if (d.dvReq != null) {           // Δv richiesto
+    const yr = bot - d.dvReq * kV, short = d.dvTot < d.dvReq * (1 - 1e-6);
+    if (short) o += '<rect x="' + f1(xB - wB / 2) + '" y="' + f1(yr) + '" width="' + f1(wB) + '" height="' + f1(yV - yr) + '" fill="none" stroke="' + CO.am + '" stroke-dasharray="4 3"/>';
+    o += '<line x1="' + f1(xB - wB / 2 - 8) + '" x2="' + f1(xB + wB / 2 + 3) + '" y1="' + f1(yr) + '" y2="' + f1(yr) + '" stroke="' + (short ? CO.am : CO.tx2) + '" stroke-width="1.5" stroke-dasharray="5 3"/>';
+    LB.push({ y: yr + 4, s: t('richiesto ', 'required ') + fmt(d.dvReq, 0), col: short ? CO.am : CO.tx2 });
+  }
+  spread(LA, top, bot, fs + 4).forEach(l => { o += TX(xA - wA / 2 - 8, l.y, l.s, 'font-size="' + fs + '" fill="' + CO.tx2 + '" text-anchor="end"'); });
+  spread(LB, top, bot, fs + 4).forEach(l => { o += TX(xB + wB / 2 + 10, l.y, l.s, 'font-size="' + fs + '" fill="' + l.col + '"'); });
+  const hd = (x, a, b) => small ? TX(x, 18, a, 'font-size="12" fill="' + CO.tx2 + '" text-anchor="middle"') + TX(x, 35, b, 'font-size="13" fill="' + CO.tx + '" text-anchor="middle"') : TX(x, top - 22, a + ' · ' + b, 'font-size="13" fill="' + CO.tx + '" text-anchor="middle"');
+  o += hd(xA, t('massa', 'mass'), mt(d.m0)) + hd(xB, 'Δv', fmt(d.dvTot, 0) + ' m/s');
+  s.innerHTML = o;
+  s.setAttribute('aria-label', d.N + t(' stadi: massa al decollo ', ' stages: lift-off mass ') + mt(d.m0) + ', Δv ' + fmt(d.dvTot, 0) + ' m/s');
+}
+
+/* ======================= Ugello ideale ======================= */
+const UF = ['ug', 'upc', 'utc', 'umm', 'uat', 'uf', 'ueps', 'upe', 'upa'], UV = { d: null };
+// contorno in raggi di gola: camera (Ac/At = 3), convergente a 30°, gola, campana all'80 % come parabola (Rao)
+function contour(eps) {
+  const Rc = Math.sqrt(3), Ru = 1.5, Rd = 0.382, thc = 30 * D2R, pts = [];
+  const x1 = -Ru * Math.sin(thc), r1 = 1 + Ru * (1 - Math.cos(thc)), x2 = x1 - (Rc - r1) / Math.tan(thc), x0 = x2 - 2.2;
+  for (let k = 0; k <= 6; k++) pts.push([x0 + (x2 - x0) * k / 6, Rc]);
+  for (let k = 1; k <= 8; k++) pts.push([x2 + (x1 - x2) * k / 8, Rc + (r1 - Rc) * k / 8]);
+  for (let k = 1; k <= 14; k++) { const ph = thc * (1 - k / 14); pts.push([-Ru * Math.sin(ph), 1 + Ru * (1 - Math.cos(ph))]); }
+  const Re = Math.sqrt(Math.max(1, eps));
+  if (Re - 1 < 1e-9) return pts;
+  const lg = Math.log10(eps), thn = (19 + 6.5 * lg) * D2R, the = Math.max(2, 15.5 - 4 * lg) * D2R;
+  let phN = thn; const clip = 1 + Rd * (1 - Math.cos(thn)) >= Re;
+  if (clip) phN = Math.acos(1 - (Re - 1) / Rd);
+  for (let k = 1; k <= 12; k++) { const ph = phN * k / 12; pts.push([Rd * Math.sin(ph), 1 + Rd * (1 - Math.cos(ph))]); }
+  if (clip) return pts;
+  const N = pts[pts.length - 1], xE = 0.8 * ((Re - 1) + Ru * (1 / Math.cos(15 * D2R) - 1)) / Math.tan(15 * D2R);
+  const tn = Math.tan(thn), te = Math.tan(the), xQ = (Re - N[1] + N[0] * tn - xE * te) / (tn - te), rQ = N[1] + tn * (xQ - N[0]);
+  const xEnd = Math.max(xE, N[0] + 1e-3);
+  if (xQ > N[0] && xQ < xEnd && rQ > N[1] && rQ < Re) for (let k = 1; k <= 70; k++) { const u = k / 70, a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u; pts.push([a * N[0] + b * xQ + c * xEnd, a * N[1] + b * rQ + c * Re]); }
+  else for (let k = 1; k <= 30; k++) pts.push([N[0] + (xEnd - N[0]) * k / 30, N[1] + (Re - N[1]) * k / 30]);
+  return pts;
+}
+function geoOf(eps, g) {
+  const pts = contour(eps), M = [], P = [];
+  pts.forEach(([x, r]) => { const m = Math.abs(x) < 1e-12 ? 1 : PH.mach(Math.max(1, r * r), g, x > 0); M.push(m); P.push(PH.pr(m, g)); });
+  return { pts, M, P, x0: pts[0][0], xE: pts[pts.length - 1][0], Rc: Math.sqrt(3), Re: pts[pts.length - 1][1] };
+}
+function nozzleRun() {
+  K.clear('fu');
+  const { v, nan } = readIds(UF), errs = nan.length ? [NAN()] : [], bad = nan.slice(), miss = [];
+  const pos = (id, it, en) => { if (v[id] != null && !(v[id] > 0)) { errs.push(t(it + ' deve essere maggiore di zero.', en + ' must be greater than zero.')); bad.push(id); v[id] = null; } };
+  pos('upc', 'La pressione in camera', 'The chamber pressure'); pos('utc', 'La temperatura in camera', 'The chamber temperature'); pos('umm', 'La massa molare', 'The molar mass');
+  pos('uat', 'L\'area di gola', 'The throat area'); pos('uf', 'La spinta', 'The thrust');
+  let g = v.ug; if (g != null && !(g > 1 && g < 2)) { errs.push(t('γ sta tra 1 e 2 (per i gas di un razzo di solito 1,15–1,3).', 'γ lies between 1 and 2 (for rocket gases usually 1.15–1.3).')); bad.push('ug'); g = null; }
+  const pc = v.upc != null ? v.upc * 1e6 : null, Tc = v.utc, mm = v.umm;
+  let pa = v.upa != null ? v.upa * 1e3 : 0;
+  if (v.upa == null) K.der('upa', 0, 0);
+  if (pa < 0) { errs.push(t('La pressione esterna non può essere negativa.', 'The ambient pressure cannot be negative.')); bad.push('upa'); pa = 0; }
+  if (pc && pa >= pc) { errs.push(t('La pressione esterna supera quella in camera: il gas non esce.', 'The ambient pressure exceeds the chamber pressure: the gas does not flow out.')); bad.push('upa'); pa = 0; }
+  if (v.ug == null) miss.push('γ');
+  let eps = null, Me = null, prr = null;
+  if (g) {
+    if (v.ueps != null) {
+      if (!(v.ueps >= 1)) { errs.push(t('Il rapporto d\'espansione è almeno 1 (uscita grande come la gola).', 'The expansion ratio is at least 1 (exit as large as the throat).')); bad.push('ueps'); }
+      else {
+        eps = v.ueps; Me = PH.mach(eps, g, true); prr = PH.pr(Me, g);
+        if (v.upe != null && pc && !near(v.upe * 1e3, prr * pc, 3e-3)) { errs.push(t('La pressione d\'uscita non torna con il rapporto d\'espansione: dovrebbe essere ', 'The exit pressure does not match the expansion ratio: it should be ') + fmt(prr * pc / 1e3, 2) + t(' kPa. Correggi il valore o svuota il campo.', ' kPa. Fix the value or clear the field.')); bad.push('upe'); }
+      }
+    } else if (v.upe != null) {
+      if (!pc) miss.push(t('la pressione in camera', 'the chamber pressure'));
+      else {
+        const pcr = Math.pow(2 / (g + 1), g / (g - 1)), r = v.upe * 1e3 / pc;
+        if (!(r > 0)) { errs.push(t('La pressione d\'uscita deve essere maggiore di zero.', 'The exit pressure must be greater than zero.')); bad.push('upe'); }
+        else if (r >= pcr) { errs.push(t('Sopra ', 'Above ') + fmt(pcr * pc / 1e3, 0) + t(' kPa il getto non diventa supersonico: scegli una pressione d\'uscita più bassa.', ' kPa the jet does not go supersonic: choose a lower exit pressure.')); bad.push('upe'); }
+        else { prr = r; Me = PH.machP(r, g); eps = PH.aoa(Me, g); }
+      }
+    } else miss.push(t('il rapporto d\'espansione o la pressione d\'uscita', 'the expansion ratio or the exit pressure'));
+  }
+  if (pc == null) miss.push(t('la pressione in camera', 'the chamber pressure'));
+  if (Tc == null) miss.push(t('la temperatura in camera', 'the chamber temperature'));
+  if (mm == null) miss.push(t('la massa molare', 'the molar mass'));
+  K.der('ueps', eps, eps >= 100 ? 1 : 2); K.der('upe', prr != null && pc ? prr * pc / 1e3 : null, 2);
+  let N = null;
+  if (Me != null && pc && Tc && mm) {
+    N = nozzleCore({ g, pc, Tc, mm, eps, pa });
+    if (v.uat != null) { N.At = v.uat * 1e-4; N.F = N.CF * pc * N.At; if (v.uf != null && !near(v.uf * 1e3, N.F, 3e-3)) { errs.push(t('La spinta non torna con l\'area di gola: dovrebbe essere ', 'The thrust does not match the throat area: it should be ') + fmt(N.F / 1e3, 1) + t(' kN. Correggi il valore o svuota il campo.', ' kN. Fix the value or clear the field.')); bad.push('uf'); } }
+    else if (v.uf != null) { if (N.CF > 0) { N.F = v.uf * 1e3; N.At = N.F / (N.CF * pc); } else { errs.push(t('A questa pressione esterna l\'ugello non dà spinta: non si ricava la gola dalla spinta.', 'At this ambient pressure the nozzle gives no thrust: the throat cannot be found from the thrust.')); bad.push('uf'); } }
+    if (N.At) { N.md = pc * N.At / N.cs; N.Fv = N.CFv * pc * N.At; }
+    K.der('uat', N.At ? N.At * 1e4 : null, 2); K.der('uf', N.F != null ? N.F / 1e3 : null, 1);
+    if (pa > 0) {
+      N.q = N.pe / pa; N.kind = N.q > 1.05 ? 'under' : N.q < 0.95 ? 'over' : 'ok'; N.sep = N.q < 0.3;
+      const Mo = PH.machP(pa / pc, g); if (Mo > 1) { N.epsOpt = PH.aoa(Mo, g); N.IspOpt = N.cs * (PH.cfv(g, pa / pc, N.epsOpt) - pa / pc * N.epsOpt) / G0; }
+    } else N.kind = 'vac';
+  }
+  bad.forEach(id => K.bad(id));
+  let info = miss.length ? t('Per il calcolo mancano: ', 'Still missing: ') + miss.join(', ') + '.' : '';
+  if (!errs.length && N && N.sep) { errs.push(t('p<sub>e</sub> è sotto 0,3 · p<sub>a</sub> (criterio di Summerfield): il getto si può staccare dalla parete dentro l\'ugello e la spinta vera è diversa da quella calcolata. Prova con un rapporto d\'espansione più piccolo o con una pressione esterna più bassa.', 'p<sub>e</sub> is below 0.3 · p<sub>a</sub> (Summerfield criterion): the jet can separate from the wall inside the nozzle and the real thrust differs from the computed one. Try a smaller expansion ratio or a lower ambient pressure.')); }
+  else if (!errs.length && N && N.CF <= 0) errs.push(t('A questa pressione esterna il coefficiente di spinta è negativo: l\'ugello è troppo sovraespanso.', 'At this ambient pressure the thrust coefficient is negative: the nozzle is far too over-expanded.'));
+  K.msg('umsg', errs.length ? errs.join('<br>') : info, errs.length ? '' : 'info');
+  UV.d = Me != null ? { g, eps, Me, N, geo: geoOf(eps, g), pa, pc } : null;
+  nozzleOut(UV.d); uvDraw(); nozzleChart(UV.d);
+  K.save({ m: tabs.get() });
+}
+function nozzleOut(d) {
+  if (!d) { K.rows('uout', []); return; }
+  const N = d.N, sub = PH.mach(d.eps, d.g, false), R = [['#', t('Uscita', 'Exit')]];
+  R.push([t('Mach d\'uscita', 'Exit Mach number'), fmt(d.Me, 3), '', t('ramo supersonico; quello subsonico dà M = ', 'supersonic branch; the subsonic one gives M = ') + fmt(sub, 4)]);
+  if (!N) { R.push(['p<sub>e</sub>/p<sub>c</sub>', sig(PH.pr(d.Me, d.g), 4), '']); K.rows('uout', R); return; }
+  const kpa = x => fmt(x / 1e3, x >= 1e5 ? 0 : 2);
+  R.push([t('Pressione d\'uscita', 'Exit pressure'), kpa(N.pe), 'kPa', 'p<sub>e</sub>/p<sub>c</sub> = ' + sig(N.prr, 4)]);
+  R.push([t('Temperatura d\'uscita', 'Exit temperature'), fmt(N.Te, 0), 'K']);
+  R.push([t('Velocità del getto', 'Jet velocity'), fmt(N.ve, 1), 'm/s']);
+  R.push(['#', t('Prestazioni', 'Performance')]);
+  R.push(['c*', fmt(N.cs, 1), 'm/s', t('velocità caratteristica: dipende solo dalla camera', 'characteristic velocity: depends on the chamber only')]);
+  R.push([t('C<sub>F</sub> nel vuoto', 'C<sub>F</sub> in vacuum'), fmt(N.CFv, 4), '']);
+  if (d.pa > 0) {
+    R.push([t('C<sub>F</sub> a p<sub>a</sub>', 'C<sub>F</sub> at p<sub>a</sub>'), fmt(N.CF, 4), '', t('termine di pressione ', 'pressure term ') + '(p<sub>e</sub> − p<sub>a</sub>) · ε / p<sub>c</sub> = ' + fmt((N.pe - d.pa) * d.eps / d.pc, 4)]);
+    R.push([t('Impulso specifico nel vuoto', 'Specific impulse in vacuum'), fmt(N.Ispv, 1), 's']);
+    R.push([t('Impulso specifico a ', 'Specific impulse at ') + kpa(d.pa) + ' kPa', fmt(N.Isp, 1), 's', 'c* · C<sub>F</sub> / g<sub>0</sub>; ' + t('velocità efficace ', 'effective velocity ') + fmt(N.cs * N.CF, 1) + ' m/s', N.CF > 0 ? 'key' : 'key warn']);
+  } else R.push([t('Impulso specifico nel vuoto', 'Specific impulse in vacuum'), fmt(N.Ispv, 1), 's', 'c* · C<sub>F</sub> / g<sub>0</sub>; ' + t('velocità efficace ', 'effective velocity ') + fmt(N.cs * N.CFv, 1) + ' m/s', 'key']);
+  const VK = { vac: [t('nel vuoto, sottoespanso', 'in vacuum, under-expanded'), t('nel vuoto il getto si allarga sempre', 'in vacuum the jet always spreads')],
+    under: [t('sottoespanso', 'under-expanded'), 'p<sub>e</sub> = ' + fmt(N.q, 2) + ' · p<sub>a</sub>: ' + t('il getto si allarga fuori dall\'ugello', 'the jet spreads outside the nozzle')],
+    over: [t('sovraespanso', 'over-expanded'), 'p<sub>e</sub> = ' + fmt(N.q, 2) + ' · p<sub>a</sub>: ' + t('il getto si stringe', 'the jet narrows')],
+    ok: [t('adattato', 'matched'), 'p<sub>e</sub> ≈ p<sub>a</sub>: ' + t('la spinta massima a questa quota', 'the best thrust at this altitude')] }[N.kind];
+  R.push([t('Espansione', 'Expansion'), N.sep ? t('sovraespanso, getto staccato', 'over-expanded, separated jet') : VK[0], '', N.sep ? 'p<sub>e</sub> = ' + fmt(N.q, 2) + ' · p<sub>a</sub> &lt; 0,3 · p<sub>a</sub>' : VK[1], N.sep ? 'warn' : '']);
+  if (N.epsOpt) R.push([t('ε adattato a questa p<sub>a</sub>', 'ε matched to this p<sub>a</sub>'), fmt(N.epsOpt, 2), '', t('darebbe Isp ', 'would give Isp ') + fmt(N.IspOpt, 1) + ' s']);
+  if (N.At) {
+    R.push(['#', t('Portata e misure', 'Flow and size')]);
+    R.push([t('Portata', 'Mass flow'), sig(N.md, 4), 'kg/s', 'ṁ = p<sub>c</sub> · A<sub>t</sub> / c*']);
+    if (d.pa > 0) R.push([t('Spinta a ', 'Thrust at ') + kpa(d.pa) + ' kPa', sig(N.F / 1e3, 4), 'kN', t('nel vuoto ', 'in vacuum ') + sig(N.Fv / 1e3, 4) + ' kN']);
+    else R.push([t('Spinta nel vuoto', 'Thrust in vacuum'), sig(N.Fv / 1e3, 4), 'kN']);
+    const Dt = 2 * Math.sqrt(N.At / Math.PI), De = Dt * Math.sqrt(d.eps), Ae = N.At * d.eps, len = x => x >= 1 ? [fmt(x, 3), 'm'] : [fmt(x * 100, 2), 'cm'];
+    const a = len(Dt), b = len(De);
+    R.push([t('Diametro di gola', 'Throat diameter'), a[0], a[1], t('area ', 'area ') + fmt(N.At * 1e4, 1) + ' cm²']);
+    R.push([t('Diametro d\'uscita', 'Exit diameter'), b[0], b[1], t('area ', 'area ') + (Ae >= 0.1 ? fmt(Ae, 3) + ' m²' : fmt(Ae * 1e4, 1) + ' cm²')]);
+  }
+  R.push(['#', 'Gas']);
+  R.push([t('Costante del gas R', 'Gas constant R'), fmt(N.R, 2), 'J/(kg·K)', '8314,46 / ' + fmt(RU / N.R, 2)]);
+  K.rows('uout', R.map(r => K.en && r && r[3] ? r.slice(0, 3).concat([r[3].replace('8314,46', '8314.46').replace('0,3 ·', '0.3 ·')], r.slice(4)) : r));
+}
+function nozzleChart(d) {
+  if (!d) { noChart('uch'); return; }
+  const G = d.geo, rt = d.N && d.N.At ? Math.sqrt(d.N.At / Math.PI) : null;
+  let unit = '', scale = 1;
+  if (rt) { if ((G.xE - G.x0) * rt >= 3) { unit = 'm'; scale = rt; } else { unit = 'cm'; scale = rt * 100; } }
+  K.chart('uch', { title: t('Mach e pressione lungo l\'ugello', 'Mach number and pressure along the nozzle'), x: G.pts.map(p => p[0] * scale),
+    series: [{ name: 'M', y: G.M, color: CO.cy }, { name: 'p/pc', y: G.P, color: CO.vi }], xLabel: unit ? t('distanza dalla gola, ', 'distance from the throat, ') + unit : t('distanza dalla gola in raggi di gola', 'distance from the throat in throat radii'),
+    yLabel: t('M e p/pc, numeri puri', 'M and p/pc, pure numbers'), xName: 'x', yMin: 0, marks: [{ x: 0, label: t('gola', 'throat') }] });
+}
+const ramp = q => 'hsl(190,82%,' + (13 + 47 * Math.max(0, Math.min(1, q))).toFixed(1) + '%)';   // un solo colore, dal buio al ciano
+function uvDraw() {
+  const host = $('uview'), W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const s = svgOf(host); s.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const d = UV.d;
+  if (!d) { s.innerHTML = TX(W / 2, H / 2, t('Dai γ e il rapporto d\'espansione per vedere l\'ugello.', 'Give γ and the expansion ratio to see the nozzle.'), 'font-size="13" fill="' + CO.tx3 + '" text-anchor="middle"'); s.setAttribute('aria-label', t('Ugello', 'Nozzle')); return; }
+  const small = W < 520, G = d.geo, N = d.N, top = small ? 58 : 62, bot = H - 26, y0 = (top + bot) / 2;
+  const xa = 16, xn = W * (small ? 0.6 : 0.62), sc = Math.min((xn - xa) / (G.xE - G.x0), (bot - top) / 2 / Math.max(G.Rc, G.Re));
+  const X = x => xa + (x - G.x0) * sc, Yu = r => y0 - r * sc, Yd = r => y0 + r * sc, lf = 'font-size="' + (small ? 11 : 12) + '" fill="' + CO.tx3 + '"';
+  let sep = null;
+  if (N && N.sep) {             // punto in cui la pressione scende a 0,3·pa: lì il getto si stacca
+    const Ms = PH.machP(0.3 * d.pa / d.pc, d.g), rs = Math.sqrt(PH.aoa(Ms, d.g)), i = G.pts.findIndex(p => p[0] > 0 && p[1] >= rs);
+    if (i > 0) sep = { i, x: G.pts[i][0], r: rs, M: Ms };
+  }
+  let o = '';
+  const Xe = X(G.xE), Rj = (sep ? sep.r : G.Re) * sc, Lp = W - 8 - Xe;
+  if (N && Lp > 20) {          // getto fuori dall'ugello: la forma dice se è sovra- o sottoespanso
+    const kind = sep ? 'over' : N.kind, q = sep ? 0.3 : (N.q || 1);
+    const A = kind === 'under' ? Math.min(0.55, 0.28 * Math.log(q)) : kind === 'over' ? Math.min(0.42, 0.3 * Math.log(1 / q)) : 0;
+    const Lc = Math.min(Math.max(2.2 * Rj, Lp / 4), Lp / 1.7);
+    const rr = xi => { const ph = Math.PI * xi / Lc, dm = Math.exp(-0.45 * xi / Lc);
+      if (kind === 'vac') return Rj + xi * Math.tan(32 * D2R) * (1 - 0.2 * xi / Lp);
+      if (kind === 'under') return Rj * (1 + A * Math.abs(Math.sin(ph)) * dm + 0.05 * xi / Lc);
+      if (kind === 'over') return Rj * (1 - A * Math.abs(Math.sin(ph)) * dm + 0.05 * xi / Lc);
+      return Rj * (1 + 0.04 * xi / Lc); };
+    const U = []; for (let i = 0; i <= 70; i++) { const xi = Lp * i / 70; U.push([Xe + xi, rr(xi)]); }
+    o += '<path d="M' + U.map(p => f1(p[0]) + ' ' + f1(y0 - p[1])).join('L') + 'L' + U.slice().reverse().map(p => f1(p[0]) + ' ' + f1(y0 + p[1])).join('L') + 'Z" fill="' + CO.cy + '" fill-opacity=".12" stroke="' + CO.ic + '" stroke-opacity=".45"/>';
+    if (kind === 'under' || kind === 'over') for (let j = 0; j * Lc < Lp - 4; j++) {
+      const a = j * Lc, b = Math.min(Lp, (j + 1) * Lc), op = (0.5 * Math.exp(-0.45 * j)).toFixed(2);
+      o += '<path d="M' + f1(Xe + a) + ' ' + f1(y0 - rr(a)) + 'L' + f1(Xe + b) + ' ' + f1(y0 + rr(b)) + 'M' + f1(Xe + a) + ' ' + f1(y0 + rr(a)) + 'L' + f1(Xe + b) + ' ' + f1(y0 - rr(b)) + '" fill="none" stroke="' + CO.ic + '" stroke-opacity="' + op + '"/>';
+    }
+  }
+  for (let k = 0; k < G.pts.length - 1; k++) {     // il flusso, a fette colorate con il Mach locale
+    const [xa1, ra] = G.pts[k], [xb1, rb] = G.pts[k + 1];
+    let m = (G.M[k] + G.M[k + 1]) / 2, r1 = ra, r2 = rb;
+    if (sep && k >= sep.i) { r1 = Math.min(ra, sep.r); r2 = Math.min(rb, sep.r); m = sep.M; }
+    const col = ramp(m / d.Me);
+    o += '<path d="M' + f1(X(xa1)) + ' ' + f1(Yu(r1)) + 'L' + f1(X(xb1)) + ' ' + f1(Yu(r2)) + 'L' + f1(X(xb1)) + ' ' + f1(Yd(r2)) + 'L' + f1(X(xa1)) + ' ' + f1(Yd(r1)) + 'Z" fill="' + col + '" stroke="' + col + '" stroke-width=".8"/>';
+  }
+  o += '<line x1="' + f1(xa) + '" x2="' + f1(W - 10) + '" y1="' + f1(y0) + '" y2="' + f1(y0) + '" stroke="' + CO.tx3 + '" stroke-opacity=".5" stroke-dasharray="6 5"/>';
+  const wall = Y => G.pts.map((p, i) => (i ? 'L' : 'M') + f1(X(p[0])) + ' ' + f1(Y(p[1]))).join('');
+  o += '<path d="' + wall(Yu) + 'M' + f1(X(G.x0)) + ' ' + f1(Yu(G.Rc)) + 'L' + f1(X(G.x0)) + ' ' + f1(Yd(G.Rc)) + wall(Yd).replace(/^M/, 'L') + '" fill="none" stroke="' + CO.ic + '" stroke-width="1.6" stroke-linejoin="round"/>';
+  if (sep) {
+    o += '<path d="M' + f1(X(sep.x)) + ' ' + f1(Yu(sep.r)) + 'H' + f1(Xe) + 'M' + f1(X(sep.x)) + ' ' + f1(Yd(sep.r)) + 'H' + f1(Xe) + '" stroke="' + CO.am + '" stroke-dasharray="4 3" fill="none"/>';
+    o += '<circle cx="' + f1(X(sep.x)) + '" cy="' + f1(Yu(sep.r)) + '" r="3.5" fill="' + CO.am + '"/>' + TX(X(sep.x), Yu(sep.r) - 10, t('separazione', 'separation'), 'font-size="12" fill="' + CO.am + '" text-anchor="middle"');
+  }
+  const ly = Yd(Math.max(G.Rc, G.Re)) + 16;      // etichetta della gola sotto l'ugello, con una linea di richiamo
+  o += '<line x1="' + f1(X(0)) + '" x2="' + f1(X(0)) + '" y1="' + f1(Yd(1) + 4) + '" y2="' + f1(ly - 12) + '" stroke="' + CO.tx3 + '" stroke-opacity=".6" stroke-dasharray="2 3"/>' + TX(X(0), ly, t('gola', 'throat'), lf + ' text-anchor="middle"');
+  o += TX(X(G.x0) + 2, Yu(G.Rc) - 8, t('camera', 'chamber'), lf);
+  o += TX(Xe, Yd(G.Re) + 16, 'M ' + fmt(d.Me, 2), 'font-size="' + (small ? 11 : 12) + '" fill="' + CO.gr + '" text-anchor="middle"');
+  o += TX(14, 20, t('Mach locale', 'Local Mach number'), 'font-size="12" fill="' + CO.tx2 + '"');
+  for (let i = 0; i < 12; i++) o += '<rect x="' + (14 + i * 11) + '" y="28" width="11" height="8" fill="' + ramp(i / 11) + '"/>';
+  o += TX(14, 50, '0', lf) + TX(146, 50, fmt(d.Me, 2), lf + ' text-anchor="end"');
+  if (N) {
+    const vt = N.sep ? t('sovraespanso, getto staccato', 'over-expanded, separated jet') : { vac: t('nel vuoto: sottoespanso', 'in vacuum: under-expanded'), under: t('sottoespanso', 'under-expanded'), over: t('sovraespanso', 'over-expanded'), ok: t('adattato', 'matched') }[N.kind];
+    o += TX(W - 14, 20, vt, 'font-size="13" fill="' + (N.sep ? CO.am : CO.tx) + '" text-anchor="end"');
+    o += TX(W - 14, 38, 'pe ' + fmt(N.pe / 1e3, 1) + ' kPa · pa ' + fmt(d.pa / 1e3, 1) + ' kPa', lf + ' text-anchor="end"');
+  }
+  s.innerHTML = o;
+  s.setAttribute('aria-label', t('Ugello con rapporto d\'espansione ', 'Nozzle with expansion ratio ') + fmt(d.eps, 1) + t(': Mach d\'uscita ', ': exit Mach number ') + fmt(d.Me, 2));
+}
+document.querySelectorAll('[data-pa]').forEach(b => b.addEventListener('click', () => {
+  // cambiando quota il motore resta lo stesso: se la gola era ricavata dalla spinta, la fisso
+  const N = UV.d && UV.d.N;
+  if (N && N.At && $('uat').value.trim() === '' && $('uf').value.trim() !== '') { $('uat').value = fv(+(N.At * 1e4).toPrecision(5)); $('uf').value = ''; }
+  $('upa').value = fv(b.dataset.pa); nozzleRun();
+}));
+
+/* ======================= esempi, memoria nell'indirizzo, avvio ======================= */
+const EXR = {
+  f9: { rdv: '', risp: '348', rve: '', rm0: '126500', rmf: '', rmp: '107500', rmr: '', rzf: '', rF: '981', rmd: '', rtb: '' },
+  d4: { rdv: '', risp: '465.5', rve: '', rm0: '35710', rmf: '', rmp: '27220', rmr: '', rzf: '', rF: '110.1', rmd: '', rtb: '' },
+};
+const S0 = {}; SI.concat(SB).forEach(id => { S0[id] = ''; });
+const EXS = {
+  f9: Object.assign({}, S0, { sn: '2', smo: 'a', si1: '300', ss1: '22.2', sp1: '410.9', si2: '348', ss2: '4', sp2: '107.5', spl: '22.8', sh: '200', sgl: '1500', sdl: '150', ssl: '250', slat: '28.5' }),
+  tre: Object.assign({}, S0, { sn: '3', smo: 'b', si1: '300', se1: '0.06', si2: '340', se2: '0.08', si3: '450', se3: '0.12', spl: '5', sh: '200', sgl: '1500', sdl: '150', ssl: '250', slat: '5.2' }),
+};
+const EXU = {
+  m1d: { ug: '1.22', upc: '9.7', utc: '3670', umm: '22.6', uat: '', uf: '845', ueps: '16', upe: '', upa: '101.325' },
+  mvac: { ug: '1.22', upc: '9.7', utc: '3670', umm: '22.6', uat: '', uf: '981', ueps: '165', upe: '', upa: '0' },
+  rl10: { ug: '1.2', upc: '4.4', utc: '3450', umm: '13', uat: '', uf: '110.1', ueps: '280', upe: '', upa: '0' },
+};
+const exR = m => { fillL(m); RV.play = false; RV.frac = 0; rocketRun(); if (!REDUCED) setTimeout(rvPlay, 250); };
+$('exr1').onclick = () => exR(EXR.f9); $('exr2').onclick = () => exR(EXR.d4);
+$('clrr').onclick = () => { K.wipe('fr'); RV.play = false; RV.frac = 0; rocketRun(); };
+$('exs1').onclick = () => { fillL(EXS.f9); stagesRun(); }; $('exs2').onclick = () => { fillL(EXS.tre); stagesRun(); };
+$('clrs').onclick = () => { K.wipe('fs'); stagesRun(); };
+$('exu1').onclick = () => { fillL(EXU.m1d); nozzleRun(); }; $('exu2').onclick = () => { fillL(EXU.mvac); nozzleRun(); }; $('exu3').onclick = () => { fillL(EXU.rl10); nozzleRun(); };
+$('clru').onclick = () => { K.wipe('fu'); nozzleRun(); };
+K.live('fr', rocketRun); K.live('fs', stagesRun); K.live('fu', nozzleRun);
+if (window.ResizeObserver) { new ResizeObserver(() => rvDraw(performance.now())).observe($('rview')); new ResizeObserver(svDraw).observe($('sview')); new ResizeObserver(uvDraw).observe($('uview')); }
+
+const RIDS = RF.concat(RB), SIDS = SI.concat(['spl'], SB);
+const st = K.keep(RIDS.concat(['sn', 'smo'], SIDS, UF));
+const has = ids => !!st && ids.some(id => st.has(id));
+if (!has(RIDS)) fillL(EXR.f9);
+if (!has(SIDS)) fillL(EXS.f9);
+if (!has(UF)) fillL(EXU.m1d);
+if (st && st.get('m')) tabs.set(st.get('m'));
+rocketRun(); stagesRun(); nozzleRun();
+if (tabs.get() === 'razzo') rvAuto();
+
+/* ---------- prova interna: ?test nell'indirizzo ---------- */
+function selfTest() {
+  const res = [];
+  const ok = (name, got, want, tol, abs) => { const err = abs ? Math.abs(got - want) : Math.abs(got - want) / Math.abs(want), pass = err <= tol; res.push(pass); console.info('selfTest', (pass ? 'ok  ' : 'FAIL') + ' ' + name, { got, want, err, tol }); };
+  const r = rocketSolve({ risp: 300, rmr: 5 });
+  ok('Tsiolkovsky: Isp 300 s, m0/mf 5 → Δv = 300 · 9,80665 · ln 5', r.V.dv, 300 * 9.80665 * Math.log(5), 1e-12);
+  ok('Tsiolkovsky: Δv = 4734,96 m/s (±0,005; «4734,9» è il valore troncato)', r.V.dv, 4734.96, 0.005, true);
+  const Mp = PH.mach(4, 1.4, true), Mb = PH.mach(4, 1.4, false);
+  ok('area–Mach γ 1,4, ε 4: ramo supersonico ≈ 2,940 (±0,001)', Mp, 2.940, 1e-3, true);
+  ok('area–Mach γ 1,4, ε 4: ramo subsonico ≈ 0,147 (±0,001)', Mb, 0.147, 1e-3, true);
+  ok('area–Mach: A/A*(Me) torna 4', PH.aoa(Mp, 1.4), 4, 1e-12);
+  ok('area–Mach: A/A*(M subsonico) torna 4', PH.aoa(Mb, 1.4), 4, 1e-12);
+  const n = nozzleCore({ g: 1.2, pc: 7e6, Tc: 3500, mm: 22, eps: 40, pa: 0 }), mdA = n.pc / n.cs;
+  ok('ugello γ 1,2, 7 MPa, 3500 K, 22 g/mol, ε 40, vuoto: c*·CF/g0 = (ṁ·ve + pe·Ae)/(ṁ·g0)', n.cs * n.CFv / G0, (mdA * n.ve + n.pe * 40) / (mdA * G0), 1e-9);
+  console.info('selfTest', 'valori ugello', { cstar: n.cs, CF: n.CFv, Isp: n.Ispv, Me: n.Me, pe_kPa: n.pe / 1e3 });
+  const c = 350 * G0, O = ST.optimum([c, c], [0.1, 0.1], 9000), M = ST.masses(O.n, [0.1, 0.1], 1000);
+  ok('2 stadi uguali (Isp 350 s, ε 0,1, Δv 9000 m/s, carico 1 t): frazione di carico = forma chiusa', 1000 / M.m0, ST.equalPi(c, 0.1, 9000, 2), 1e-9);
+  ok('2 stadi uguali: n = exp(Δv/(2·ve))', O.n[1], Math.exp(9000 / (2 * c)), 1e-9);
+  const cc = [300 * G0, 348 * G0], ee = [0.05, 0.036], O2 = ST.optimum(cc, ee, 9275), pi0 = 1 / ST.masses(O2.n, ee, 1).m0;
+  ok('stadi diversi: i Δv sommano 9275 m/s', cc[0] * Math.log(O2.n[0]) + cc[1] * Math.log(O2.n[1]), 9275, 1e-12);
+  const shift = dd => { const dv1 = cc[0] * Math.log(O2.n[0]) + dd; return 1 / ST.masses([Math.exp(dv1 / cc[0]), Math.exp((9275 - dv1) / cc[1])], ee, 1).m0; };
+  const worse = [-200, -50, 50, 200].every(dd => shift(dd) < pi0); res.push(worse);
+  console.info('selfTest', (worse ? 'ok  ' : 'FAIL') + ' stadi diversi: spostare ±50 o ±200 m/s tra gli stadi dà meno carico', { pi0, meno50: shift(-50), piu50: shift(50) });
+  console.info('selfTest', res.every(Boolean) ? 'tutto ok' : 'ERRORI', res.filter(Boolean).length + '/' + res.length);
+}
+if (/[?&]test\b/.test(location.search)) selfTest();
+</script>
+</body>
+</html>

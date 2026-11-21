@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- MODELLO: copia questo file per una pagina nuova. Titolo < 60 caratteri, descrizione < 155, un solo h1. -->
+<title data-en="Circular orbit · Keplario">Orbita circolare · Keplario</title>
+<meta name="description" content="Quota, velocità e periodo di un'orbita circolare: dai un dato, la pagina ricava gli altri e li disegna." data-en-content="Altitude, speed and period of a circular orbit: give one value, the page works out the others and draws them.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/_modello.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Orbita circolare · Keplario","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/_modello.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<!--KIT:CSS-->
+</head>
+<body>
+<main>
+  <div class="ph">
+    <div>
+      <h1 data-en="Circular orbit">Orbita circolare</h1>
+      <p class="lead" data-en="Give the altitude, the speed or the period. The page works out the other two and shows the orbit.">Dai la quota, la velocità o il periodo. La pagina ricava gli altri due e ti mostra l'orbita.</p>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" data-m="orb" aria-controls="m-orb" aria-selected="true" data-en="Orbit">Orbita</button>
+    <button role="tab" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
+  </div>
+
+  <section id="m-orb" class="lab">
+    <form class="stack" id="f" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Start from a real satellite">Parti da un satellite reale</h2>
+        <div id="sat"></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Orbit">Orbita</h2>
+        <p class="why" data-en="One value is enough. The empty fields show in green what the page works out.">Basta un valore. I campi vuoti mostrano in verde quello che la pagina ricava.</p>
+        <div class="f"><label for="h" data-en="Altitude">Quota</label><input id="h" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="v" data-en="Speed">Velocità</label><input id="v" inputmode="decimal"><span class="u">km/s</span></div>
+        <div class="f"><label for="T" data-en="Period">Periodo</label><input id="T" inputmode="decimal"><span class="u">min</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr" data-en="Clear">Svuota</button>
+      </div>
+    </form>
+    <div>
+      <div id="msg"></div>
+      <div class="view" id="view"><div class="cap"><span style="color:var(--cy)"><i></i><span data-en="orbit">orbita</span></span><span style="color:var(--gr)"><i class="dot"></i><span data-en="satellite">satellite</span></span></div></div>
+      <div class="out" id="out"></div>
+      <div id="ch"></div>
+    </div>
+  </section>
+
+  <section id="m-info" hidden>
+    <div class="pnl" style="max-width:70ch">
+      <h2 data-en="Formulas">Formule</h2>
+      <p data-en="v = √(μ / r), T = 2π √(r³ / μ), with r = R⊕ + h and μ = 398 600.4418 km³/s².">v = √(μ / r), T = 2π √(r³ / μ), con r = R⊕ + h e μ = 398 600,4418 km³/s².</p>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<!--KIT:JS-->
+<script>
+'use strict';
+K.init('orbite');                         // evidenzia la materia nella barra
+const { $, t, num, sig, fmt } = K;
+const tabs = K.tabs('seg');
+
+/* ---------- risolutore: dai dati che ci sono ricava gli altri ---------- */
+function solve() {
+  K.clear('f'); K.msg('msg', '');
+  const h = num('h'), v = num('v'), T = num('T');
+  if ([h, v, T].some(Number.isNaN)) { K.msg('msg', t('Uno dei valori non è un numero.', 'One of the values is not a number.')); return null; }
+  let r = null; const from = [];
+  if (h != null) { r = K.RE + h; from.push('h'); }
+  else if (v != null) { r = K.MU / (v * v); from.push('v'); }
+  else if (T != null) { r = Math.cbrt(K.MU * Math.pow(T * 60 / (2 * Math.PI), 2)); from.push('T'); }
+  if (r == null) { K.rows('out', []); return null; }
+  const vv = Math.sqrt(K.MU / r), TT = 2 * Math.PI * Math.sqrt(r * r * r / K.MU) / 60;
+  K.der('h', r - K.RE, 1); K.der('v', vv, 4); K.der('T', TT, 2);
+  // dati in più: devono essere coerenti con il primo
+  if (h != null && v != null && Math.abs(v - vv) / vv > 1e-3) { K.bad('v'); K.msg('msg', t('Quota e velocità non sono coerenti: a ', 'Altitude and speed do not agree: at ') + fmt(h, 0) + ' km ' + t('la velocità è ', 'the speed is ') + fmt(vv, 3) + ' km/s.'); }
+  if (r < K.RE) K.msg('msg', t('L\'orbita passa sotto la superficie della Terra.', 'The orbit goes below the Earth\'s surface.'));
+  return { r, v: vv, T: TT };
+}
+
+/* ---------- vista 3D ---------- */
+let S3 = null;
+function view(o) {
+  if (!K.has3D()) return;
+  if (!S3) {
+    S3 = K.scene3(THREE, 'view');
+    S3.scene.add(K.stars(THREE));
+    const E = K.earth(THREE, 1); S3.scene.add(E.group); S3.E = E;
+    S3.orbit = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x35d4f2 })); S3.scene.add(S3.orbit);
+    S3.sat = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 12), new THREE.MeshBasicMaterial({ color: 0x58e07f })); S3.scene.add(S3.sat);
+    S3.onFrame(dt => { S3.E.ball.rotation.y += dt * 0.02; S3.E.clouds.rotation.y += dt * 0.024; if (S3.o) { S3.ph += dt * 2 * Math.PI / 20; const R = S3.o.r / K.RE; S3.sat.position.set(R * Math.cos(S3.ph), 0, -R * Math.sin(S3.ph)).applyAxisAngle(new THREE.Vector3(1, 0, 0), 0.4); } });
+    S3.ph = 0;
+  }
+  S3.o = o;
+  const R = o.r / K.RE, pts = [];
+  for (let k = 0; k < 256; k++) { const a = k / 256 * 2 * Math.PI; pts.push(new THREE.Vector3(R * Math.cos(a), 0, -R * Math.sin(a)).applyAxisAngle(new THREE.Vector3(1, 0, 0), 0.4)); }
+  S3.orbit.geometry.dispose(); S3.orbit.geometry = new THREE.BufferGeometry().setFromPoints(pts);
+  const d = Math.max(3.2, R * 2.6); S3.camera.position.set(d * 0.55, d * 0.38, d * 0.75); S3.camera.lookAt(0, 0, 0);
+}
+
+/* ---------- calcolo completo ---------- */
+function run() {
+  const o = solve(); K.save({ m: tabs.get() });
+  if (!o) return;
+  K.rows('out', [
+    ['#', t('Risultati', 'Results')],
+    [t('Raggio dell\'orbita', 'Orbit radius'), fmt(o.r, 1), 'km'],
+    [t('Velocità', 'Speed'), fmt(o.v, 4), 'km/s', null, 'key'],
+    [t('Periodo', 'Period'), fmt(o.T, 2), 'min', fmt(1440 / o.T, 2) + t(' giri al giorno', ' revolutions per day')],
+  ]);
+  view(o);
+  const hs = [], vs = [];
+  for (let h = 200; h <= 2000; h += 20) { hs.push(h); vs.push(Math.sqrt(K.MU / (K.RE + h))); }
+  K.chart('ch', { title: t('Velocità circolare e quota', 'Circular speed and altitude'), x: hs, series: [{ name: 'v', y: vs, color: K.C.cy }], xLabel: t('quota, km', 'altitude, km'), yLabel: 'km/s', unit: 'km/s', xName: 'h', marks: [{ x: o.r - K.RE, label: t('la tua', 'yours'), color: K.C.gr }] });
+}
+
+K.sat('sat', el => { K.fill({ h: (el.a - K.RE).toFixed(1), v: '', T: '' }); run(); });
+K.live('f', run);
+$('ex').onclick = () => { K.fill({ h: '550', v: '', T: '' }); run(); };
+$('clr').onclick = () => { K.wipe('f'); run(); };
+const st = K.keep(['h', 'v', 'T']);
+if (st && st.get('m')) tabs.set(st.get('m'));
+if (!st) K.fill({ h: '420' });
+run();
+</script>
+</body>
+</html>
