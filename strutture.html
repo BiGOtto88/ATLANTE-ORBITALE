@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-en="Structures and materials · Keplario">Strutture e materiali · Keplario</title>
+<meta name="description" content="Il tubo portante di un satellite: carichi di lancio e margini di sicurezza, frequenze proprie, instabilità (NASA SP-8007) e materiali aerospaziali." data-en-content="A satellite's load-bearing tube: launch loads and margins of safety, natural frequencies, buckling (NASA SP-8007) and aerospace materials.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/strutture.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Strutture e materiali · Keplario","description":"Carichi di lancio, margini di sicurezza, frequenze proprie, instabilità e materiali del tubo portante di un satellite.","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/strutture.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<style>
+/* Keplario · laboratorio: stile comune delle pagine di calcolo.
+   Stessi colori e caratteri dell'app (cruscotto scuro, B612), senza maiuscole forzate, sfumature o bagliori.
+   Regola dei colori: ciano = cose che si toccano e la prima serie dei grafici; verde = valori calcolati;
+   ambra = avvisi. Niente rosso o magenta. */
+@font-face{font-family:'B612';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-700-normal.woff2) format('woff2')}
+:root{
+  --bk:#000;--pn:#080a0d;--pn2:#10141a;--pn3:#171c24;--ln:#252b33;--ln2:#414b57;
+  --tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;
+  --cy:#35d4f2;--cy2:#1aa9c7;--gr:#58e07f;--vi:#a995ff;--ic:#cfe3f5;--am:#ffb224;
+  --ui:"B612","DejaVu Sans",Verdana,sans-serif;--mono:"B612 Mono","DejaVu Sans Mono",Consolas,monospace;
+  --num:"B612","DejaVu Sans",Verdana,sans-serif;  /* numeri: B612 ha cifre di larghezza uguale e una virgola stretta (in B612 Mono la virgola sembra uno spazio) */
+  --r:6px;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;background:var(--bk)}
+body{color:var(--tx);font:15px/1.5 var(--ui);min-height:100vh}
+a{color:var(--cy)}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* barra in alto: Keplario, Cielo, le sei materie, lingua */
+.kb{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.92);border-bottom:1px solid var(--ln);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.kb-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:6px;padding:0 18px;height:50px}
+.kb-home{font-weight:700;color:var(--tx);text-decoration:none;font-size:15px;margin-right:10px;white-space:nowrap}
+.kb-sky{color:var(--tx2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:var(--r);white-space:nowrap}
+.kb-sky:hover{color:var(--tx);background:var(--pn2)}
+.kb-sep{width:1px;height:20px;background:var(--ln);margin:0 6px;flex:none}
+.kb-nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.kb-nav::-webkit-scrollbar{display:none}
+.kb-nav a{color:var(--tx2);text-decoration:none;font-size:14px;padding:14px 9px 12px;white-space:nowrap;border-bottom:2px solid transparent}
+.kb-nav a:hover{color:var(--tx)}
+.kb-nav a[aria-current=page]{color:var(--tx);border-bottom-color:var(--cy)}
+.kb-lang{flex:none;margin-left:6px}
+@media (max-width:760px){
+  .kb-in{flex-wrap:wrap;height:auto;padding:0 12px;row-gap:0}
+  .kb-home{padding:13px 0}
+  .kb-sep{display:none}
+  .kb-lang{margin-left:auto}
+  .kb-nav{order:5;flex-basis:100%;margin:0 -12px;padding:0 6px;border-top:1px solid var(--ln)}
+  .kb-nav a{padding:11px 9px 9px}
+}
+
+main{max-width:1240px;margin:0 auto;padding:30px 18px 80px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:18px 28px;flex-wrap:wrap;margin-bottom:20px}
+.ph h1{font-size:28px;line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.005em}
+.ph .lead{color:var(--tx2);margin:0;max-width:62ch}
+
+/* bottoni */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--ln2);background:var(--pn);color:var(--tx);font:inherit;font-size:14px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,color .15s}
+.btn:hover:not(:disabled){border-color:var(--cy);color:var(--cy)}
+.btn:active:not(:disabled){background:var(--pn2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--cy);border-color:var(--cy);color:#00141a;font-weight:700}
+.btn.pri:hover:not(:disabled){background:#62e0f7;color:#00141a}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:13px}
+.btn.icon{width:36px;padding:0}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+
+/* schede di modo (orbita, manovre, ...) */
+.seg{display:flex;gap:0;border-bottom:1px solid var(--ln);margin:0 0 18px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{background:none;border:0;border-bottom:2px solid transparent;color:var(--tx2);font:inherit;font-size:15px;padding:10px 14px 9px;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.seg button:hover{color:var(--tx)}
+.seg button[aria-selected=true]{color:var(--tx);border-bottom-color:var(--cy)}
+
+/* griglia: dati a sinistra, vista e risultati a destra */
+.lab{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:22px;align-items:start}
+.lab > *{min-width:0}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.stack{display:grid;gap:14px}
+.pnl{background:var(--pn);border:1px solid var(--ln);border-radius:var(--r);padding:14px 16px 16px}
+.pnl > h2,.pnl > h3{font-size:14px;font-weight:700;color:var(--tx);margin:0 0 4px}
+.pnl > .why{font-size:13px;color:var(--tx3);margin:0 0 10px}
+.pnl + .acts{margin-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* campi: etichetta a sinistra, numero a destra. Un campo vuoto mostra in verde il valore ricavato. */
+.f{display:grid;grid-template-columns:minmax(0,1fr) 116px 54px;gap:8px;align-items:center;margin:6px 0}
+.f > .u{font-size:13px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f > label,.f > .lb{font-size:14px;color:var(--tx2);line-height:1.3}
+.f input,.f select{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 9px;font:inherit;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.f select{font-family:var(--ui);text-align:left;padding-right:4px}
+.f input:hover,.f select:hover{border-color:var(--tx3)}
+.f input:focus{border-color:var(--cy);outline:none;box-shadow:0 0 0 1px var(--cy)}
+.f input::placeholder{color:var(--tx3);opacity:1}
+.f input.der::placeholder{color:var(--gr)}
+.f input.bad{border-color:var(--am);box-shadow:0 0 0 1px var(--am)}
+.f.wide{grid-template-columns:1fr}
+.f.nou{grid-template-columns:minmax(0,1fr) 178px}
+@media (max-width:420px){.f{grid-template-columns:minmax(0,1fr) 104px 46px}.f.nou{grid-template-columns:minmax(0,1fr) 158px}}
+.f.wide input{text-align:left}
+.ck{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2);margin:8px 0;cursor:pointer}
+.ck input{width:17px;height:17px;accent-color:var(--cy);margin:0}
+.hint{font-size:13px;color:var(--tx3);margin:8px 0 0}
+.hint b{color:var(--tx2);font-weight:400}
+
+/* partire da un satellite reale */
+.sat{position:relative}
+.sat input{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 10px;font:inherit;font-size:14px}
+.sat input:focus{border-color:var(--cy);outline:none}
+.sat ul{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:var(--r);max-height:280px;overflow:auto;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.sat li{padding:7px 9px;border-radius:4px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;gap:10px}
+.sat li small{color:var(--tx3);font-family:var(--num);font-variant-numeric:tabular-nums;font-size:12px}
+.sat li[aria-selected=true],.sat li:hover{background:var(--pn3);color:var(--cy)}
+.satnote{font-size:13px;color:var(--tx3);margin:6px 0 0}
+.satnote a{color:var(--cy)}
+
+/* messaggi */
+.msg{border-left:2px solid var(--am);background:rgba(255,178,36,.06);color:#ffd27a;padding:8px 12px;font-size:14px;margin:0 0 12px;border-radius:0 var(--r) var(--r) 0}
+.msg.info{border-left-color:var(--cy);background:rgba(53,212,242,.06);color:var(--tx)}
+.msg:empty{display:none}
+
+/* vista 2D/3D */
+.view{position:relative;width:100%;background:#000;border:1px solid var(--ln);border-radius:var(--r);overflow:hidden;aspect-ratio:16/11}
+@media (max-width:600px){.view{aspect-ratio:1/1}}
+.view.sq{aspect-ratio:1/1}
+.view > canvas,.view > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.view .cap{position:absolute;left:12px;bottom:10px;right:12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--tx2);pointer-events:none;text-shadow:0 1px 3px #000}
+.view .cap i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.view .cap i.dot{width:8px;height:8px;border-radius:50%}
+.view .tl{position:absolute;right:10px;top:10px;display:flex;gap:6px}
+.view .tl .btn{background:rgba(8,10,13,.8)}
+.view .ld{position:absolute;inset:0;display:grid;place-items:center;color:var(--tx3);font-size:13px}
+.bar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.bar input[type=range]{flex:1;min-width:150px;accent-color:var(--cy)}
+.bar .t{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--gr);min-width:140px;text-align:right}
+
+/* risultati */
+.out{margin-top:16px}
+.out h3{font-size:13.5px;font-weight:700;color:var(--tx2);margin:18px 0 4px}
+.out h3:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--ln);font-size:14px}
+.row > span:first-child{color:var(--tx2)}
+.row .v{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--gr);text-align:right;white-space:nowrap}
+.row .v small{color:var(--tx3);font-size:12.5px;margin-left:6px}
+.row .n{grid-column:1/-1;font-size:12.5px;color:var(--tx3);margin-top:-2px}
+.row.key .v{font-size:17px}
+.row.warn .v{color:var(--am)}
+.note{font-size:13px;color:var(--tx3);margin:12px 0 0;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 26px}
+
+/* grafici */
+.chart{position:relative;margin-top:14px;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:8px 8px 4px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ttl{font-size:13px;color:var(--tx2);margin:2px 4px 6px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.chart .ttl b{color:var(--tx);font-weight:700;margin-right:6px}
+.chart .ttl i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.chart .tip{position:absolute;pointer-events:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:4px;padding:5px 8px;font-size:12.5px;font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--tx);white-space:nowrap;z-index:5}
+.chart .tip span{display:block}
+.chart text{font-family:var(--num);font-size:11px;fill:var(--tx3)}
+.chart .ax{stroke:var(--ln2);stroke-width:1}
+.chart .gd{stroke:var(--ln);stroke-width:1}
+
+/* tabelle di dati */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+.tbl th{text-align:left;font-weight:400;color:var(--tx3);border-bottom:1px solid var(--ln2);padding:6px 8px 6px 0}
+.tbl td{border-bottom:1px solid var(--ln);padding:6px 8px 6px 0}
+.tbl td.num,.tbl th.num{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.tbl td.num{color:var(--gr)}
+
+/* piede */
+.foot{max-width:1240px;margin:0 auto;padding:22px 18px 40px;border-top:1px solid var(--ln);color:var(--tx3);font-size:13px;display:flex;gap:8px 20px;flex-wrap:wrap}
+.foot a{color:var(--tx2)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* solo questa pagina */
+details.mp{margin:12px 0 0;border-top:1px solid var(--ln);padding-top:4px}
+details.mp>summary{display:flex;align-items:center;gap:10px;min-height:36px;cursor:pointer;list-style:none;font-size:14px;color:var(--tx2)}
+details.mp>summary::-webkit-details-marker{display:none}
+details.mp>summary::before{content:"";flex:none;width:6px;height:6px;margin-left:2px;border-right:1.5px solid var(--tx3);border-bottom:1.5px solid var(--tx3);transform:rotate(-45deg);transition:transform .15s}
+details.mp[open]>summary::before{transform:rotate(45deg)}
+details.mp>summary:hover{color:var(--tx)}
+.btn[aria-pressed=true]{border-color:var(--cy);color:var(--cy)}
+.view .vt{position:absolute;left:12px;right:12px;top:10px;font-size:12.5px;line-height:1.4;color:var(--tx2);pointer-events:none;text-shadow:0 1px 3px #000}
+.view .vt b{color:var(--tx);font-weight:400}
+.view svg text{font-family:var(--ui)}
+.tw{overflow-x:auto;margin-top:14px}
+.tw .tbl{margin-top:0}
+.tbl td.num{white-space:nowrap}
+.tbl td.am{color:var(--am)}
+.tbl tr.gov td{background:var(--pn2)}
+.tbl tr.gov td:first-child,#tbl tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--cy)}
+.tbl td:first-child,.tbl th:first-child{padding-left:8px}
+.tbl th small{display:block;font-size:11.5px}
+#tbl{min-width:660px}
+#tbl tbody tr{cursor:pointer}
+#tbl tbody tr:hover td{background:var(--pn)}
+#tbl tbody tr.sel td{background:var(--pn2)}
+#tbl .lk{background:none;border:0;padding:0;font:inherit;color:var(--tx);cursor:pointer;text-align:left;white-space:nowrap}
+#bars .ttl .tg{margin-left:auto;display:flex;gap:6px}
+#bars svg text{font-size:12.5px;fill:var(--tx2);font-family:var(--ui)}
+#bars svg text.v{font-family:var(--num);fill:var(--tx3)}
+#bars svg .on text{fill:var(--tx);font-weight:700}
+#bars svg .on text.v{fill:var(--gr);font-weight:400}
+#bars svg g.b{cursor:pointer;outline:none}
+#bars svg g.b:focus-visible rect.hit{stroke:var(--cy);stroke-width:1.5}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:14px;align-items:start}
+.info p,.info li{font-size:14px;color:var(--tx2);margin:6px 0;line-height:1.55}
+.info .fx{font-family:var(--num);color:var(--tx);margin:8px 0;overflow-x:auto}
+.info ul{margin:6px 0;padding-left:18px}
+</style>
+</head>
+<body>
+<main>
+  <div class="ph">
+    <div>
+      <h1 data-en="Structures and materials">Strutture e materiali</h1>
+      <p class="lead" data-en="The tube that carries a satellite through launch: loads and margins of safety, natural frequencies, buckling and materials. Give the numbers you have, the page works out the rest.">Il tubo che regge un satellite durante il lancio: carichi e margini di sicurezza, frequenze proprie, instabilità e materiali. Dai i numeri che hai, il resto lo ricava la pagina.</p>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" id="tb-car" data-m="car" aria-controls="m-car" aria-selected="true" data-en="Launch loads">Carichi di lancio</button>
+    <button role="tab" id="tb-fre" data-m="fre" aria-controls="m-fre" aria-selected="false" data-en="Natural frequencies">Frequenze</button>
+    <button role="tab" id="tb-ins" data-m="ins" aria-controls="m-ins" aria-selected="false" data-en="Buckling">Instabilità</button>
+    <button role="tab" id="tb-mat" data-m="mat" aria-controls="m-mat" aria-selected="false" data-en="Materials">Materiali</button>
+    <button role="tab" id="tb-info" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
+  </div>
+
+  <section class="lab" id="lab">
+    <form class="stack" id="f" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Structure">Struttura</h2>
+        <p class="why" data-en="A thin-walled tube clamped on the launcher interface. It carries the rest of the satellite.">Un tubo a parete sottile, incastrato sull'interfaccia del lanciatore. Sopra porta il resto del satellite.</p>
+        <div class="f wide"><label for="mat" data-en="Material">Materiale</label><select id="mat"></select></div>
+        <div class="f"><label for="R" data-en="Mean radius R">Raggio medio R</label><input id="R" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="t" data-en="Wall thickness t">Spessore t</label><input id="t" inputmode="decimal"><span class="u">mm</span></div>
+        <div class="f"><label for="L" data-en="Length L">Lunghezza L</label><input id="L" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="mass" data-en="Mass carried m">Massa sostenuta m</label><input id="mass" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f"><label for="hcg" data-en="CG height hcg">Quota del baricentro hcg</label><input id="hcg" inputmode="decimal"><span class="u">m</span></div>
+        <p class="hint" data-en="Leave the thickness empty: the page finds the smallest one that passes every check. Without hcg the mass sits on top of the tube.">Lascia vuoto lo spessore: la pagina trova il minimo che passa tutte le verifiche. Senza hcg la massa sta in cima al tubo.</p>
+        <details class="mp" id="mp">
+          <summary data-en="Material properties">Proprietà del materiale</summary>
+          <p class="why" data-en="In green, the values of the chosen material. Type a number to change one.">In verde i valori del materiale scelto. Scrivi un numero per cambiarlo.</p>
+          <div class="f"><label for="E" data-en="Young's modulus E">Modulo di Young E</label><input id="E" inputmode="decimal"><span class="u">GPa</span></div>
+          <div class="f"><label for="nu" data-en="Poisson's ratio ν">Coefficiente di Poisson ν</label><input id="nu" inputmode="decimal"><span class="u"></span></div>
+          <div class="f"><label for="rho" data-en="Density ρ">Densità ρ</label><input id="rho" inputmode="decimal"><span class="u">kg/m³</span></div>
+          <div class="f"><label for="sy" data-en="Yield strength σy">Snervamento σy</label><input id="sy" inputmode="decimal"><span class="u">MPa</span></div>
+          <div class="f"><label for="su" data-en="Ultimate strength σu">Rottura σu</label><input id="su" inputmode="decimal"><span class="u">MPa</span></div>
+          <div class="f"><label for="al" data-en="Thermal expansion α">Dilatazione termica α</label><input id="al" inputmode="decimal"><span class="u">10⁻⁶/K</span></div>
+        </details>
+      </div>
+
+      <div class="pnl" data-for="car fre ins">
+        <h2 data-en="Launcher">Lanciatore</h2>
+        <div class="f wide"><label for="lv" class="vh" data-en="Launcher">Lanciatore</label><select id="lv"></select></div>
+        <p class="why" id="lvsrc"></p>
+        <div data-for="car ins">
+          <div class="f"><label for="nlo" data-en="Minimum axial nx">Assiale minimo nx</label><input id="nlo" inputmode="decimal"><span class="u">g</span></div>
+          <div class="f"><label for="nhi" data-en="Maximum axial nx">Assiale massimo nx</label><input id="nhi" inputmode="decimal"><span class="u">g</span></div>
+          <div class="f"><label for="ny" data-en="Lateral ny (±)">Laterale ny (±)</label><input id="ny" inputmode="decimal"><span class="u">g</span></div>
+          <p class="hint" data-en="Minus = compression. Empty: the flight event that sizes the tube, in green. A value you type replaces the launcher envelope.">Meno = compressione. Vuoti: l'evento di volo che dimensiona, in verde. Un valore scritto da te sostituisce l'inviluppo del lanciatore.</p>
+        </div>
+        <div data-for="fre">
+          <div class="f"><label for="frl" data-en="Minimum lateral">Minimo laterale</label><input id="frl" inputmode="decimal"><span class="u">Hz</span></div>
+          <div class="f"><label for="fra" data-en="Minimum axial">Minimo assiale</label><input id="fra" inputmode="decimal"><span class="u">Hz</span></div>
+          <p class="hint" data-en="Empty: the minimums the launcher asks for a satellite clamped at the interface.">Vuoti: i minimi chiesti dal lanciatore per il satellite incastrato all'interfaccia.</p>
+        </div>
+      </div>
+
+      <div class="pnl" data-for="ins">
+        <h2 data-en="Euler column">Colonna di Eulero</h2>
+        <div class="f wide"><label for="bc" data-en="End conditions">Vincoli alle estremità</label><select id="bc"></select></div>
+        <div class="f"><label for="kk" data-en="Effective length factor K">Fattore di lunghezza K</label><input id="kk" inputmode="decimal"><span class="u"></span></div>
+        <p class="hint" data-en="Empty: K from the end conditions and the CG height.">Vuoto: K ricavato dai vincoli e dalla quota del baricentro.</p>
+      </div>
+
+      <div class="pnl" data-for="mat">
+        <h2 data-en="Thermal expansion">Dilatazione termica</h2>
+        <p class="why" data-en="The tube's temperature changes by ΔT from the temperature at assembly.">Il tubo cambia temperatura di ΔT rispetto a quando è stato montato.</p>
+        <div class="f"><label for="dT" data-en="Temperature change ΔT">Salto di temperatura ΔT</label><input id="dT" inputmode="decimal"><span class="u">K</span></div>
+      </div>
+
+      <div class="pnl" data-for="car ins mat">
+        <h2 data-en="Safety factors">Fattori di sicurezza</h2>
+        <p class="why" data-en="Empty: values from the ECSS-E-ST-32-10C standard, in green.">Vuoti: valori della norma ECSS-E-ST-32-10C, in verde.</p>
+        <div class="f"><label for="kq" data-en="Qualification KQ">Qualifica KQ</label><input id="kq" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="km" data-en="Model KM">Modello KM</label><input id="km" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="kp" data-en="Project KP">Progetto KP</label><input id="kp" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="fosy" data-en="Yield FOSY">Snervamento FOSY</label><input id="fosy" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="fosu" data-en="Ultimate FOSU">Rottura FOSU</label><input id="fosu" inputmode="decimal"><span class="u"></span></div>
+      </div>
+
+      <div class="acts">
+        <button class="btn" type="button" id="ex" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="The example: a 1 500 kg satellite on Vega-C, carried by an Al 7075-T6 tube 0.94 m across.">L'esempio: un satellite da 1 500 kg su Vega-C, portato da un tubo in Al 7075-T6 di 0,94 m di diametro.</p>
+    </form>
+
+    <div>
+      <div id="msg"></div>
+      <div class="view" id="v2" data-for="car"></div>
+      <div class="view" id="v3" data-for="fre ins" hidden><div class="tl" id="tl"></div><div class="cap" id="cap"></div></div>
+      <div id="m-car" role="tabpanel" aria-labelledby="tb-car"><div class="out" id="o-car"></div><div class="tw" id="ev-car"></div><div id="ch-car"></div></div>
+      <div id="m-fre" role="tabpanel" aria-labelledby="tb-fre" hidden><div class="out" id="o-fre"></div><div id="ch-fre"></div></div>
+      <div id="m-ins" role="tabpanel" aria-labelledby="tb-ins" hidden><div class="out" id="o-ins"></div><div id="ch-ins"></div></div>
+      <div id="m-mat" role="tabpanel" aria-labelledby="tb-mat" hidden>
+        <div class="chart" id="bars"></div>
+        <div class="out" id="o-mat"></div>
+        <div class="tw"><table class="tbl" id="tbl"></table></div>
+        <p class="note" data-en="Typical room-temperature values (MMPDS, ASM Handbook, Materion and Special Metals data sheets), not design allowables. CFRP: an indicative quasi-isotropic laminate with standard carbon fibre; it does not yield, so σy = σu. Be S-200F: guaranteed minimums. Tap a row to use that material.">Valori tipici a temperatura ambiente (MMPDS, ASM Handbook, schede Materion e Special Metals), non ammissibili di progetto. CFRP: laminato quasi isotropo in fibra di carbonio standard, indicativo; non si snerva, quindi σy = σu. Be S-200F: minimi garantiti. Tocca una riga per usare quel materiale.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="m-info" role="tabpanel" aria-labelledby="tb-info" hidden>
+    <div class="info">
+      <div class="pnl">
+        <h2 data-en="The model">Il modello</h2>
+        <p data-en="The primary structure is a thin-walled tube: mean radius R, thickness t, length L. It is clamped at the base, on the launcher interface. The rest of the satellite is a mass m lumped at its centre of gravity, at height hcg, rigidly attached to the tube: at the top if hcg ≥ L, at height hcg if lower. The tube has its own mass.">La struttura primaria è un tubo a parete sottile: raggio medio R, spessore t, lunghezza L. È incastrato alla base, sull'interfaccia con il lanciatore. Il resto del satellite è una massa m concentrata nel baricentro, a quota hcg, attaccata in modo rigido al tubo: in cima se hcg ≥ L, alla quota hcg se è più in basso. Il tubo ha la sua massa.</p>
+        <p class="fx">A = 2πRt · I = πR³t · mb = ρ·A·L</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Launch loads">Carichi di lancio</h2>
+        <p data-en="The launcher's quasi-static load factors (in g, at the CG, gravity included) become inertia forces. For every flight event the page takes the worse axial extreme with the full lateral factor and keeps the worst case.">I fattori di carico quasi statici del lanciatore (in g, nel baricentro, gravità compresa) diventano forze d'inerzia. Per ogni evento di volo la pagina prende l'estremo assiale peggiore con il laterale pieno e tiene il caso peggiore.</p>
+        <p class="fx">P = (m + mb)·|nx|·g · M = (m·hcg + mb·L/2)·ny·g</p>
+        <p class="fx">σ = Peq / (2πRt) · Peq = |P| + 2M/R</p>
+        <p data-en="The moment counts as extra axial load because σ = P/A + M·R/I and R/I = 2/(R·A). Signs: minus = compression, as in the Vega-C and Ariane 6 manuals. Falcon 9 uses the opposite sign: the page converts it and uses the corners of its envelope (table 5-3).">Il momento conta come un carico assiale in più, perché σ = P/A + M·R/I e R/I = 2/(R·A). Segni: meno = compressione, come nei manuali di Vega-C e Ariane 6. Falcon 9 usa il segno opposto: la pagina lo converte e usa gli angoli del suo inviluppo (tab. 5-3).</p>
+        <p data-en="Factors from ECSS-E-ST-32-10C Rev.2: design limit load = KQ·KP·KM·limit load, with KQ = 1.25 for satellites and KM = 1.2 at the start of a project (down to 1.0 once the model is correlated with tests). Then FOSY = 1.1 on yield and FOSU = 1.25 on ultimate.">Fattori della ECSS-E-ST-32-10C Rev.2: carico limite di progetto = KQ·KP·KM·carico limite, con KQ = 1,25 per i satelliti e KM = 1,2 a inizio progetto (fino a 1,0 quando il modello è correlato con le prove). Poi FOSY = 1,1 sullo snervamento e FOSU = 1,25 sulla rottura.</p>
+        <p class="fx">MS = σamm / (KQ·KP·KM·FOS·σ) − 1</p>
+        <p data-en="MS ≥ 0: the structure holds with the required margin. The minimum thickness is the one that gives MS = 0.">MS ≥ 0: la struttura regge con il margine chiesto. Lo spessore minimo è quello che dà MS = 0.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Natural frequencies">Frequenze proprie</h2>
+        <p data-en="Rayleigh's method with the static deflected shape: k is the stiffness at the CG and c·mb the share of the tube mass that moves with it.">Metodo di Rayleigh con la deformata statica: k è la rigidezza nel baricentro, c·mb la parte della massa del tubo che si muove con lui.</p>
+        <p class="fx">f = (1/2π)·√(k / (m + c·mb))</p>
+        <p data-en="Lateral: bending plus shear. With hcg = L:">Laterale: flessione più taglio. Con hcg = L:</p>
+        <p class="fx">1/k = L³/(3EI) + L/(κGA) · c = 33/140 ≈ 0,24</p>
+        <p data-en="with G = E / (2(1 + ν)) and κ = 0.5 for a thin tube. If the CG is above the tube (hcg > L), L³/3 becomes (hcg³ − (hcg − L)³)/3; if it is lower, only the part up to hcg works. Without shear this is the classic f = (1/2π)·√(3EI / ((m + 0.24·mb)·L³)), shown next to the result. Shear matters in short tubes.">con G = E / (2(1 + ν)) e κ = 0,5 per un tubo sottile. Se il baricentro sta sopra il tubo (hcg > L), L³/3 diventa (hcg³ − (hcg − L)³)/3; se sta più in basso lavora solo il tratto fino a hcg. Senza taglio si torna alla classica f = (1/2π)·√(3EI / ((m + 0,24·mb)·L³)), riportata accanto al risultato. Il taglio pesa nei tubi corti.</p>
+        <p data-en="Axial: k = EA/L (EA/hcg if hcg &lt; L), c = 1/3. Launcher requirements apply to the satellite clamped at the interface, the same boundary condition as the model.">Assiale: k = EA/L (EA/hcg se hcg &lt; L), c = 1/3. I requisiti dei lanciatori valgono per il satellite incastrato all'interfaccia, lo stesso vincolo del modello.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Buckling">Instabilità</h2>
+        <p class="fx">PE = π²EI / (K·L)²</p>
+        <p data-en="Euler column. With a free top the load sits at the CG: if hcg > L the page solves x·tan x = L/(hcg − L) and uses K = π/x; if hcg &lt; L it uses K = 2·hcg/L. Type K to use your own.">Colonna di Eulero. Con la cima libera il carico sta nel baricentro: se hcg > L la pagina risolve x·tan x = L/(hcg − L) e usa K = π/x; se hcg &lt; L usa K = 2·hcg/L. Scrivi K per usare il tuo.</p>
+        <p class="fx">Pcl = 2πEt² / √(3(1 − ν²))</p>
+        <p data-en="Cylindrical shell under compression. Imperfections lower this load a lot; NASA SP-8007 gives the knockdown factor, valid for R/t &lt; 1500:">Guscio cilindrico compresso. Le imperfezioni abbassano molto questo carico; NASA SP-8007 dà il fattore di riduzione, valido per R/t &lt; 1500:</p>
+        <p class="fx">γ = 1 − 0,901·(1 − e^(−φ)) · φ = √(R/t) / 16</p>
+        <p data-en="The allowable γ·Pcl is compared with Peq on the compressed side times KQ·KP·KM·FOSU (FOSU = 1.25 for buckling too, ECSS table 4-5). Using the compression knockdown for bending as well is on the safe side: for bending SP-8007 gives 0.731 instead of 0.901. If γ·σcl exceeds yield, the page uses yield as the limit.">Il carico ammissibile γ·Pcl si confronta con Peq sul lato compresso per KQ·KP·KM·FOSU (FOSU = 1,25 anche per l'instabilità, ECSS tab. 4-5). Usare la riduzione della compressione anche per la flessione va dalla parte della sicurezza: per la flessione SP-8007 dà 0,731 al posto di 0,901. Se γ·σcl supera lo snervamento, la pagina usa lo snervamento come limite.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Materials and thermal expansion">Materiali e dilatazione</h2>
+        <p class="fx">ΔL = α·L·ΔT · σ = E·α·ΔT · σ₂ = E·α·ΔT / (1 − ν)</p>
+        <p data-en="σ is the stress in a tube that cannot lengthen; σ₂ in a plate restrained in two directions. The thermal margin uses FOSY and FOSU with KM and KP, without KQ, which belongs to flight loads. The table gives typical values: for design use the MMPDS A or B allowables or the supplier's data.">σ è lo sforzo in un tubo che non può allungarsi, σ₂ in una lastra bloccata in due direzioni. Il margine termico usa FOSY e FOSU con KM e KP, senza KQ, che riguarda i carichi di volo. La tabella dà valori tipici: per progettare usa gli ammissibili A o B del MMPDS o i dati del fornitore.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Assumptions and limits">Ipotesi e limiti</h2>
+        <ul>
+          <li data-en="Thin wall (R/t > 10), linear elastic isotropic material; quasi-isotropic CFRP is treated as isotropic in its plane.">Parete sottile (R/t > 10), materiale elastico lineare e isotropo; il CFRP quasi isotropo è trattato come isotropo nel suo piano.</li>
+          <li data-en="The satellite is a point mass: no rotational inertia, which lowers the lateral mode, and no adapter flexibility.">Il satellite è una massa in un punto: niente inerzia di rotazione, che abbassa il modo laterale, e niente flessibilità dell'adattatore.</li>
+          <li data-en="Rayleigh's method gives slightly high values: +0.05 % with a tip mass equal to the tube mass, against the exact solution.">Il metodo di Rayleigh dà valori appena più alti del vero: +0,05 % con una massa in cima uguale a quella del tubo, rispetto alla soluzione esatta.</li>
+          <li data-en="For L/R below 2 the beam model is only indicative.">Per L/R sotto 2 il modello a trave è solo indicativo.</li>
+          <li data-en="Left out: cut-outs, stiffeners, joints and inserts (ECSS uses KLD = 1.2 there), fatigue, sine, acoustic and shock loads.">Non ci sono aperture, irrigidimenti, giunzioni e inserti (lì la ECSS usa KLD = 1,2), fatica, carichi sinusoidali, acustici e da shock.</li>
+          <li data-en="Manual envelopes are for preliminary sizing: the real loads come from the coupled loads analysis with the launcher.">Gli inviluppi dei manuali servono al dimensionamento preliminare: i carichi veri vengono dall'analisi accoppiata con il lanciatore.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Sources">Fonti</h2>
+        <ul>
+          <li>ECSS-E-ST-32-10C Rev.2 Corr.1 (2019), Structural factors of safety for spaceflight hardware.</li>
+          <li>ECSS-E-HB-32-26A (2013), Spacecraft mechanical loads analysis handbook.</li>
+          <li>ECSS-E-HB-32-20 (2011), Structural materials handbook.</li>
+          <li>NASA SP-8007 (1968; Rev. 2, 2020), Buckling of thin-walled circular cylinders.</li>
+          <li data-en="J. R. Wertz, W. J. Larson, Space Mission Analysis and Design, 3rd ed. (1999), § 11.6.">J. R. Wertz, W. J. Larson, Space Mission Analysis and Design, 3ª ed. (1999), § 11.6.</li>
+          <li>E. F. Bruhn, Analysis and Design of Flight Vehicle Structures (1973).</li>
+          <li>R. D. Blevins, Formulas for Natural Frequency and Mode Shape (1979).</li>
+          <li>Vega-C User's Manual, Issue 1 Rev 0 (2025) · Ariane 6 User's Manual, Issue 2 Rev 0 (2021) · SpaceX, Falcon User's Guide (2025).</li>
+          <li data-en="MMPDS; ASM Handbook vol. 2; Materion (S-200F) and Special Metals (Inconel 718) data sheets.">MMPDS; ASM Handbook vol. 2; schede Materion (S-200F) e Special Metals (Inconel 718).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+/* Keplario · laboratorio: funzioni comuni a tutte le pagine di calcolo.
+   K.bar(...)       barra in alto con Cielo, le sei materie e la lingua
+   K.en, K.t(it,en) lingua (stessa scelta dell'app: #en/#it, ?lang=, localStorage «atlante-lingua», lingua del browser)
+   K.num(id)        legge un campo: null se vuoto, NaN se non è un numero (accetta virgola, spazi, 1e-3, −)
+   K.fmt, K.sig     numeri all'italiana o all'inglese (spazio per le migliaia)
+   K.der(id, x)     mostra in verde, dentro un campo lasciato vuoto, il valore che la pagina ha ricavato
+   K.rows(el, ...)  righe di risultati; K.msg(el, testo) avvisi
+   K.live(el, fn)   ricalcola a ogni modifica; K.keep(ids) ricorda i dati nell'indirizzo (#a=…&e=…)
+   K.sat(el, fn)    «parti da un satellite reale»: cerca nel catalogo data/active.txt e dà gli elementi medi del TLE
+   K.earth(THREE)   Terra realistica (giorno, notte, riflesso del mare, nuvole, atmosfera)
+   K.chart(el, ...) grafico a linee con assi, legenda e lettura al passaggio del puntatore */
+'use strict';
+const K = (() => {
+  const $ = id => typeof id === 'string' ? document.getElementById(id) : id;
+
+  /* ---------- lingua ---------- */
+  const lang = (() => {
+    const h = (location.hash || '').slice(1);
+    if (h === 'en' || h === 'it') return h;
+    const q = (location.search.match(/[?&]lang=(en|it)\b/) || [])[1]; if (q) return q;
+    try { const s = localStorage.getItem('atlante-lingua'); if (s === 'en' || s === 'it') return s; } catch (e) {}
+    return /^it\b/i.test(navigator.language || 'it') ? 'it' : 'en';
+  })();
+  const en = lang === 'en';
+  const t = (it, e) => en ? e : it;
+  function applyLang(root) {
+    document.documentElement.lang = lang;
+    if (!en) return;
+    (root || document).querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-en'); });
+    for (const a of ['title', 'aria-label', 'placeholder', 'content', 'alt'])
+      (root || document).querySelectorAll('[data-en-' + a + ']').forEach(el => el.setAttribute(a, el.getAttribute('data-en-' + a)));
+  }
+
+  /* ---------- barra in alto ---------- */
+  const SUBJ = [
+    ['orbite', 'Orbite e manovre', 'Orbits and manoeuvres'],
+    ['assetto', 'Assetto e controllo', 'Attitude and control'],
+    ['propulsione', 'Propulsione e lanciatori', 'Propulsion and launchers'],
+    ['strutture', 'Strutture e materiali', 'Structures and materials'],
+    ['comunicazioni', 'Comunicazioni e navigazione', 'Communications and navigation'],
+    ['sistemi', 'Sistemi e missione', 'Systems and mission'],
+  ];
+  const sky = () => en ? 'en/' : './';
+  function bar(cur) {
+    const satQ = (location.search.match(/[?&](sat=\d+)/) || [])[1], q = satQ ? '?' + satQ : '';
+    const h = document.createElement('header'); h.className = 'kb';
+    h.innerHTML = '<div class="kb-in"><a class="kb-home" href="' + sky() + '">Keplario</a>' +
+      '<a class="kb-sky" href="' + sky() + '#cielo">' + t('Cielo', 'Sky') + '</a><span class="kb-sep" aria-hidden="true"></span>' +
+      '<nav class="kb-nav" aria-label="' + t('Laboratorio', 'Lab') + '">' +
+      SUBJ.map(s => '<a href="' + s[0] + '.html' + q + '"' + (s[0] === cur ? ' aria-current="page"' : '') + '>' + (en ? s[2] : s[1]) + '</a>').join('') +
+      '</nav><button class="btn sm kb-lang" type="button" title="' + (en ? 'Italiano' : 'English') + '">' + (en ? 'IT' : 'EN') + '</button></div>';
+    document.body.prepend(h);
+    h.querySelector('.kb-lang').onclick = () => {
+      try { localStorage.setItem('atlante-lingua', en ? 'it' : 'en'); } catch (e) {}
+      const u = new URL(location.href); u.searchParams.delete('lang'); if (u.hash === '#en' || u.hash === '#it') u.hash = '';
+      location.replace(u.href);
+    };
+    const cn = h.querySelector('[aria-current=page]'); if (cn && cn.scrollIntoView) setTimeout(() => cn.scrollIntoView({ block: 'nearest', inline: 'center' }), 0);
+    const f = document.createElement('footer'); f.className = 'foot';
+    f.innerHTML = '<span>' + t('Strumento didattico: non usarlo per operazioni di volo.', 'A learning tool: not for flight operations.') + '</span>' +
+      '<a href="' + sky() + '">' + t('Torna al cielo', 'Back to the sky') + '</a><a href="LICENZE.txt">' + t('Licenze', 'Licences') + '</a>';
+    document.body.append(f);
+  }
+  function init(cur) { applyLang(); bar(cur); }
+
+  /* ---------- numeri ---------- */
+  function num(id) {
+    const el = $(id); if (!el) return null;
+    let v = String(el.value).trim(); if (v === '') return null;
+    v = v.replace(/[\s  ']/g, '').replace(/−/g, '-').replace(/[×x]10\^?/i, 'e');
+    // separatore decimale: con punto e virgola insieme vale l'ultimo dei due (1.234,5 e 1,234.5);
+    // da soli, un punto o una virgola sono decimali (0.366 e 0,366); ripetuti sono migliaia (1.234.567)
+    const dot = v.lastIndexOf('.'), com = v.lastIndexOf(',');
+    if (dot >= 0 && com >= 0) v = dot > com ? v.replace(/,/g, '') : v.replace(/\./g, '').replace(',', '.');
+    else if ((v.match(/\./g) || []).length > 1) v = v.replace(/\./g, '');
+    else if ((v.match(/,/g) || []).length > 1) v = v.replace(/,/g, '');
+    else v = v.replace(',', '.');
+    const x = Number(v); return Number.isFinite(x) ? x : NaN;
+  }
+  const DEC = en ? '.' : ',';
+  function group(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmt(x, d) {
+    if (x == null || !Number.isFinite(x)) return '—';
+    d = d == null ? 2 : d;
+    let s = Math.abs(x).toFixed(d); const p = s.split('.');
+    const neg = x < 0 && Number(s) !== 0;
+    return (neg ? '−' : '') + group(p[0]) + (p[1] ? DEC + p[1] : '');
+  }
+  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function sig(x, n) {     // n cifre significative; potenze di dieci fuori da 10⁻³…10⁷
+    if (x == null || !Number.isFinite(x)) return '—';
+    n = n || 4; if (x === 0) return '0';
+    const ax = Math.abs(x), e = Math.floor(Math.log10(ax));
+    if (e < -3 || e > 7) {
+      const m = x / Math.pow(10, e);
+      return fmt(m, n - 1).replace(new RegExp('\\' + DEC + '?0+$'), '') + '·10' + String(e).split('').map(c => SUP[c]).join('');
+    }
+    return fmt(x, Math.max(0, n - 1 - e));
+  }
+  const plain = (x, d) => (x == null || !Number.isFinite(x)) ? '' : fmt(x, d).replace(/ /g, ' ');
+
+  /* ---------- campi ricavati e campi in conflitto ---------- */
+  function der(id, x, d) {
+    const el = $(id); if (!el) return;
+    if (el.dataset.ph === undefined) el.dataset.ph = el.placeholder || '';
+    if (el.value.trim() !== '') return;
+    const ok = x != null && Number.isFinite(x);
+    el.placeholder = ok ? (typeof d === 'string' ? d : (d == null ? sig(x, 5) : plain(x, d))) : el.dataset.ph;
+    el.classList.toggle('der', ok);
+  }
+  function clear(scope) {
+    (scope ? $(scope) : document).querySelectorAll('input').forEach(el => {
+      if (el.dataset.ph !== undefined) el.placeholder = el.dataset.ph;
+      el.classList.remove('der', 'bad');
+    });
+  }
+  function bad(id, on) { const el = $(id); if (el) el.classList.toggle('bad', on !== false); }
+  const given = id => { const el = $(id); return !!el && el.value.trim() !== ''; };
+
+  /* ---------- risultati e avvisi ---------- */
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // voce: ['#', 'Titolo'] oppure [etichetta, valore, unità, nota, classe]  (valore già formattato)
+  function rows(el, list) {
+    $(el).innerHTML = list.filter(Boolean).map(r => r[0] === '#' ? '<h3>' + r[1] + '</h3>' :
+      '<div class="row' + (r[4] ? ' ' + r[4] : '') + '"><span>' + r[0] + '</span><span class="v">' + r[1] + (r[2] ? '<small>' + r[2] + '</small>' : '') + '</span>' +
+      (r[3] ? '<span class="n">' + r[3] + '</span>' : '') + '</div>').join('');
+  }
+  function msg(el, text, kind) { $(el).innerHTML = text ? '<p class="msg' + (kind ? ' ' + kind : '') + '">' + text + '</p>' : ''; }
+
+  /* ---------- ricalcolo e memoria nell'indirizzo ---------- */
+  function live(scope, fn, ms) {
+    let tm = 0; const go = () => { clearTimeout(tm); tm = setTimeout(fn, ms == null ? 160 : ms); };
+    $(scope).addEventListener('input', go); $(scope).addEventListener('change', go); return go;
+  }
+  let keepIds = [], keepExtra = {};
+  function keep(ids, extra) {          // salva i campi compilati nell'indirizzo, così il calcolo si può condividere
+    keepIds = ids; keepExtra = extra || {};
+    const h = (location.hash || '').slice(1);
+    if (h && h.includes('=')) {
+      const p = new URLSearchParams(h);
+      ids.forEach(id => { const el = $(id); if (!el || !p.has(id)) return; if (el.type === 'checkbox') el.checked = p.get(id) === '1'; else el.value = p.get(id); });
+      return p;
+    }
+    return null;
+  }
+  function save(extra) {
+    const p = new URLSearchParams();
+    Object.entries(Object.assign({}, keepExtra, extra || {})).forEach(([k, v]) => { if (v != null && v !== '') p.set(k, v); });
+    keepIds.forEach(id => { const el = $(id); if (!el) return; if (el.type === 'checkbox') { if (el.checked) p.set(id, '1'); } else if (el.value.trim() !== '') p.set(id, el.value.trim()); });
+    const s = p.toString(); try { history.replaceState(null, '', location.pathname + location.search + (s ? '#' + s : '')); } catch (e) {}
+  }
+  function fill(map) { Object.entries(map).forEach(([id, v]) => { const el = $(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }); }
+  function wipe(scope) { $(scope).querySelectorAll('input:not([type=checkbox]):not([type=range]):not([data-keep])').forEach(el => { el.value = ''; }); clear(scope); }
+
+  /* ---------- costanti e utilità di meccanica orbitale ---------- */
+  const MU = 398600.4418, RE = 6378.137, J2 = 1.08262668e-3, D2R = Math.PI / 180, G0 = 9.80665, OMEGA_E = 7.2921159e-5;
+  function kepler(M, e) { let E = e < 0.8 ? M : Math.PI; for (let k = 0; k < 50; k++) { const d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E)); E -= d; if (Math.abs(d) < 1e-13) break; } return E; }
+  function nuFromM(M, e) { const E = kepler(((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), e); return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)); }
+  function gmst(date) {   // tempo siderale medio di Greenwich, rad (IAU 1982)
+    const jd = date.getTime() / 86400000 + 2440587.5, T = (jd - 2451545) / 36525;
+    let s = 67310.54841 + (876600 * 3600 + 8640184.812866) * T + 0.093104 * T * T - 6.2e-6 * T * T * T;
+    return ((s % 86400 + 86400) % 86400) / 86400 * 2 * Math.PI;
+  }
+  // perifocale → inerziale (ECI). Angoli in radianti.
+  function pqw2eci(x, y, i, raan, argp) {
+    const cw = Math.cos(argp), sw = Math.sin(argp), ci = Math.cos(i), si = Math.sin(i), co = Math.cos(raan), so = Math.sin(raan);
+    const x1 = x * cw - y * sw, y1 = x * sw + y * cw, y2 = y1 * ci, z2 = y1 * si;
+    return [x1 * co - y2 * so, x1 * so + y2 * co, z2];
+  }
+
+  /* ---------- satelliti reali dal catalogo dell'app ---------- */
+  let CAT = null;
+  function catalog() {
+    if (CAT) return CAT;
+    CAT = fetch('data/active.txt').then(r => { if (!r.ok) throw new Error('catalogo'); return r.text(); }).then(txt => {
+      const L = txt.split(/\r?\n/), out = [];
+      for (let k = 0; k < L.length - 2; k++) {
+        if (L[k + 1].startsWith('1 ') && L[k + 2].startsWith('2 ') && !L[k].startsWith('1 ') && !L[k].startsWith('2 ')) {
+          out.push({ name: L[k].trim().replace(/^0 /, ''), l1: L[k + 1], l2: L[k + 2], norad: +L[k + 1].slice(2, 7) }); k += 2;
+        }
+      }
+      return out;
+    });
+    CAT.catch(() => { CAT = null; });
+    return CAT;
+  }
+  function elements(s) {   // elementi medi del TLE (non osculanti): bastano per i calcoli del laboratorio
+    const l1 = s.l1, l2 = s.l2;
+    const i = +l2.slice(8, 16), raan = +l2.slice(17, 25), e = +('0.' + l2.slice(26, 33).trim()), argp = +l2.slice(34, 42), M = +l2.slice(43, 51), nrev = +l2.slice(52, 63);
+    const yy = +l1.slice(18, 20), day = +l1.slice(20, 32), year = yy < 57 ? 2000 + yy : 1900 + yy;
+    const epoch = new Date(Date.UTC(year, 0, 1) + (day - 1) * 86400000);
+    const n = nrev * 2 * Math.PI / 86400, a = Math.cbrt(MU / (n * n));
+    const nu = nuFromM(M * D2R, e) / D2R;
+    return { name: s.name, norad: s.norad, i, raan, e, argp, M, nu: (nu + 360) % 360, a, n, revDay: nrev, epoch, hp: a * (1 - e) - RE, ha: a * (1 + e) - RE, T: 2 * Math.PI / n };
+  }
+  const POP = [25544, 20580, 48274, 40697, 41866, 49260, 43013, 39084];
+  let satN = 0;
+  function sat(host, onPick) {
+    host = $(host); host.classList.add('sat'); const id = 'sat' + (++satN);
+    host.innerHTML = '<label class="vh" for="' + id + 'Q">' + t('Cerca un satellite', 'Search for a satellite') + '</label>' +
+      '<input id="' + id + 'Q" type="search" autocomplete="off" spellcheck="false" placeholder="' + t('Nome o numero NORAD, es. ISS', 'Name or NORAD number, e.g. ISS') + '" role="combobox" aria-expanded="false" aria-controls="' + id + 'L">' +
+      '<ul id="' + id + 'L" role="listbox" hidden></ul><p class="satnote">' + t('Oppure inserisci i tuoi numeri qui sotto.', 'Or type your own numbers below.') + '</p>';
+    const q = host.querySelector('input'), ul = host.querySelector('ul'), note = host.querySelector('.satnote');
+    let list = [], sel = -1;
+    const close = () => { ul.hidden = true; q.setAttribute('aria-expanded', 'false'); sel = -1; };
+    const draw = () => {
+      ul.innerHTML = list.map((s, k) => '<li role="option" id="' + id + 'O' + k + '" aria-selected="' + (k === sel) + '" data-k="' + k + '"><span>' + esc(s.name) + '</span><small>' + s.norad + '</small></li>').join('');
+      ul.hidden = !list.length; q.setAttribute('aria-expanded', String(!!list.length));
+      if (sel >= 0) q.setAttribute('aria-activedescendant', id + 'O' + sel); else q.removeAttribute('aria-activedescendant');
+    };
+    const search = () => catalog().then(cat => {
+      const v = q.value.trim().toLowerCase();
+      if (!v) list = POP.map(n => cat.find(s => s.norad === n)).filter(Boolean);
+      else if (/^\d+$/.test(v)) list = cat.filter(s => String(s.norad).startsWith(v)).slice(0, 12);
+      else { const a = cat.filter(s => s.name.toLowerCase().startsWith(v)), b = cat.filter(s => !s.name.toLowerCase().startsWith(v) && s.name.toLowerCase().includes(v)); list = a.concat(b).slice(0, 12); }
+      sel = -1; draw();
+    }).catch(() => { note.textContent = t('Catalogo non disponibile: inserisci i dati a mano.', 'Catalogue not available: type the data by hand.'); });
+    const pick = s => {
+      close(); q.value = s.name; const el = elements(s);
+      note.innerHTML = t('Elementi medi del TLE del ', 'Mean TLE elements, epoch ') + el.epoch.toISOString().slice(0, 16).replace('T', ' ') + ' UTC · <a href="' + sky() + '#sat-' + s.norad + '">' + t('vedilo nel cielo', 'see it in the sky') + '</a>';
+      onPick(el);
+    };
+    q.addEventListener('focus', search); q.addEventListener('input', search);
+    q.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { sel = Math.min(list.length - 1, sel + 1); draw(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); draw(); e.preventDefault(); }
+      else if (e.key === 'Enter') { if (list[sel >= 0 ? sel : 0]) pick(list[sel >= 0 ? sel : 0]); e.preventDefault(); }
+      else if (e.key === 'Escape') close();
+    });
+    ul.addEventListener('mousedown', e => { const li = e.target.closest('li'); if (li) { e.preventDefault(); pick(list[+li.dataset.k]); } });
+    q.addEventListener('blur', () => setTimeout(close, 120));
+    // ?sat=25544 nell'indirizzo (arriva dalla scheda di un satellite nel cielo)
+    const want = +((location.search.match(/[?&]sat=(\d+)/) || [])[1] || 0);
+    if (want) catalog().then(cat => { const s = cat.find(x => x.norad === want); if (s) pick(s); }).catch(() => {});
+    return { pick };
+  }
+
+  /* ---------- Terra realistica (three.js r128) ---------- */
+  function earth(THREE, R, opt) {
+    R = R || 1; opt = opt || {};
+    const TL = new THREE.TextureLoader(), tx = n => { const x = TL.load('tex/' + n + '.jpg'); x.anisotropy = 8; return x; };
+    const sun = (opt.sun || new THREE.Vector3(5, 2.5, 4)).clone().normalize();
+    const g = new THREE.Group();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { day: { value: tx('day') }, night: { value: tx('night') }, spec: { value: tx('spec') }, sun: { value: sun } },
+      vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+      fragmentShader: 'uniform sampler2D day,night,spec; uniform vec3 sun; varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vec3 n=normalize(vN); vec3 L=normalize((viewMatrix*vec4(sun,0.)).xyz); float d=dot(n,L); float k=smoothstep(-0.12,0.18,d); vec3 dc=texture2D(day,vUv).rgb; vec3 nc=texture2D(night,vUv).rgb*1.4; vec3 c=mix(nc,dc*(0.25+0.95*max(d,0.)),k); float sp=texture2D(spec,vUv).r; vec3 h=normalize(L+vV); c+=sp*pow(max(dot(n,h),0.),48.)*0.45*k; float f=pow(1.-max(dot(n,vV),0.),3.); c+=vec3(.25,.5,1.)*f*0.3*(0.2+k); gl_FragColor=vec4(c,1.); }'
+    });
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), mat); g.add(ball);
+    const cm = new THREE.MeshPhongMaterial({ transparent: true, opacity: 0.5, depthWrite: false });
+    TL.load('tex/clouds.jpg', x => { cm.alphaMap = x; cm.needsUpdate = true; });
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(R * 1.008, 96, 72), cm); g.add(clouds);
+    const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 64, 48), new THREE.ShaderMaterial({
+      transparent: true, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+      fragmentShader: 'varying vec3 vN; void main(){ float i=pow(0.72-dot(vN,vec3(0.,0.,1.)),3.); gl_FragColor=vec4(.3,.55,1.,1.)*i*0.42; }'
+    }));
+    g.add(atm);
+    return { group: g, ball, clouds, setSun(v) { mat.uniforms.sun.value.copy(v).normalize(); } };
+  }
+  function stars(THREE, n, r) {
+    n = n || 1400; r = r || 80;
+    const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    for (let k = 0; k < n; k++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * 6.283, s = Math.sqrt(1 - u * u), rr = r * (1 + Math.random() * 0.4);
+      pos.set([rr * s * Math.cos(a), rr * u, rr * s * Math.sin(a)], k * 3);
+      const b = 0.45 + Math.random() * 0.55; col.set([b, b, b * (0.92 + Math.random() * 0.12)], k * 3);
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return new THREE.Points(g, new THREE.PointsMaterial({ size: r * 0.0018, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
+  }
+  // ECI (km) → coordinate three.js con l'asse y in alto e il raggio terrestre come unità
+  const v3 = (THREE, p, unit) => new THREE.Vector3(p[0] / (unit || RE), p[2] / (unit || RE), -p[1] / (unit || RE));
+  // scena pronta: renderer, camera, controlli, ridimensionamento, ciclo di disegno che si ferma fuori dallo schermo
+  function scene3(THREE, host, opt) {
+    host = $(host); opt = opt || {};
+    const cv = document.createElement('canvas'); host.prepend(cv);
+    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(opt.fov || 38, 1, 0.01, 2000);
+    scene.add(new THREE.AmbientLight(0x8a8a9a, opt.ambient == null ? 0.9 : opt.ambient));
+    const light = new THREE.DirectionalLight(0xfff1e0, 1.5); light.position.set(5, 2.5, 4); scene.add(light);
+    let controls = null;
+    if (THREE.OrbitControls && opt.controls !== false) { controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = false; }
+    const size = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+    if (window.ResizeObserver) new ResizeObserver(size).observe(host); else addEventListener('resize', size);
+    size();
+    let vis = true, hooks = [];
+    if (window.IntersectionObserver) new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(host);
+    let last = performance.now();
+    (function loop(now) {
+      requestAnimationFrame(loop);
+      if (!vis || document.hidden) { last = now; return; }
+      const dt = Math.min(0.1, (now - last) / 1000); last = now;
+      hooks.forEach(f => f(dt, now));
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    })(last);
+    return { THREE, renderer, scene, camera, controls, light, cv, size, onFrame(f) { hooks.push(f); } };
+  }
+  const has3D = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } };
+
+  /* ---------- grafici a linee ---------- */
+  const C = { cy: '#35d4f2', gr: '#58e07f', vi: '#a995ff', ic: '#cfe3f5', am: '#ffb224', tx3: '#85919d' };
+  function ticks(lo, hi, n) {
+    if (!(hi > lo)) { hi = lo + 1; }
+    const span = hi - lo, step0 = span / (n || 5), mag = Math.pow(10, Math.floor(Math.log10(step0))), r = step0 / mag;
+    const step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag, out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    return { out, step };
+  }
+  function tickFmt(v, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e6 || (Math.abs(v) < 1e-3 && v !== 0) ? sig(v, 2) : fmt(v, Math.min(d, 6)); }
+  // o = { title, x: [...], series: [{ name, y: [...], color, dash }], xLabel, yLabel, yFmt(v), xFmt(v), marks: [{ x, label }], yMin, yMax, h }
+  function chart(host, o) {
+    host = $(host); host.classList.add('chart');
+    const draw = () => {
+      const W = Math.max(280, host.clientWidth - 16), H = o.h || 230, L = 56, Rm = 14, T = 10, B = 34;
+      const xs = o.x, all = [];
+      o.series.forEach(s => s.y.forEach(v => { if (Number.isFinite(v)) all.push(v); }));
+      let y0 = o.yMin != null ? o.yMin : Math.min(...all), y1 = o.yMax != null ? o.yMax : Math.max(...all);
+      if (y0 === y1) { y0 -= 1; y1 += 1; }
+      const pad = (y1 - y0) * 0.06; if (o.yMin == null) y0 -= pad; if (o.yMax == null) y1 += pad;
+      const x0 = xs[0], x1 = xs[xs.length - 1];
+      const X = v => L + (v - x0) / (x1 - x0 || 1) * (W - L - Rm), Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+      const ty = ticks(y0, y1, 5), tx = ticks(x0, x1, Math.max(3, Math.floor(W / 110)));
+      let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(o.title || '') + '">';
+      ty.out.forEach(v => { if (v < y0 || v > y1) return; s += '<line class="gd" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(v) : tickFmt(v, ty.step)) + '</text>'; });
+      tx.out.forEach(v => { if (v < x0 || v > x1) return; s += '<line class="gd" y1="' + T + '" y2="' + (H - B) + '" x1="' + X(v) + '" x2="' + X(v) + '" opacity=".6"/><text x="' + X(v) + '" y="' + (H - B + 15) + '" text-anchor="middle">' + (o.xFmt ? o.xFmt(v) : tickFmt(v, tx.step)) + '</text>'; });
+      s += '<line class="ax" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + (H - B) + '" y2="' + (H - B) + '"/>';
+      if (o.xLabel) s += '<text x="' + (W - Rm) + '" y="' + (H - 4) + '" text-anchor="end">' + esc(o.xLabel) + '</text>';
+      if (o.yLabel) s += '<text x="' + 4 + '" y="' + (T + 2) + '" text-anchor="start" dominant-baseline="hanging" opacity="0">' + '</text>';
+      (o.marks || []).forEach(m => { if (m.x < x0 || m.x > x1) return; s += '<line x1="' + X(m.x) + '" x2="' + X(m.x) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="' + (m.color || C.tx3) + '" stroke-dasharray="3 3"/><text x="' + (X(m.x) + 4) + '" y="' + (T + 11) + '" style="fill:' + (m.color || C.tx3) + '">' + esc(m.label || '') + '</text>'; });
+      (o.bands || []).forEach(b => { s += '<rect x="' + X(b.x0) + '" width="' + Math.max(0, X(b.x1) - X(b.x0)) + '" y="' + T + '" height="' + (H - T - B) + '" fill="' + (b.color || '#fff') + '" opacity="' + (b.op || 0.06) + '"/>'; });
+      o.series.forEach(se => {
+        let d = '', pen = false;
+        se.y.forEach((v, k) => { if (!Number.isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(xs[k]).toFixed(1) + ' ' + Y(Math.max(y0, Math.min(y1, v))).toFixed(1); pen = true; });
+        s += '<path d="' + d + '" fill="none" stroke="' + (se.color || C.cy) + '" stroke-width="2" stroke-linejoin="round"' + (se.dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+      });
+      s += '<line class="hx" y1="' + T + '" y2="' + (H - B) + '" stroke="' + C.ic + '" stroke-opacity=".5" visibility="hidden"/>';
+      o.series.forEach((se, k) => { s += '<circle data-k="' + k + '" r="4" fill="' + (se.color || C.cy) + '" stroke="#000" stroke-width="2" visibility="hidden"/>'; });
+      s += '<rect x="' + L + '" y="' + T + '" width="' + (W - L - Rm) + '" height="' + (H - T - B) + '" fill="transparent" style="cursor:crosshair"/></svg>';
+      const head = '<div class="ttl"><b>' + esc(o.title || '') + '</b>' + (o.yLabel ? '<span>' + esc(o.yLabel) + '</span>' : '') +
+        (o.series.length > 1 ? o.series.map(se => '<span style="color:' + (se.color || C.cy) + '"><i></i><span style="color:var(--tx2)">' + esc(se.name) + '</span></span>').join('') : '') + '</div>';
+      host.innerHTML = head + s + '<div class="tip" hidden></div>';
+      const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), hx = svg.querySelector('.hx'), dots = svg.querySelectorAll('circle'), hit = svg.querySelector('rect:last-of-type');
+      const show = ev => {
+        const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+        const xv = x0 + (px - L) / (W - L - Rm) * (x1 - x0);
+        let k = 0, best = Infinity; xs.forEach((v, j) => { const d = Math.abs(v - xv); if (d < best) { best = d; k = j; } });
+        hx.setAttribute('x1', X(xs[k])); hx.setAttribute('x2', X(xs[k])); hx.setAttribute('visibility', 'visible');
+        let html = '<span style="color:var(--tx2)">' + (o.xName ? esc(o.xName) + ' ' : '') + (o.xFmt ? o.xFmt(xs[k]) : sig(xs[k], 4)) + '</span>';
+        o.series.forEach((se, j) => { const v = se.y[k]; const c = dots[j]; if (Number.isFinite(v)) { c.setAttribute('cx', X(xs[k])); c.setAttribute('cy', Y(Math.max(y0, Math.min(y1, v)))); c.setAttribute('visibility', 'visible'); } else c.setAttribute('visibility', 'hidden');
+          html += '<span style="color:' + (se.color || C.cy) + '">' + (o.series.length > 1 ? esc(se.name) + ' ' : '') + (o.yFmt ? o.yFmt(v) : sig(v, 4)) + (o.unit ? ' ' + esc(o.unit) : '') + '</span>'; });
+        tip.innerHTML = html; tip.hidden = false;
+        const hr = host.getBoundingClientRect(), tw = tip.offsetWidth, cx = ev.clientX - hr.left;
+        tip.style.left = Math.min(hr.width - tw - 6, Math.max(6, cx + 12)) + 'px'; tip.style.top = (ev.clientY - hr.top - 46) + 'px';
+      };
+      const hide = () => { tip.hidden = true; hx.setAttribute('visibility', 'hidden'); dots.forEach(c => c.setAttribute('visibility', 'hidden')); };
+      hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show); hit.addEventListener('pointerleave', hide);
+    };
+    draw();
+    if (!host._ro && window.ResizeObserver) { let w = host.clientWidth; host._ro = new ResizeObserver(() => { if (host._draw && Math.abs(host.clientWidth - w) > 4) { w = host.clientWidth; host._draw(); } }); host._ro.observe(host); }
+    host._draw = draw;
+  }
+
+  function unchart(host) { host = $(host); if (!host) return; host._draw = null; host.innerHTML = ''; }   // toglie un grafico (non si ridisegna più)
+
+  /* ---------- salvare i risultati ---------- */
+  function csv(name, head, data) {
+    const sep = en ? ',' : ';', dec = v => typeof v === 'number' ? (en ? String(v) : String(v).replace('.', ',')) : '"' + String(v).replace(/"/g, '""') + '"';
+    const txt = [head.map(dec).join(sep)].concat(data.map(r => r.map(dec).join(sep))).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + txt], { type: 'text/csv' })); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ---------- schede di modo ---------- */
+  function tabs(host, onChange) {     // <div class="seg" role="tablist"><button role="tab" data-m="..." aria-controls="...">
+    host = $(host); const bs = [...host.querySelectorAll('[role=tab]')];
+    const set = m => { bs.forEach(b => { const on = b.dataset.m === m; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; const p = $(b.getAttribute('aria-controls')); if (p) p.hidden = !on; }); onChange && onChange(m); };
+    host.addEventListener('click', e => { const b = e.target.closest('[role=tab]'); if (b) set(b.dataset.m); });
+    host.addEventListener('keydown', e => { const k = bs.indexOf(document.activeElement); if (k < 0) return; let j = k; if (e.key === 'ArrowRight') j = (k + 1) % bs.length; else if (e.key === 'ArrowLeft') j = (k - 1 + bs.length) % bs.length; else return; bs[j].focus(); set(bs[j].dataset.m); e.preventDefault(); });
+    return { set, get: () => (bs.find(b => b.getAttribute('aria-selected') === 'true') || bs[0]).dataset.m };
+  }
+
+  return { $, lang, en, t, init, applyLang, SUBJ, sky, num, fmt, sig, plain, der, clear, bad, given, esc, rows, msg, live, keep, save, fill, wipe,
+    MU, RE, J2, D2R, G0, OMEGA_E, kepler, nuFromM, gmst, pqw2eci, catalog, elements, sat, earth, stars, v3, scene3, has3D, C, chart, unchart, ticks, csv, tabs };
+})();
+</script>
+<script>
+'use strict';
+K.init('strutture');
+const { $, t, num, fmt, esc } = K;
+const g0 = K.G0, PI = Math.PI, DEC = K.en ? '.' : ',';
+const NO3D = /[?&]no3d\b/.test(location.search) || typeof THREE === 'undefined' || !K.has3D();
+const CALM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const Z0 = () => 0;
+
+/* ---------- numeri ---------- */
+function fz(x, d) {                         // senza zeri inutili: 1,35 · −4,5 · 2 810
+  if (x == null || !Number.isFinite(x)) return '—';
+  let s = fmt(x, d == null ? 3 : d);
+  if (s.indexOf(DEC) >= 0) s = s.replace(/0+$/, '').replace(DEC === '.' ? /\.$/ : /,$/, '');
+  return s;
+}
+const pm = x => (x > 0 ? '+' : '') + fz(x, 2);
+const msF = x => Number.isFinite(x) ? (x >= 0 ? '+' : '') + fmt(x, Math.abs(x) >= 100 ? 0 : 2) : '—';
+const msC = x => Number.isFinite(x) && x < 0 ? ' warn' : '';
+const kN = x => fmt(x / 1e3, Math.abs(x) >= 1e5 ? 0 : 1);
+const MPa = x => fmt(x / 1e6, Math.abs(x) >= 1e8 ? 0 : 1);
+const mm = x => x == null || !Number.isFinite(x) ? '—' : fmt(x * 1e3, x < 1e-3 ? 3 : 2);
+const pct = x => (x >= 0 ? '+' : '') + fmt(x * 100, 0) + ' %';
+
+/* ---------- materiali: valori tipici a temperatura ambiente ---------- */
+// E GPa · nu · rho kg/m³ · sy, su MPa · al 10⁻⁶/K
+const MAT = [
+  { k: 'al2024', n: 'Al 2024-T3', E: 73.1, nu: 0.33, rho: 2780, sy: 345, su: 483, al: 23.2 },
+  { k: 'al6061', n: 'Al 6061-T6', E: 68.9, nu: 0.33, rho: 2700, sy: 276, su: 310, al: 23.6 },
+  { k: 'al7075', n: 'Al 7075-T6', E: 71.7, nu: 0.33, rho: 2810, sy: 503, su: 572, al: 23.6 },
+  { k: 'ti64', n: 'Ti-6Al-4V', E: 113.8, nu: 0.342, rho: 4430, sy: 880, su: 950, al: 8.6 },
+  { k: 'ss304', n: 'AISI 304', E: 193, nu: 0.29, rho: 8000, sy: 215, su: 505, al: 17.3 },
+  { k: 'in718', n: 'Inconel 718', E: 200, nu: 0.29, rho: 8190, sy: 1100, su: 1375, al: 13.0 },
+  { k: 'invar', n: 'Invar 36', E: 141, nu: 0.26, rho: 8050, sy: 276, su: 490, al: 1.3 },
+  { k: 'cfrp', n: ['CFRP quasi isotropo', 'CFRP quasi-isotropic'], E: 60, nu: 0.30, rho: 1580, sy: 550, su: 550, al: 2.0, brittle: true },
+  { k: 'az31', n: 'Mg AZ31B', E: 45, nu: 0.35, rho: 1770, sy: 220, su: 290, al: 26.0 },
+  { k: 'be', n: 'Be S-200F', E: 303, nu: 0.10, rho: 1850, sy: 241, su: 324, al: 11.3 },
+];
+const mname = m => Array.isArray(m.n) ? t(m.n[0], m.n[1]) : m.n;
+
+/* ---------- lanciatori: carichi quasi statici (g, meno = compressione) e frequenze minime ---------- */
+const EV = (it, en, lo, hi, lat) => ({ it, en, lo, hi, lat });
+const evn = e => K.en ? e.en : e.it;
+const LV = {
+  vegac: { n: 'Vega-C', fl: 12, fa: 20,
+    src: () => t('Vega-C User\'s Manual, Issue 1 Rev 0 (2025): tab. 3.2.1.1.a e § 4.2.3.4.', 'Vega-C User\'s Manual, Issue 1 Rev 0 (2025): table 3.2.1.1.a and § 4.2.3.4.'),
+    ev: () => [
+      EV('decollo', 'lift-off', -4.5, 3.0, 1.35),
+      EV('pressione dinamica massima', 'maximum dynamic pressure', -4.0, 1.5, 0.9),
+      EV('P120C: accelerazione massima e fine spinta', 'P120C: maximum acceleration and tail-off', -5.0, 1.0, 0.7),
+      EV('accensione e volo dello Z40, accensione dello Z9', 'Z40 ignition and flight, Z9 ignition', -5.0, 3.0, 1.3),
+      EV('volo dell\'AVUM+', 'AVUM+ flight', -1.0, 0.5, 0.7)],
+    warn: M => M < 500 ? t('La tabella dei carichi di Vega-C vale per satelliti oltre 500 kg.', 'The Vega-C load table applies to satellites above 500 kg.') : '' },
+  a6: { n: 'Ariane 6', fl: 6, fa: 20,
+    src: M => t('Ariane 6 User\'s Manual, Issue 2 Rev 0 (2021): tab. ', 'Ariane 6 User\'s Manual, Issue 2 Rev 0 (2021): table ') + (M > 3400 ? t('3.2.1.a (oltre 3 400 kg)', '3.2.1.a (above 3 400 kg)') : '3.2.1.b (2 000–3 400 kg)') + t(' e § 4.2.3.4.', ' and § 4.2.3.4.'),
+    ev: M => { const l = M > 3400 ? 1.8 : 2.0; return [
+      EV('decollo, accensione dei booster', 'lift-off, booster ignition', -3.5, 0.5, l),
+      EV('fase aerodinamica', 'aerodynamic phase', -3.6, -0.5, l),
+      EV('fine spinta dei booster', 'end of booster flight', -6.0, -0.8, 1.0),
+      EV('separazione dei booster', 'booster jettisoning', -4.0, 2.5, 0.9),
+      EV('spegnimento del Vulcain', 'Vulcain cut-off', -4.3, 1.4, 0.5),
+      EV('accensioni e spegnimenti del Vinci', 'Vinci ignitions and cut-offs', -4.5, 1.4, 0.5)]; },
+    warn: M => M < 2000 ? t('Sotto 2 000 kg il manuale di Ariane 6 rimanda ad Arianespace: la pagina usa la tabella 3.2.1.b.', 'Below 2 000 kg the Ariane 6 manual refers you to Arianespace: the page uses table 3.2.1.b.') : '' },
+  f9: { n: 'Falcon 9', fl: 10, fa: 25,
+    src: M => t('Falcon User\'s Guide (maggio 2025): tab. 5-3, colonna ', 'Falcon User\'s Guide (May 2025): table 5-3, column ') + (M > 1800 ? t('oltre 1 800 kg', 'above 1 800 kg') : M >= 1000 ? '1 000–1 800 kg' : t('sotto 1 000 kg', 'below 1 000 kg')) + t(', e § 5.3. Segno convertito: là più = compressione.', ', and § 5.3. Sign converted: there plus = compression.'),
+    ev: M => { const c = M > 1800 ? [6, 0.5, 3.5, 2, 1.5, 2, 2, 0.5] : M >= 1000 ? [8.5, 2, 4, 3, 1.5, 3, 4, 2] : [11, 4, 5, 7.5, 2, 7.5, 6, 4];
+      return [EV('inviluppo: compressione massima', 'envelope: maximum compression', -c[0], -c[0], c[1]),
+        EV('inviluppo: laterale massimo con compressione', 'envelope: maximum lateral with compression', -c[2], -c[2], c[3]),
+        EV('inviluppo: laterale massimo con trazione', 'envelope: maximum lateral with tension', c[4], c[4], c[5]),
+        EV('inviluppo: trazione massima', 'envelope: maximum tension', c[6], c[6], c[7])]; },
+    warn: () => '' },
+  my: { n: '', src: () => t('Scrivi tu i fattori di carico e i requisiti di frequenza.', 'Type your own load factors and frequency requirements.'), warn: () => '' }
+};
+
+/* ---------- elenchi ---------- */
+const opt = (id, list) => { $(id).innerHTML = list.map(([v, s]) => '<option value="' + v + '">' + esc(s) + '</option>').join(''); };
+opt('mat', MAT.map(m => [m.k, mname(m)]).concat([['my', t('personalizzato: scrivi tu i valori', 'custom: type your own values')]]));
+opt('lv', [['vegac', 'Vega-C'], ['a6', 'Ariane 6'], ['f9', 'Falcon 9'], ['my', t('valori miei', 'my own values')]]);
+opt('bc', [['free', t('incastro alla base, cima libera', 'clamped base, free top')], ['fp', t('incastro e cerniera', 'clamped and pinned')], ['pp', t('cerniera e cerniera', 'pinned and pinned')], ['ff', t('incastro e incastro', 'clamped and clamped')]]);
+
+/* ---------- modello ---------- */
+const KBC = { fp: PI / 4.493409, pp: 1, ff: 0.5 };
+const DEF = { kq: 1.25, km: 1.2, kp: 1, fosy: 1.1, fosu: 1.25 };
+const MS = (allow, fs, s) => s > 0 ? allow / (fs * s) - 1 : Infinity;
+const knock = rt => { const phi = Math.sqrt(rt) / 16; return { phi, g: 1 - 0.901 * (1 - Math.exp(-phi)) }; };
+
+// deformata statica per una forza laterale unitaria nel baricentro (flessione + taglio, braccio rigido sopra il tubo)
+function latShape(EI, kGA, L, h) {
+  const a = Math.min(h, L), q = kGA > 0 ? 1 / kGA : 0;
+  const wb = z => (h * z * z / 2 - z * z * z / 6) / EI, tb = z => (h * z - z * z / 2) / EI;
+  const w = z => z <= a ? wb(z) + q * z : wb(a) + q * a + tb(a) * (z - a);
+  const th = z => tb(Math.min(z, a));
+  const wh = h <= L ? wb(h) + q * h : wb(L) + q * L + tb(L) * (h - L);
+  return { w, th, wh, a };
+}
+const NQ = 64;
+function latF(EI, kGA, L, h, m, mb) {      // Rayleigh: f = (1/2π)·√(k / (m + c·mb))
+  const S = latShape(EI, kGA, L, h);
+  let q = 0;
+  for (let j = 0; j <= NQ; j++) { const y = S.w(L * j / NQ) / S.wh; q += (j === 0 || j === NQ ? 1 : j % 2 ? 4 : 2) * y * y; }
+  const c = q / (3 * NQ), k = 1 / S.wh, me = m + c * mb;
+  return { f: me > 0 ? Math.sqrt(k / me) / (2 * PI) : Infinity, k, c, me, S };
+}
+function axF(EA, L, h, m, mb) {
+  const a = Math.min(h, L), k = EA / a, c = a / (3 * L) + (L - a) / L, me = m + c * mb;
+  return { f: me > 0 ? Math.sqrt(k / me) / (2 * PI) : Infinity, k, c, me, a };
+}
+function kFree(L, h) {                     // cima libera, carico nel baricentro: x·tan x = L/(hcg − L), K = π/x
+  if (h <= L) return 2 * h / L;
+  const r = L / (h - L); let lo = 0, hi = PI / 2;
+  for (let j = 0; j < 64; j++) { const x = (lo + hi) / 2; if (x * Math.tan(x) < r) lo = x; else hi = x; }
+  return 2 * PI / (lo + hi);
+}
+
+function calc(o, tt, RR) {
+  const R = RR || o.R, A = 2 * PI * R * tt, I = PI * R * R * R * tt, mb = o.rho * A * o.L;
+  const Mt = o.M + mb, Mh = o.M * o.h + mb * o.L / 2;
+  const r = { t: tt, R, A, I, mb, Mt, Mh, evs: [] };
+  let gS = null, gB = null, gE = null;
+  for (const ev of o.ev) {                 // ogni evento: i due estremi assiali con il laterale pieno
+    const M = Math.abs(ev.lat) * g0 * Mh, b = 2 * M / R;
+    let es = 0;
+    for (const nx of [ev.lo, ev.hi]) {
+      const P = -nx * g0 * Mt, s = (Math.abs(P) + b) / A, pc = P + b;   // P: compressione positiva
+      es = Math.max(es, s);
+      if (!gS || s > gS.s) gS = { ev, nx, lat: ev.lat, P, M, s, Peq: Math.abs(P) + b };
+      if (!gB || pc > gB.Peq) gB = { ev, nx, lat: ev.lat, P, M, Peq: pc };
+      if (!gE || P > gE.P) gE = { ev, nx, lat: ev.lat, P, M };
+    }
+    r.evs.push({ ev, s: es, MSu: MS(o.su, o.fsU, es) });
+  }
+  Object.assign(r, { gS, gB, gE });
+  r.MSy = gS ? MS(o.sy, o.fsY, gS.s) : Infinity;
+  r.MSu = gS ? MS(o.su, o.fsU, gS.s) : Infinity;
+  const sq = Math.sqrt(3 * (1 - o.nu * o.nu)), kn = knock(R / tt);
+  r.rt = R / tt; r.phi = kn.phi; r.gam = kn.g;
+  r.scl = o.E * tt / (R * sq); r.Pcl = r.scl * A;
+  r.plast = r.gam * r.scl > o.sy;
+  r.Pall = Math.min(r.gam * r.scl, o.sy) * A;
+  r.MSsh = gB && gB.Peq > 0 ? MS(r.Pall, o.fsU, gB.Peq) : Infinity;
+  r.K = o.kk != null ? o.kk : o.bc === 'free' ? kFree(o.L, o.h) : KBC[o.bc];
+  r.PE = PI * PI * o.E * I / Math.pow(r.K * o.L, 2);
+  r.MSE = gE && gE.P > 0 ? MS(r.PE, o.fsU, gE.P) : Infinity;
+  const G = o.E / (2 * (1 + o.nu));
+  r.lat = latF(o.E * I, 0.5 * G * A, o.L, o.h, o.M, mb);
+  r.latB = latF(o.E * I, 0, o.L, o.h, o.M, mb);
+  r.ax = axF(o.E * A, o.L, o.h, o.M, mb);
+  return r;
+}
+
+// verifiche: margine ≥ 0 se rispettata, cresce con lo spessore
+const CRIT = {
+  u: [r => r.MSu, 'rottura', 'ultimate strength'],
+  y: [r => r.MSy, 'snervamento', 'yield'],
+  sh: [r => r.MSsh, 'instabilità del guscio', 'shell buckling'],
+  eu: [r => r.MSE, 'colonna di Eulero', 'Euler column'],
+  fl: [(r, o) => r.lat.f / o.frlV - 1, 'frequenza laterale', 'lateral frequency'],
+  fa: [(r, o) => r.ax.f / o.fraV - 1, 'frequenza assiale', 'axial frequency'] };
+const crits = o => Object.keys(CRIT).filter(k => k === 'fl' ? o.frlV : k === 'fa' ? o.fraV : o.ev.length);
+function bisect(f, lo, hi) {               // in scala logaritmica; null = non basta, 0 = non limita
+  if (!(f(Math.exp(hi)) >= 0)) return null;
+  if (f(Math.exp(lo)) >= 0) return 0;
+  for (let j = 0; j < 50; j++) { const mid = (lo + hi) / 2; if (f(Math.exp(mid)) >= 0) hi = mid; else lo = mid; }
+  return Math.exp(hi);
+}
+const minT = (o, k) => bisect(x => CRIT[k][0](calc(o, x), o), Math.log(o.R * 1e-5), Math.log(o.R * 0.5));
+const minR = (o, tt, k) => bisect(x => CRIT[k][0](calc(o, tt, x), o), Math.log(Math.max(tt * 10, 1e-3)), Math.log(100));
+
+/* ---------- lettura dei campi ---------- */
+const NUM = ['R', 't', 'L', 'mass', 'hcg', 'E', 'nu', 'rho', 'sy', 'su', 'al', 'nlo', 'nhi', 'ny', 'frl', 'fra', 'kk', 'dT', 'kq', 'km', 'kp', 'fosy', 'fosu'];
+const lab = id => { const l = document.querySelector('label[for="' + id + '"]'); return l ? l.textContent.trim() : id; };
+function read() {
+  K.clear('f');
+  const v = {}, nan = [];
+  NUM.forEach(id => { v[id] = num(id); if (Number.isNaN(v[id])) { nan.push(id); K.bad(id); } });
+  if (nan.length) return { err: t('Questi valori non sono numeri: ', 'These values are not numbers: ') + nan.map(lab).join(', ') + '.' };
+  const o = { warn: [] }, bad = [], no = (id, s) => bad.push([id, s]);
+  // materiale: i campi vuoti prendono il valore del materiale scelto
+  const mt = MAT.find(m => m.k === $('mat').value) || null;
+  o.mt = mt; o.brittle = !!(mt && mt.brittle);
+  [['E', 1e9], ['nu', 1], ['rho', 1], ['sy', 1e6], ['su', 1e6], ['al', 1e-6]].forEach(([id, k]) => {
+    let x = v[id]; if (x == null && mt) { x = mt[id]; K.der(id, x, fz(x)); }
+    o[id] = x == null ? null : x * k;
+  });
+  const miss = ['E', 'nu', 'rho', 'sy', 'su', 'al'].filter(id => o[id] == null);
+  if (miss.length) return { open: true, err: t('Mancano dati del materiale: ', 'Material data missing: ') + miss.map(lab).join(', ') + t('. Scrivili, oppure scegli un materiale dall\'elenco.', '. Type them, or pick a material from the list.') };
+  if (!(o.E > 0)) no('E', t('Il modulo di Young deve essere positivo.', 'Young\'s modulus must be positive.'));
+  if (!(o.nu >= 0 && o.nu < 0.5)) no('nu', t('Il coefficiente di Poisson deve stare fra 0 e 0,5.', 'Poisson\'s ratio must be between 0 and 0.5.'));
+  if (!(o.rho > 0)) no('rho', t('La densità deve essere positiva.', 'The density must be positive.'));
+  if (!(o.sy > 0) || !(o.su > 0)) no(!(o.sy > 0) ? 'sy' : 'su', t('Snervamento e rottura devono essere positivi.', 'Yield and ultimate strength must be positive.'));
+  else if (o.sy > o.su) no('sy', t('Lo snervamento (', 'The yield strength (') + fz(o.sy / 1e6, 0) + t(' MPa) supera la rottura (', ' MPa) is above the ultimate strength (') + fz(o.su / 1e6, 0) + t(' MPa): controlla i due valori.', ' MPa): check both values.'));
+  // geometria e massa
+  const need = ['R', 'L', 'mass'].filter(id => v[id] == null);
+  if (need.length) return { empty: true, err: t('Per il calcolo servono: ', 'The calculation needs: ') + need.map(lab).join(', ') + '.' };
+  o.R = v.R; o.L = v.L; o.M = v.mass;
+  if (!(o.R > 0)) no('R', t('Il raggio deve essere maggiore di zero.', 'The radius must be greater than zero.'));
+  if (!(o.L > 0)) no('L', t('La lunghezza deve essere maggiore di zero.', 'The length must be greater than zero.'));
+  if (!(o.M >= 0)) no('mass', t('La massa non può essere negativa.', 'The mass cannot be negative.'));
+  o.h = v.hcg; if (o.h == null) { o.h = o.L; K.der('hcg', o.L, fz(o.L)); }
+  if (!(o.h > 0)) no('hcg', t('Il baricentro deve stare sopra la base: hcg > 0.', 'The centre of gravity must be above the base: hcg > 0.'));
+  o.t = v.t == null ? null : v.t / 1e3;
+  if (o.t != null && !(o.t > 0)) no('t', t('Lo spessore deve essere maggiore di zero.', 'The thickness must be greater than zero.'));
+  else if (o.t != null && o.R > 0 && o.t >= o.R / 2) no('t', t('Lo spessore deve essere molto più piccolo del raggio: qui è il ', 'The thickness must be much smaller than the radius: here it is ') + fz(o.t / o.R * 100, 0) + t(' % di R.', ' % of R.'));
+  // fattori di sicurezza: vuoti = valori ECSS
+  ['kq', 'km', 'kp', 'fosy', 'fosu'].forEach(id => {
+    let x = v[id]; if (x == null) { x = DEF[id]; K.der(id, x, fz(x)); }
+    else if (x < 1) no(id, t('I fattori di sicurezza valgono 1 o più.', 'Safety factors are 1 or more.'));
+    o[id] = x;
+  });
+  const kd = o.kq * o.kp * o.km;
+  o.fsY = kd * o.fosy; o.fsU = kd * o.fosu; o.fsTY = o.km * o.kp * o.fosy; o.fsTU = o.km * o.kp * o.fosu;
+  o.bc = $('bc').value; o.kk = v.kk; o.dT = v.dT;
+  if (o.kk != null && !(o.kk > 0)) no('kk', t('K deve essere maggiore di zero.', 'K must be greater than zero.'));
+  if (v.frl != null && !(v.frl > 0)) no('frl', t('Il requisito di frequenza deve essere positivo.', 'The frequency requirement must be positive.'));
+  if (v.fra != null && !(v.fra > 0)) no('fra', t('Il requisito di frequenza deve essere positivo.', 'The frequency requirement must be positive.'));
+  if (bad.length) { bad.forEach(b => K.bad(b[0])); return { err: [...new Set(bad.map(b => b[1]))].join(' ') }; }
+  // lanciatore: eventi di volo e frequenze minime
+  o.lv = $('lv').value; o.LVo = LV[o.lv] || LV.my;
+  o.Mcls = o.M + (o.t ? o.rho * 2 * PI * o.R * o.t * o.L : 0);
+  const base = o.LVo.ev ? o.LVo.ev(o.Mcls) : [];
+  o.typed = v.nlo != null || v.nhi != null || v.ny != null;
+  if (o.typed) {                           // i valori scritti sostituiscono l'inviluppo del lanciatore
+    const env = base.length ? { lo: Math.min(...base.map(e => e.lo)), hi: Math.max(...base.map(e => e.hi)), lat: Math.max(...base.map(e => e.lat)) } : { lo: 0, hi: 0, lat: 0 };
+    const e = EV('i tuoi valori', 'your values', v.nlo != null ? v.nlo : env.lo, v.nhi != null ? v.nhi : env.hi, Math.abs(v.ny != null ? v.ny : env.lat));
+    if (v.nlo == null) K.der('nlo', e.lo, pm(e.lo));
+    if (v.nhi == null) K.der('nhi', e.hi, pm(e.hi));
+    if (v.ny == null) K.der('ny', e.lat, fz(e.lat));
+    if (e.lo > e.hi) { K.bad(v.nlo != null ? 'nlo' : 'nhi'); return { err: t('L\'assiale minimo (', 'The minimum axial factor (') + pm(e.lo) + t(' g) supera il massimo (', ' g) is above the maximum (') + pm(e.hi) + t(' g). Ricorda: meno = compressione.', ' g). Remember: minus = compression.') }; }
+    o.ev = [e];
+  } else o.ev = base;
+  o.frlV = v.frl != null ? v.frl : o.LVo.fl || null;
+  o.fraV = v.fra != null ? v.fra : o.LVo.fa || null;
+  if (v.frl == null && o.frlV) K.der('frl', o.frlV, fz(o.frlV));
+  if (v.fra == null && o.fraV) K.der('fra', o.fraV, fz(o.fraV));
+  const w = o.LVo.warn(o.Mcls); if (w && !o.typed) o.warn.push([w, 'car ins']);
+  if (!o.ev.length) o.warn.push([t('Scrivi i fattori di carico, oppure scegli un lanciatore.', 'Type the load factors, or pick a launcher.'), 'car ins']);
+  return o;
+}
+
+/* ---------- calcolo completo ---------- */
+let LAST = null;
+function lvHint() {
+  const L = LV[$('lv').value] || LV.my, M = num('mass');
+  $('lvsrc').textContent = ($('lv').value !== 'my' ? t('Valori tipici: controlla il manuale del lanciatore. ', 'Typical values: check the launcher manual. ') : '') + L.src(Number.isFinite(M) ? M : 0);
+}
+function show(m) {
+  $('lab').hidden = m === 'info';
+  document.querySelectorAll('[data-for]').forEach(el => { el.hidden = !el.dataset.for.split(' ').includes(m); });
+}
+function run() {
+  const m = tabs.get(); show(m);
+  const o = read(); K.save({ m }); lvHint();
+  if (o.err) { LAST = null; K.msg('msg', o.err); if (o.open) $('mp').open = true; blank(m); return; }
+  const tm = {}; crits(o).forEach(k => { tm[k] = minT(o, k); });
+  let tt = o.t, size = null;
+  if (tt == null) {                        // spessore vuoto: il minimo che passa tutte le verifiche
+    const ks = Object.keys(tm), fail = ks.filter(k => tm[k] == null);
+    let err = '';
+    if (fail.length) err = t('Nessuno spessore fino a R/2 basta per: ', 'No thickness up to R/2 is enough for: ') + fail.map(k => t(CRIT[k][1], CRIT[k][2])).join(', ') + t('. Prova un raggio più grande o un altro materiale.', '. Try a larger radius or another material.');
+    else if (!ks.length || !ks.some(k => tm[k] > 0)) err = t('Nessuna verifica limita lo spessore: scrivi tu lo spessore t.', 'No check limits the thickness: type the thickness t yourself.');
+    if (err) { LAST = null; K.msg('msg', err); blank(m); return; }
+    size = ks.reduce((a, b) => tm[b] > tm[a] ? b : a); tt = tm[size];
+    K.der('t', tt * 1e3, fz(tt * 1e3, 2));
+  }
+  const r = calc(o, tt);
+  r.tm = tm; r.size = size; r.Rm = {};
+  if (o.frlV) r.Rm.fl = minR(o, tt, 'fl');
+  if (o.fraV) r.Rm.fa = minR(o, tt, 'fa');
+  if (!o.typed && o.ev.length) { const g = m === 'ins' ? r.gB : r.gS; K.der('nlo', g.ev.lo, pm(g.ev.lo)); K.der('nhi', g.ev.hi, pm(g.ev.hi)); K.der('ny', g.ev.lat, fz(g.ev.lat)); }
+  if (o.kk == null) K.der('kk', r.K, fz(r.K, 3));
+  const ws = o.warn.filter(w => w[1].split(' ').includes(m)).map(w => w[0]);
+  if (r.rt < 10) ws.push('R/t = ' + fz(r.rt, 1) + t(': la parete non è sottile (serve R/t > 10), le formule perdono precisione.', ': the wall is not thin (R/t > 10 is needed), the formulas lose accuracy.'));
+  if (m === 'ins' && r.rt > 1500) ws.push('R/t = ' + fmt(r.rt, 0) + t(': fuori dal campo di NASA SP-8007 (R/t < 1500), γ è estrapolato.', ': outside the NASA SP-8007 range (R/t < 1500), γ is extrapolated.'));
+  if (m === 'fre' && o.L / o.R < 2) ws.push('L/R = ' + fz(o.L / o.R, 2) + t(': tubo molto corto, il modello a trave è solo indicativo.', ': a very short tube, the beam model is only indicative.'));
+  K.msg('msg', ws.join('<br>'));
+  LAST = { o, r, m };
+  if (m === 'car') { renderCar(o, r); drawLoads(); }
+  else if (m === 'fre') { renderFre(o, r); view3(); }
+  else if (m === 'ins') { renderIns(o, r); view3(); }
+  else if (m === 'mat') renderMat(o);
+}
+function blank(m) {
+  ['o-car', 'o-fre', 'o-ins', 'o-mat'].forEach(id => K.rows(id, []));
+  ['ev-car', 'ch-car', 'ch-fre', 'ch-ins'].forEach(id => { $(id).innerHTML = ''; });
+  if (m === 'car') drawLoads(); else if (m === 'fre' || m === 'ins') view3(); else if (m === 'mat') renderMat(null);
+}
+
+/* ---------- risultati ---------- */
+const sizeRows = r => r.size ? [['#', t('Spessore', 'Thickness')], [t('Spessore ricavato', 'Thickness worked out'), mm(r.t), 'mm', t('il minimo che passa tutte le verifiche; lo decide: ', 'the smallest that passes every check; set by: ') + t(CRIT[r.size][1], CRIT[r.size][2]), 'key']] : [];
+function tmRow(r, k, it, en, note) {
+  if (!(k in r.tm)) return null;
+  const x = r.tm[k];
+  return [t(it, en), x ? mm(x) : '—', x ? 'mm' : '', x == null ? t('nessuno spessore fino a R/2 basta', 'no thickness up to R/2 is enough') : x === 0 ? t('non limita lo spessore', 'does not limit the thickness') : note || '', x == null ? 'warn' : ''];
+}
+const mine = r => r.size ? t('ricavato', 'worked out') : t('il tuo', 'yours');
+
+function renderCar(o, r) {
+  const g = r.gS;
+  if (!g) { K.rows('o-car', sizeRows(r)); $('ev-car').innerHTML = ''; $('ch-car').innerHTML = ''; return; }
+  K.rows('o-car', sizeRows(r).concat([
+    ['#', t('Carichi alla base', 'Loads at the base')],
+    [t('Forza assiale P', 'Axial force P'), kN(Math.abs(g.P)), 'kN', (g.P >= 0 ? t('compressione', 'compression') : t('trazione', 'tension')) + ', nx ' + pm(g.nx) + ' g · (m + mb)·|nx|·g'],
+    [t('Momento flettente M', 'Bending moment M'), fmt(g.M / 1e3, 2), 'kN·m', 'ny ' + fz(g.lat) + ' g · (m·hcg + mb·L/2)·ny·g'],
+    [t('Carico assiale equivalente Peq', 'Equivalent axial load Peq'), kN(g.Peq), 'kN', '|P| + 2M/R · ' + t('evento: ', 'event: ') + esc(evn(g.ev))],
+    [t('Massa del tubo mb', 'Tube mass mb'), fmt(r.mb, 1), 'kg', 'ρ · 2πRt · L'],
+    ['#', t('Sforzo e margini', 'Stress and margins')],
+    [t('Sforzo di membrana σ', 'Membrane stress σ'), MPa(g.s), 'MPa', 'Peq / (2πRt), ' + t('a carico limite', 'at limit load')],
+    [t('Margine a snervamento', 'Yield margin of safety'), msF(r.MSy), '', o.brittle ? t('un composito non si snerva: conta la rottura', 'a composite does not yield: the ultimate check governs') : 'σy / (' + fz(o.fsY, 3) + ' · σ) − 1, ' + fz(o.fsY, 3) + ' = KQ·KP·KM·FOSY', msC(r.MSy).trim()],
+    [t('Margine a rottura', 'Ultimate margin of safety'), msF(r.MSu), '', 'σu / (' + fz(o.fsU, 3) + ' · σ) − 1, ' + fz(o.fsU, 3) + ' = KQ·KP·KM·FOSU', 'key' + msC(r.MSu)],
+    ['#', t('Spessore minimo, con R fisso', 'Minimum thickness, R fixed')],
+    tmRow(r, 'y', 'per MS = 0 a snervamento', 'for MS = 0 at yield'),
+    tmRow(r, 'u', 'per MS = 0 a rottura', 'for MS = 0 at ultimate'),
+  ]));
+  $('ev-car').innerHTML = r.evs.length < 2 ? '' : '<table class="tbl"><thead><tr><th>' + t('Evento di volo', 'Flight event') + '</th><th class="num">nx, g</th><th class="num">ny, g</th><th class="num">σ, MPa</th><th class="num">' + t('MS rottura', 'MS ultimate') + '</th></tr></thead><tbody>' +
+    r.evs.map(x => '<tr' + (x.ev === g.ev ? ' class="gov"' : '') + '><td>' + esc(evn(x.ev)) + '</td><td class="num">' + (x.ev.lo === x.ev.hi ? pm(x.ev.lo) : pm(x.ev.lo) + ' / ' + pm(x.ev.hi)) + '</td><td class="num">±' + fz(x.ev.lat) + '</td><td class="num">' + MPa(x.s) + '</td><td class="num' + (x.MSu < 0 ? ' am' : '') + '">' + msF(x.MSu) + '</td></tr>').join('') + '</tbody></table>';
+  const tmin = Math.max(r.tm.y || 0, r.tm.u || 0);
+  if (!tmin) { $('ch-car').innerHTML = ''; return; }
+  const lo = 0.35 * Math.min(tmin, r.t), hi = Math.max(2.6 * tmin, 1.3 * r.t), xs = [], y1 = [], y2 = [];
+  for (let j = 0; j <= 80; j++) { const x = lo + (hi - lo) * j / 80, c = calc(o, x); xs.push(x * 1e3); y1.push(c.MSy); y2.push(c.MSu); }
+  const mk = [{ x: r.t * 1e3, label: mine(r), color: K.C.gr }];
+  if (Math.abs(tmin - r.t) > 0.08 * (hi - lo)) mk.push({ x: tmin * 1e3, label: 'MS = 0', color: K.C.ic });
+  K.chart('ch-car', { title: t('Margini e spessore', 'Margins and thickness'), x: xs, xName: 't', xLabel: t('spessore t, mm', 'thickness t, mm'), yLabel: 'MS',
+    series: [{ name: t('snervamento', 'yield'), y: y1, color: K.C.cy }, { name: t('rottura', 'ultimate'), y: y2, color: K.C.vi }], marks: mk, yFmt: v => fmt(v, 2) });
+}
+
+function renderFre(o, r) {
+  const dl = o.frlV ? r.lat.f / o.frlV - 1 : null, da = o.fraV ? r.ax.f / o.fraV - 1 : null;
+  const req = (lbl, d, f, req) => [lbl + ' ≥ ' + fz(req) + ' Hz', pct(d), '', d >= 0 ? t('rispettato', 'met') : t('non rispettato: mancano ', 'not met: short by ') + fmt(req - f, 1) + ' Hz', d < 0 ? 'warn' : ''];
+  const rm = x => x == null ? '—' : x === 0 ? '—' : fmt(x, 3);
+  K.rows('o-fre', sizeRows(r).concat([
+    ['#', t('Frequenze proprie', 'Natural frequencies')],
+    [t('Prima laterale', 'First lateral'), fmt(r.lat.f, 1), 'Hz', t('flessione e taglio; senza taglio ', 'bending and shear; bending only ') + fmt(r.latB.f, 1) + ' Hz', 'key' + (dl != null && dl < 0 ? ' warn' : '')],
+    [t('Prima assiale', 'First axial'), fmt(r.ax.f, 1), 'Hz', 'k = EA/' + (o.h < o.L ? 'hcg' : 'L') + t(', un terzo della massa del tubo', ', one third of the tube mass'), 'key' + (da != null && da < 0 ? ' warn' : '')],
+    o.frlV || o.fraV ? ['#', t('Requisiti', 'Requirements') + (o.lv !== 'my' && !(K.given('frl') && K.given('fra')) ? ' · ' + o.LVo.n : '')] : null,
+    o.frlV ? req(t('Laterale', 'Lateral'), dl, r.lat.f, o.frlV) : null,
+    o.fraV ? req(t('Assiale', 'Axial'), da, r.ax.f, o.fraV) : null,
+    o.frlV || o.fraV ? ['#', t('Per rispettarli', 'To meet them')] : null,
+    o.frlV ? tmRow(r, 'fl', 'Spessore minimo, laterale', 'Minimum thickness, lateral', t('con R = ', 'with R = ') + fz(o.R) + ' m') : null,
+    o.fraV ? tmRow(r, 'fa', 'Spessore minimo, assiale', 'Minimum thickness, axial', t('con R = ', 'with R = ') + fz(o.R) + ' m') : null,
+    o.frlV ? [t('Raggio minimo, laterale', 'Minimum radius, lateral'), rm(r.Rm.fl), r.Rm.fl ? 'm' : '', r.Rm.fl == null ? t('nessun raggio fino a 100 m basta', 'no radius up to 100 m is enough') : t('con t = ', 'with t = ') + mm(r.t) + ' mm'] : null,
+    o.fraV ? [t('Raggio minimo, assiale', 'Minimum radius, axial'), rm(r.Rm.fa), r.Rm.fa ? 'm' : '', r.Rm.fa == null ? t('nessun raggio fino a 100 m basta', 'no radius up to 100 m is enough') : t('con t = ', 'with t = ') + mm(r.t) + ' mm'] : null,
+    ['#', t('Dati del modello', 'Model data')],
+    [t('Momento d\'inerzia I = πR³t', 'Second moment of area I = πR³t'), K.sig(r.I, 4), 'm⁴'],
+    [t('Massa del tubo mb', 'Tube mass mb'), fmt(r.mb, 1), 'kg', t('in moto con la massa: ', 'moving with the mass: ') + fz(r.lat.c, 3) + '·mb ' + t('(laterale)', '(lateral)')],
+    [t('Rigidezza laterale nel baricentro', 'Lateral stiffness at the CG'), fmt(r.lat.k / 1e6, 2), 'MN/m', t('il taglio toglie il ', 'shear takes off ') + fmt((1 - r.lat.k / r.latB.k) * 100, 0) + ' %'],
+  ]));
+  const tl = r.tm.fl, ref = tl ? [r.t, tl] : [r.t], lo = 0.3 * Math.min(...ref), hi = 2.2 * Math.max(...ref), xs = [], ys = [];
+  for (let j = 0; j <= 60; j++) { const x = lo + (hi - lo) * j / 60; xs.push(x * 1e3); ys.push(calc(o, x).lat.f); }
+  const se = [{ name: t('laterale', 'lateral'), y: ys, color: K.C.cy }];
+  if (o.frlV) se.push({ name: t('requisito', 'requirement'), y: xs.map(() => o.frlV), color: K.C.ic, dash: true });
+  const mk = [{ x: r.t * 1e3, label: mine(r), color: K.C.gr }];
+  if (tl && Math.abs(tl - r.t) > 0.08 * (hi - lo)) mk.push({ x: tl * 1e3, label: t('minimo', 'minimum'), color: K.C.ic });
+  K.chart('ch-fre', { title: t('Frequenza laterale e spessore', 'Lateral frequency and thickness'), x: xs, xName: 't', xLabel: t('spessore t, mm', 'thickness t, mm'), yLabel: 'Hz', unit: 'Hz', series: se, marks: mk, yMin: 0, yFmt: v => fmt(v, v < 10 ? 1 : 0) });
+}
+
+function renderIns(o, r) {
+  const g = r.gB, e = r.gE, comp = g && g.Peq > 0, compE = e && e.P > 0;
+  const kNote = o.kk != null ? t('scritto da te', 'typed by you') : o.bc !== 'free' ? '' : o.h > o.L ? t('cima libera, carico nel baricentro ', 'free top, load at the CG, ') + fz(o.h - o.L) + t(' m sopra il tubo', ' m above the tube') : o.h < o.L ? t('cima libera, carico a quota hcg', 'free top, load at height hcg') : t('cima libera', 'free top');
+  K.rows('o-ins', sizeRows(r).concat([
+    ['#', t('Guscio cilindrico, NASA SP-8007', 'Cylindrical shell, NASA SP-8007')],
+    ['R/t', fmt(r.rt, 0), '', r.rt > 1500 ? t('fuori dal campo della formula (R/t < 1500)', 'outside the formula range (R/t < 1500)') : '', r.rt > 1500 ? 'warn' : ''],
+    [t('Riduzione per le imperfezioni γ', 'Knockdown factor γ'), fmt(r.gam, 3), '', 'γ = 1 − 0,901·(1 − e^(−φ)), φ = √(R/t)/16 = ' + fmt(r.phi, 3)],
+    [t('Carico critico classico Pcl', 'Classical buckling load Pcl'), kN(r.Pcl), 'kN', '2πEt² / √(3(1 − ν²))'],
+    [t('Carico ammissibile', 'Allowable load'), kN(r.Pall), 'kN', r.plast ? t('γ·σcl supera lo snervamento: il limite è σy·A', 'γ·σcl is above yield: the limit is σy·A') : 'γ·Pcl'],
+    comp ? [t('Carico di progetto', 'Design load'), kN(o.fsU * g.Peq), 'kN', fz(o.fsU, 3) + ' · Peq, Peq = ' + kN(g.Peq) + ' kN · ' + esc(evn(g.ev))] : null,
+    [t('Margine del guscio', 'Shell margin of safety'), msF(r.MSsh), '', comp ? 'γ·Pcl / (' + fz(o.fsU, 3) + ' · Peq) − 1' : t('nessuna compressione alla base', 'no compression at the base'), 'key' + msC(r.MSsh)],
+    ['#', t('Colonna di Eulero', 'Euler column')],
+    [t('Fattore di lunghezza K', 'Effective length factor K'), fz(r.K, 3), '', kNote],
+    [t('Carico critico PE', 'Critical load PE'), kN(r.PE), 'kN', 'π²EI / (K·L)²'],
+    compE ? [t('Carico di progetto', 'Design load'), kN(o.fsU * e.P), 'kN', fz(o.fsU, 3) + ' · P · ' + esc(evn(e.ev))] : null,
+    [t('Margine della colonna', 'Column margin of safety'), msF(r.MSE), '', compE ? '' : t('nessuna compressione', 'no compression'), msC(r.MSE).trim()],
+    ['#', t('Spessore minimo, con R fisso', 'Minimum thickness, R fixed')],
+    tmRow(r, 'sh', 'per il guscio', 'for the shell'),
+    tmRow(r, 'eu', 'per la colonna', 'for the column'),
+  ]));
+  const xs = [], ys = [];
+  for (let x = 10; x <= 1500; x += 10) { xs.push(x); ys.push(knock(x).g); }
+  K.chart('ch-ins', { title: t('Riduzione γ di NASA SP-8007', 'NASA SP-8007 knockdown γ'), x: xs, xName: 'R/t', xLabel: 'R/t', yLabel: 'γ', series: [{ name: 'γ', y: ys, color: K.C.cy }],
+    marks: r.rt <= 1500 ? [{ x: r.rt, label: mine(r), color: K.C.gr }] : [], yMin: 0, yMax: 1, yFmt: v => fmt(v, 2) });
+}
+
+function renderMat(o) {
+  drawBars(); drawTable();
+  if (!o) { K.rows('o-mat', []); return; }
+  if (o.dT == null) { $('o-mat').innerHTML = '<h3>' + t('Dilatazione termica', 'Thermal expansion') + '</h3><p class="note">' + t('Scrivi il salto di temperatura ΔT per vedere allungamento e sforzo termico.', 'Type the temperature change ΔT to see the elongation and the thermal stress.') + '</p>'; return; }
+  const dL = o.al * o.L * o.dT, s1 = o.E * o.al * o.dT, s2 = s1 / (1 - o.nu), a1 = Math.abs(s1);
+  const my = MS(o.sy, o.fsTY, a1), mu = MS(o.su, o.fsTU, a1);
+  K.rows('o-mat', [
+    ['#', t('Dilatazione termica', 'Thermal expansion') + ' · ' + (o.mt && !K.given('al') && !K.given('E') ? esc(mname(o.mt)) : t('i tuoi valori', 'your values'))],
+    [t('Allungamento libero ΔL', 'Free elongation ΔL'), fmt(dL * 1e3, 3), 'mm', 'α · L · ΔT, L = ' + fz(o.L) + ' m'],
+    [t('Sforzo con il tubo bloccato', 'Stress, tube fully restrained'), MPa(a1), 'MPa', (s1 > 0 ? t('compressione', 'compression') + ' · ' : s1 < 0 ? t('trazione', 'tension') + ' · ' : '') + 'E · α · ΔT', 'key'],
+    [t('Lastra bloccata in due direzioni', 'Plate restrained in two directions'), MPa(Math.abs(s2)), 'MPa', 'E · α · ΔT / (1 − ν)'],
+    [t('Margine a snervamento', 'Yield margin of safety'), msF(my), '', 'σy / (' + fz(o.fsTY, 3) + ' · σ) − 1, ' + t('senza KQ', 'without KQ'), msC(my).trim()],
+    [t('Margine a rottura', 'Ultimate margin of safety'), msF(mu), '', 'σu / (' + fz(o.fsTU, 3) + ' · σ) − 1', msC(mu).trim()],
+  ]);
+}
+
+/* ---------- materiali: barre e tabella ---------- */
+let BAR = 'er';
+function drawBars() {
+  const host = $('bars'); if (!host || host.offsetParent === null) return;
+  const W = Math.max(280, host.clientWidth - 16), nar = W < 480, sel = $('mat').value, er = BAR === 'er';
+  const val = m => er ? m.E * 1e3 / m.rho : m.sy * 1e3 / m.rho;
+  const items = MAT.slice().sort((a, b) => val(b) - val(a)), vmax = val(items[0]);
+  const rh = 26, lw = nar ? 152 : 180, bw = W - lw - 52, H = items.length * rh + 4;
+  const ttl = er ? t('Rigidezza specifica E/ρ', 'Specific stiffness E/ρ') : t('Resistenza specifica σy/ρ', 'Specific strength σy/ρ');
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="group" aria-label="' + esc(ttl) + '">';
+  items.forEach((m, j) => {
+    const y = 2 + j * rh, on = m.k === sel, v = val(m), w = Math.max(2, bw * v / vmax), name = mname(m), vs = fmt(v, er ? 1 : 0);
+    s += '<g class="b' + (on ? ' on' : '') + '" data-k="' + m.k + '" tabindex="0" role="button" aria-pressed="' + on + '" aria-label="' + esc(name + ': ' + vs) + '">' +
+      '<rect class="hit" x="0.5" y="' + (y + 0.5) + '" width="' + (W - 1) + '" height="' + (rh - 1) + '" rx="4" fill="transparent"/>' +
+      '<text x="' + (lw - 10) + '" y="' + (y + rh / 2 + 4.5) + '" text-anchor="end">' + esc(name) + '</text>' +
+      '<rect x="' + lw + '" y="' + (y + 6) + '" width="' + w.toFixed(1) + '" height="' + (rh - 12) + '" rx="2" fill="#35d4f2" opacity="' + (on ? 1 : 0.5) + '"/>' +
+      '<text class="v" x="' + (lw + w + 6).toFixed(1) + '" y="' + (y + rh / 2 + 4.5) + '">' + vs + '</text></g>';
+  });
+  host.innerHTML = '<div class="ttl"><b>' + ttl + '</b><span>' + (er ? 'MN·m/kg' : 'kN·m/kg') + '</span><span class="tg">' +
+    '<button type="button" class="btn sm" data-b="er" aria-pressed="' + er + '">E/ρ</button><button type="button" class="btn sm" data-b="sr" aria-pressed="' + !er + '">σy/ρ</button></span></div>' + s + '</svg>';
+}
+function drawTable() {
+  const sel = $('mat').value, th = (a, u) => '<th class="num">' + a + (u ? '<small>' + u + '</small>' : '') + '</th>';
+  $('tbl').innerHTML = '<thead><tr><th>' + t('Materiale', 'Material') + '</th>' + th('E', 'GPa') + th('ν', '') + th('ρ', 'kg/m³') + th('σy', 'MPa') + th('σu', 'MPa') + th('α', '10⁻⁶/K') + th('E/ρ', 'MN·m/kg') + th('σy/ρ', 'kN·m/kg') + '</tr></thead><tbody>' +
+    MAT.map(m => '<tr data-k="' + m.k + '"' + (m.k === sel ? ' class="sel"' : '') + '><td><button type="button" class="lk" aria-pressed="' + (m.k === sel) + '">' + esc(mname(m)) + '</button></td><td class="num">' + fz(m.E, 1) + '</td><td class="num">' + fz(m.nu, 3) + '</td><td class="num">' + fz(m.rho, 0) + '</td><td class="num">' + fz(m.sy, 0) + '</td><td class="num">' + fz(m.su, 0) + '</td><td class="num">' + fz(m.al, 1) + '</td><td class="num">' + fmt(m.E * 1e3 / m.rho, 1) + '</td><td class="num">' + fmt(m.sy * 1e3 / m.rho, 0) + '</td></tr>').join('') + '</tbody>';
+}
+const PROPS = ['E', 'nu', 'rho', 'sy', 'su', 'al'];
+let prevMat = '';
+function pickMat(k) {
+  if (k === 'my') { const p = MAT.find(m => m.k === prevMat); if (p) PROPS.forEach(id => { if (!K.given(id)) $(id).value = fz(p[id]); }); $('mp').open = true; }
+  else PROPS.forEach(id => { $(id).value = ''; });
+  $('mat').value = k; prevMat = k; run();
+}
+
+/* ---------- schema dei carichi (2D) ---------- */
+function body(o) {                         // dove sta il resto del satellite (quote in m)
+  const R = o.R, L = o.L, h = o.h, w = 2.3 * R;
+  if (h >= L) { const H = Math.max(2 * (h - L), 0.6 * R); return { y0: L, y1: L + H, w, att: L }; }
+  const H = Math.min(Math.max(0.6 * R, 0.45 * L), 2 * h);
+  return { y0: h - H / 2, y1: h + H / 2, w, att: h };
+}
+function drawLoads() {
+  const host = $('v2'); if (host.hidden) return;
+  const W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const o = LAST && LAST.o, r = LAST && LAST.r, g = r && r.gS;
+  const head = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="';
+  if (!g) { host.innerHTML = head + esc(t('Schema dei carichi', 'Load diagram')) + '"><text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" fill="#85919d" font-size="13">' + esc(o ? t('Scrivi i fattori di carico o scegli un lanciatore.', 'Type the load factors or pick a launcher.') : t('Scrivi raggio, lunghezza e massa.', 'Type radius, length and mass.')) + '</text></svg>'; return; }
+  const nar = W < 560, fs = nar ? 11.5 : 12.5, CY = '#35d4f2', GR = '#58e07f', IC = '#cfe3f5', T2 = '#9aa5b1', T3 = '#85919d';
+  const tx = (x, y, s, c, a) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" fill="' + c + '" font-size="' + fs + '"' + (a ? ' text-anchor="' + a + '"' : '') + '>' + esc(s) + '</text>';
+  const bd = body(o), top = Math.max(o.L, bd.y1);
+  const yG = H - (nar ? 102 : 112), y0 = nar ? 62 : 50;
+  const sc = Math.min((yG - y0) / top, (nar ? 0.36 : 0.26) * W / bd.w), xc = Math.round(W * (nar ? 0.32 : 0.3));
+  const Y = z => yG - z * sc, rp = Math.max(o.R * sc, 6), bw = Math.max(bd.w * sc, 2.3 * rp);
+  let s = head + esc(t('Schema dei carichi: ', 'Load diagram: ') + evn(g.ev)) + '"><defs>' + [['ldc', CY], ['ldg', GR]].map(([id, c]) => '<marker id="' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="' + c + '"/></marker>').join('') + '</defs>';
+  // satellite (dietro), tubo e interfaccia incastrata
+  s += '<rect x="' + (xc - bw / 2) + '" y="' + Y(bd.y1) + '" width="' + bw + '" height="' + (bd.y1 - bd.y0) * sc + '" fill="#0e141c" stroke="' + T3 + '" stroke-dasharray="4 3"/>';
+  s += '<rect x="' + (xc - rp) + '" y="' + Y(o.L) + '" width="' + 2 * rp + '" height="' + o.L * sc + '" fill="#121a24" fill-opacity=".85" stroke="' + IC + '" stroke-width="1.5"/>';
+  const gw = Math.max(1.7 * rp, bw / 2) + 12;
+  s += '<line x1="' + (xc - gw) + '" x2="' + (xc + gw) + '" y1="' + yG + '" y2="' + yG + '" stroke="' + T2 + '" stroke-width="2"/>';
+  for (let x = xc - gw + 8; x <= xc + gw; x += 8) s += '<line x1="' + x + '" y1="' + (yG + 2) + '" x2="' + (x - 7) + '" y2="' + (yG + 9) + '" stroke="#414b57"/>';
+  // baricentro e carichi d'inerzia
+  const yc = Y(o.h), al = Math.max(34, Math.min(64, (yG - y0) * 0.16)), dn = g.nx <= 0, lx = xc + bw / 2 + 30;
+  s += '<line x1="' + xc + '" y1="' + yc + '" x2="' + xc + '" y2="' + (yc + (dn ? al : -al)) + '" stroke="' + CY + '" stroke-width="2" marker-end="url(#ldc)"/>';
+  s += '<line x1="' + xc + '" y1="' + yc + '" x2="' + lx + '" y2="' + yc + '" stroke="' + CY + '" stroke-width="2" marker-end="url(#ldc)"/>';
+  s += '<circle cx="' + xc + '" cy="' + yc + '" r="5" fill="' + GR + '" stroke="#000" stroke-width="2"/>';
+  s += tx(lx + 6, yc + 4, 'ny ' + fz(g.lat) + ' g', CY) + tx(xc + 8, yc + (dn ? al - 2 : -al + 10), 'nx ' + pm(g.nx) + ' g', CY);
+  s += tx(lx + 6, yc - 12, t('baricentro, ', 'CG, ') + fz(o.M, 0) + ' kg', T2);
+  if (!nar) {
+    const rx = xc - gw - 12;
+    s += tx(rx, yG - 46, t('alla base', 'at the base'), T3, 'end') + tx(rx, yG - 28, 'P ' + kN(Math.abs(g.P)) + ' kN', GR, 'end') + tx(rx, yG - 10, 'M ' + fmt(g.M / 1e3, 1) + ' kN·m', GR, 'end');
+  }
+  // sforzo lungo il diametro della base (trazione in su); il carico laterale spinge verso destra
+  const sL = (-g.P + 2 * g.M / o.R) / r.A, sR = -(g.P + 2 * g.M / o.R) / r.A;
+  const sp = Math.max(2 * rp, Math.min(W * (nar ? 0.5 : 0.36), 280)), x0 = xc - sp / 2, x1 = xc + sp / 2;
+  const yz = yG + (nar ? 56 : 58), am = nar ? 24 : 30, k = am / Math.max(Math.abs(sL), Math.abs(sR), 1);
+  s += tx(x0, yG + 22, t('σ alla base, carico limite', 'σ at the base, limit load'), T3);
+  s += '<line x1="' + (x0 - 8) + '" x2="' + (x1 + 8) + '" y1="' + yz + '" y2="' + yz + '" stroke="#414b57"/>';
+  s += '<path d="M' + x0 + ' ' + yz + 'L' + x0 + ' ' + (yz - k * sL).toFixed(1) + 'L' + x1 + ' ' + (yz - k * sR).toFixed(1) + 'L' + x1 + ' ' + yz + 'Z" fill="' + GR + '" fill-opacity=".14" stroke="' + GR + '" stroke-width="1.5"/>';
+  const lbl = v => (v > 0 ? '+' : '') + fmt(v / 1e6, 1) + ' MPa';
+  s += tx(x0, yz - k * sL + (sL >= 0 ? -6 : 15), lbl(sL), GR) + tx(x1, yz - k * sR + (sR >= 0 ? -6 : 15), lbl(sR), GR, 'end');
+  host.innerHTML = s + '</svg><div class="vt">' + t('Evento che dimensiona: ', 'Sizing event: ') + '<b>' + esc((o.lv !== 'my' && !o.typed ? o.LVo.n + ' · ' : '') + evn(g.ev)) + '</b></div>';
+}
+
+/* ---------- vista 3D: tubo, adattatore, satellite e modo di vibrare o di instabilità ---------- */
+let S3 = null;
+const V3 = { fm: 'lat', bm: null, bv: 'sh', ph: 0, key: '', asp: 0, anim: false, shell: false, F: null, W: null, sw: null };
+function gridGeo(nr, nh) {                 // tubo: nr colonne chiuse sul giro (senza cucitura) × nh+1 anelli
+  const idx = [], cs = new Float64Array(nr * 3);
+  for (let i = 0; i < nr; i++) { const a = 2 * PI * i / nr; cs[i * 3] = Math.cos(a); cs[i * 3 + 1] = Math.sin(a); cs[i * 3 + 2] = a; }
+  for (let j = 0; j < nh; j++) for (let i = 0; i < nr; i++) {
+    const a = j * nr + i, b = j * nr + (i + 1) % nr, c = (j + 1) * nr + i, d = (j + 1) * nr + (i + 1) % nr;
+    idx.push(a, b, d, a, d, c);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nr * (nh + 1) * 3), 3)); g.setIndex(idx);
+  g.userData = { nr, nh, cs }; return g;
+}
+function make3() {
+  const S = K.scene3(THREE, 'v3', { fov: 30, ambient: 0.5 });
+  S.root = new THREE.Group(); S.scene.add(S.root);
+  const fill = new THREE.DirectionalLight(0xc6dcff, 0.5); fill.position.set(-4, 1.5, -3); S.scene.add(fill);
+  S.mat = new THREE.MeshStandardMaterial({ color: 0xb4c2cf, metalness: 0.35, roughness: 0.45, side: THREE.DoubleSide });
+  S.lo = new THREE.Mesh(gridGeo(72, 40), S.mat);
+  S.lines = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x1f2b38, transparent: true, opacity: 0.7 }));
+  S.lines.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(1968 * 3), 3));
+  S.ghost = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x85919d, transparent: true, opacity: 0.35 }));
+  S.adapter = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.45, 0.5, 72, 1, true), new THREE.MeshStandardMaterial({ color: 0x3b4450, metalness: 0.45, roughness: 0.6, side: THREE.DoubleSide }));
+  S.ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 8, 96), new THREE.MeshStandardMaterial({ color: 0x8d98a5, metalness: 0.5, roughness: 0.4 }));
+  S.ring.rotation.x = PI / 2;
+  S.att = new THREE.Group();
+  S.box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x1a2330, transparent: true, opacity: 0.55, roughness: 0.85, depthWrite: false }));
+  S.edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), new THREE.LineBasicMaterial({ color: 0xcfe3f5, transparent: true, opacity: 0.6 }));
+  S.cg = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), new THREE.MeshBasicMaterial({ color: 0x58e07f, depthTest: false }));
+  S.cg.renderOrder = 10;
+  S.att.add(S.box, S.edges, S.cg);
+  S.root.add(S.lo, S.lines, S.ghost, S.adapter, S.ring, S.att);
+  S.cv.setAttribute('role', 'img');
+  S.onFrame(tick3);
+  return S;
+}
+function place3(o) {                       // parti ferme e dimensioni (cambiano con R, L, hcg)
+  const R = o.R, L = o.L, bd = body(o), Sz = Math.max(L, o.h, 2 * R);
+  S3.adapter.scale.set(R, R, R); S3.adapter.position.y = -0.25 * R;
+  S3.ring.scale.set(R, R, R);
+  S3.box.scale.set(bd.w, bd.y1 - bd.y0, bd.w); S3.box.position.set(0, (bd.y0 + bd.y1) / 2 - bd.att, 0);
+  S3.edges.scale.copy(S3.box.scale); S3.edges.position.copy(S3.box.position);
+  S3.cg.scale.setScalar(0.03 * Sz); S3.cg.position.set(0, o.h - bd.att, 0);
+  const gp = [], ring = z => { for (let i = 0; i < 72; i++) { const a = 2 * PI * i / 72, b = 2 * PI * (i + 1) / 72; gp.push(R * Math.cos(a), z, -R * Math.sin(a), R * Math.cos(b), z, -R * Math.sin(b)); } };
+  ring(0); ring(L);
+  for (let k = 0; k < 12; k++) { const a = 2 * PI * k / 12; gp.push(R * Math.cos(a), 0, -R * Math.sin(a), R * Math.cos(a), L, -R * Math.sin(a)); }
+  S3.ghost.geometry.dispose(); S3.ghost.geometry = new THREE.BufferGeometry(); S3.ghost.geometry.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3));
+}
+function frame3(o) {
+  const bd = body(o), top = Math.max(o.L, bd.y1), bot = -0.5 * o.R, cy = (top + bot) / 2, Sz = Math.max(o.L, o.h, 2 * o.R);
+  const hh = (top - bot) / 2 + 0.06 * Sz, hw = Math.max(1.45 * o.R, bd.w / 2) + 0.12 * Sz;
+  const cam = S3.camera, tf = Math.tan(cam.fov * PI / 360), asp = cam.aspect || 1;
+  const d = 1.08 * Math.max(hh / tf, hw / (tf * asp)) + 1.2 * o.R, az = 0.42, el = 0.2;
+  cam.position.set(d * Math.sin(az) * Math.cos(el), cy + d * Math.sin(el), d * Math.cos(az) * Math.cos(el));
+  cam.near = d / 200; cam.far = d * 20; cam.updateProjectionMatrix();
+  if (S3.controls) { S3.controls.target.set(0, cy, 0); S3.controls.minDistance = d * 0.3; S3.controls.maxDistance = d * 3; S3.controls.update(); } else cam.lookAt(0, cy, 0);
+}
+function colShape(o, r) {                  // forma della colonna instabile, spostamento massimo 1
+  const L = o.L, h = o.h; let w, d;
+  if (o.bc === 'free') { const a = Math.min(h, L), k = PI / (r.K * L); w = z => 1 - Math.cos(k * Math.min(z, a)) + (z > a ? k * Math.sin(k * a) * (z - a) : 0); d = z => k * Math.sin(k * Math.min(z, a)); }
+  else if (o.bc === 'pp') { w = z => Math.sin(PI * z / L); d = z => PI / L * Math.cos(PI * z / L); }
+  else if (o.bc === 'ff') { w = z => 1 - Math.cos(2 * PI * z / L); d = z => 2 * PI / L * Math.sin(2 * PI * z / L); }
+  else { const kL = 4.493409, k = kL / L; w = z => Math.sin(k * z) - k * z + kL * (1 - Math.cos(k * z)); d = z => k * Math.cos(k * z) - k + kL * k * Math.sin(k * z); }
+  const at = body(o).att; let mx = Math.abs(w(at) + d(at) * (h - at));
+  for (let j = 0; j <= 60; j++) mx = Math.max(mx, Math.abs(w(L * j / 60)));
+  return { w: z => w(z) / mx, d: z => d(z) / mx };
+}
+function shellWave(o, tt) {                // disegno indicativo a diamanti con la semionda classica λ = π√(Rt)/(12(1−ν²))^¼
+  const R = o.R, L = o.L, lam = PI * Math.sqrt(R * tt) / Math.pow(12 * (1 - o.nu * o.nu), 0.25);
+  const Lz = Math.max(2.4 * lam, L / 20), N = Math.max(8, Math.min(40, Math.round(2 * PI * R / (1.5 * Lz)))), B = 0.03 * R;
+  return { lam, Lz, N, W: (th, z) => { const e = Math.sin(PI * z / L); return -B * e * e * 0.5 * (Math.cos(2 * PI * z / Lz) + Math.cos(N * th)); } };
+}
+function setShape() {                      // deformata del modo mostrato (spostamenti in m, già ingranditi)
+  const { o, r, m } = LAST, Sz = Math.max(o.L, o.h, 2 * o.R);
+  V3.shell = false; V3.W = null; V3.anim = false;
+  if (m === 'fre') {
+    if (V3.fm === 'lat') { const sh = r.lat.S, k = 0.11 * Sz / sh.wh; V3.F = { u: z => k * sh.w(z), psi: z => k * sh.th(z), v: Z0, dr: Z0 }; }
+    else { const a = Math.min(o.h, o.L), A = 0.07 * o.L; V3.F = { u: Z0, psi: Z0, v: z => -A * Math.min(z, a) / a, dr: z => z < a ? o.nu * A / a * o.R : 0 }; }
+    V3.anim = !CALM;
+  } else if (V3.bv === 'col') {
+    const c = colShape(o, r), k = 0.1 * Sz; V3.F = { u: z => k * c.w(z), psi: z => k * c.d(z), v: Z0, dr: Z0 };
+  } else {
+    V3.sw = shellWave(o, r.t); V3.shell = true; V3.W = V3.sw.W; V3.F = { u: Z0, psi: Z0, v: Z0, dr: Z0 };
+  }
+}
+function deform(mesh, R, L, F, s, Wf) {
+  const g = mesh.geometry, nr = g.userData.nr, nh = g.userData.nh, cs = g.userData.cs, p = g.attributes.position.array;
+  let q = 0;
+  for (let j = 0; j <= nh; j++) {
+    const z = L * j / nh, u = s * F.u(z), ps = s * F.psi(z), v = s * F.v(z), dr = s * F.dr(z), c = Math.cos(ps), sn = Math.sin(ps);
+    for (let i = 0; i < nr; i++) {
+      const rr = R + dr + (Wf ? Wf(cs[i * 3 + 2], z) : 0), x0 = rr * cs[i * 3];
+      p[q++] = u + x0 * c; p[q++] = z + v - x0 * sn; p[q++] = -rr * cs[i * 3 + 1];
+    }
+  }
+  g.attributes.position.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingSphere();
+}
+function apply3(s) {
+  const o = LAST.o, F = V3.F, R = o.R, L = o.L;
+  if (V3.shell) deform(S3.hi, R, L, F, 1, V3.W);
+  else {
+    deform(S3.lo, R, L, F, s, null);
+    const p = S3.lines.geometry.attributes.position.array; let q = 0;
+    const put = (a, z) => { const u = s * F.u(z), ps = s * F.psi(z), v = s * F.v(z), rr = (R + s * F.dr(z)) * 1.004, x0 = rr * Math.cos(a); p[q++] = u + x0 * Math.cos(ps); p[q++] = z + v - x0 * Math.sin(ps); p[q++] = -rr * Math.sin(a); };
+    for (let k = 0; k <= 6; k++) { const z = L * k / 6; for (let i = 0; i < 72; i++) { put(2 * PI * i / 72, z); put(2 * PI * (i + 1) / 72, z); } }
+    for (let k = 0; k < 12; k++) { const a = 2 * PI * k / 12; for (let j = 0; j < 40; j++) { put(a, L * j / 40); put(a, L * (j + 1) / 40); } }
+    S3.lines.geometry.attributes.position.needsUpdate = true; S3.lines.geometry.computeBoundingSphere();
+  }
+  const a = body(o).att, sh = V3.shell ? 0 : s;
+  S3.att.position.set(sh * F.u(a), a + sh * F.v(a), 0); S3.att.rotation.z = -sh * F.psi(a);
+}
+function tick3(dt) {
+  if (!LAST || !S3 || !S3.root.visible) return;
+  if (S3.camera.aspect !== V3.asp) { V3.asp = S3.camera.aspect; frame3(LAST.o); }
+  if (V3.anim && LAST.m === 'fre') { V3.ph += dt * 2 * PI / 1.8; apply3(Math.sin(V3.ph)); }
+}
+function tools() {
+  const m = tabs.get(), b = (k, on, it, en) => '<button type="button" class="btn sm" data-k="' + k + '" aria-pressed="' + on + '">' + t(it, en) + '</button>';
+  $('tl').innerHTML = !LAST ? '' : m === 'fre' ? b('lat', V3.fm === 'lat', 'laterale', 'lateral') + b('ax', V3.fm === 'ax', 'assiale', 'axial')
+    : b('sh', V3.bv === 'sh', 'guscio', 'shell') + b('col', V3.bv === 'col', 'colonna', 'column');
+}
+function caption3() {
+  const cap = $('cap');
+  if (!LAST) { cap.innerHTML = '<span>' + t('Scrivi raggio, lunghezza e massa.', 'Type radius, length and mass.') + '</span>'; return ''; }
+  const { r, m } = LAST, cg = '<span style="color:var(--gr)"><i class="dot"></i>' + t('baricentro', 'CG') + '</span>', gh = '<span style="color:var(--tx3)"><i></i>' + t('forma a riposo', 'shape at rest') + '</span>';
+  let lead, rest;
+  if (m === 'fre') { lead = (V3.fm === 'lat' ? t('primo modo laterale, ', 'first lateral mode, ') + fmt(r.lat.f, 1) : t('primo modo assiale, ', 'first axial mode, ') + fmt(r.ax.f, 1)) + ' Hz'; rest = cg + gh + '<span>' + (CALM ? t('ampiezza ingrandita', 'amplitude exaggerated') : t('rallentato, ampiezza ingrandita', 'slowed down, amplitude exaggerated')) + '</span>'; }
+  else if (V3.bv === 'col') { lead = t('colonna: K ', 'column: K ') + fz(r.K, 2) + ', PE ' + kN(r.PE) + ' kN'; rest = cg + gh + '<span>' + t('ampiezza ingrandita', 'amplitude exaggerated') + '</span>'; }
+  else { lead = t('guscio: γ·Pcl ', 'shell: γ·Pcl ') + kN(r.Pall) + ' kN'; rest = '<span>' + t('disegno indicativo a diamanti, semionda classica ', 'indicative diamond pattern, classical half-wave ') + fmt(V3.sw.lam * 1e3, 0) + ' mm</span>'; }
+  cap.innerHTML = '<span style="color:var(--tx)">' + lead + '</span>' + rest;
+  return lead;
+}
+function view3() {
+  const host = $('v3'); if (host.hidden) return;
+  if (LAST) { V3.bv = V3.bm || (LAST.r.MSE < LAST.r.MSsh ? 'col' : 'sh'); setShape(); }
+  tools(); const lead = caption3();
+  if (NO3D) { side2D(); return; }
+  if (!LAST) { if (S3) S3.root.visible = false; return; }
+  if (!S3) S3 = make3();
+  const o = LAST.o; S3.root.visible = true;
+  const key = o.R + '|' + o.L + '|' + o.h;
+  if (key !== V3.key) { V3.key = key; place3(o); V3.asp = 0; }
+  if (V3.shell && !S3.hi) { S3.hi = new THREE.Mesh(gridGeo(320, 180), S3.mat); S3.root.add(S3.hi); }
+  S3.lo.visible = S3.lines.visible = S3.ghost.visible = !V3.shell; if (S3.hi) S3.hi.visible = V3.shell;
+  if (!V3.anim) apply3(1);
+  S3.cv.setAttribute('aria-label', t('Vista 3D del tubo e del satellite: ', '3D view of the tube and the satellite: ') + lead);
+}
+function side2D() {                        // senza WebGL: la stessa deformata vista di lato
+  const host = $('v3'); let svg = host.querySelector('svg');
+  if (!svg) { host.insertAdjacentHTML('afterbegin', '<svg role="img"></svg>'); svg = host.querySelector('svg'); }
+  const W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+  if (!LAST) { svg.innerHTML = ''; return; }
+  const o = LAST.o, F = V3.F, bd = body(o), Sz = Math.max(o.L, o.h, 2 * o.R), top = Math.max(o.L, bd.y1);
+  const sc = Math.min((H - 96) / (top + 0.5 * o.R + 0.1 * Sz), 0.6 * W / (Math.max(bd.w, 2.9 * o.R) + 0.25 * Sz)), xc = W / 2, yG = H - 50 - 0.5 * o.R * sc;
+  const P = (x0, z) => { const u = F.u(z), ps = F.psi(z), v = F.v(z), rr = x0 * (1 + F.dr(z) / o.R); return [xc + (u + rr * Math.cos(ps)) * sc, yG - (z + v - rr * Math.sin(ps)) * sc]; };
+  const path = pts => 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'Z';
+  const pts = []; for (let j = 0; j <= 40; j++) pts.push(P(o.R, o.L * j / 40)); for (let j = 40; j >= 0; j--) pts.push(P(-o.R, o.L * j / 40));
+  const Rs = o.R * sc, a0 = 0.5 * Rs;
+  let s = '<path d="M' + (xc - Rs) + ' ' + yG + 'L' + (xc + Rs) + ' ' + yG + 'L' + (xc + 1.45 * Rs) + ' ' + (yG + a0) + 'L' + (xc - 1.45 * Rs) + ' ' + (yG + a0) + 'Z" fill="#2a313a"/>';
+  s += '<rect x="' + (xc - Rs) + '" y="' + (yG - o.L * sc) + '" width="' + 2 * Rs + '" height="' + o.L * sc + '" fill="none" stroke="#85919d" stroke-dasharray="4 4" opacity=".7"/>';
+  s += '<path d="' + path(pts) + '" fill="#1a2430" stroke="#cfe3f5" stroke-width="1.5"/>';
+  if (V3.shell) {
+    const dx = Math.max(6, 2 * PI * o.R / V3.sw.N * sc / 2), dz = Math.max(6, V3.sw.Lz * sc / 2), x0 = xc - Rs, y1 = yG - o.L * sc;
+    s += '<clipPath id="tc"><rect x="' + x0 + '" y="' + y1 + '" width="' + 2 * Rs + '" height="' + o.L * sc + '"/></clipPath><g clip-path="url(#tc)" stroke="#cfe3f5" stroke-opacity=".45">';
+    for (let x = x0 - o.L * sc * dx / dz; x < xc + Rs; x += 2 * dx) s += '<line x1="' + x + '" y1="' + yG + '" x2="' + (x + o.L * sc * dx / dz) + '" y2="' + y1 + '"/><line x1="' + (x + o.L * sc * dx / dz) + '" y1="' + yG + '" x2="' + x + '" y2="' + y1 + '"/>';
+    s += '</g>';
+  }
+  const a = bd.att, u = F.u(a), ps = V3.shell ? 0 : F.psi(a), v = F.v(a);
+  const cn = (x, y) => { const dy = y - a; return [xc + (u + x * Math.cos(ps) + dy * Math.sin(ps)) * sc, yG - (a + v - x * Math.sin(ps) + dy * Math.cos(ps)) * sc]; };
+  s += '<path d="' + path([cn(-bd.w / 2, bd.y0), cn(bd.w / 2, bd.y0), cn(bd.w / 2, bd.y1), cn(-bd.w / 2, bd.y1)]) + '" fill="#101722" fill-opacity=".6" stroke="#cfe3f5" stroke-opacity=".6"/>';
+  const c = cn(0, o.h); s += '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="5" fill="#58e07f" stroke="#000" stroke-width="2"/>';
+  svg.innerHTML = s; svg.setAttribute('aria-label', $('cap').textContent);
+}
+
+/* ---------- prova interna (solo con ?test) ---------- */
+function selfTest() {
+  const res = [], chk = (name, got, want, tol) => { const err = Math.abs(got - want) / Math.abs(want); res.push({ name, got: +got.toPrecision(7), want, err: +err.toExponential(2), ok: err <= tol }); };
+  chk('Eulero: E 70 GPa, I 1e-6 m⁴, L 2 m, K 1 → P kN', PI * PI * 70e9 * 1e-6 / Math.pow(1 * 2, 2) / 1e3, 172.718, 5e-4);
+  const kn = knock(500);
+  chk('SP-8007: φ con R/t 500', kn.phi, 1.397542, 1e-5);
+  chk('SP-8007: γ con R/t 500', kn.g, 0.321731, 1e-4);
+  // mensola con massa in cima, senza massa del tubo né taglio: (1/2π)·√(3EI/(mL³)), R 0,5 m, t 2 mm, E 70 GPa, L 1 m, m 1000 kg → 64,636 Hz a mano
+  chk('mensola, massa in cima: f Hz', latF(70e9 * PI * 0.125 * 0.002, 0, 1, 1, 1000, 0).f, 64.636, 1e-4);
+  chk('Rayleigh: quota della massa del tubo 33/140', latF(1, 0, 1, 1, 1, 1).c, 33 / 140, 1e-6);
+  // con massa in cima uguale a quella del tubo la soluzione esatta è λ = 1,247917, ω = λ²·√(EI/(mb·L³))
+  chk('Rayleigh / esatta, laterale (m = mb)', latF(1, 0, 1, 1, 1, 1).f * 2 * PI / Math.pow(1.247917, 2), 1, 1e-3);
+  // assiale: β·tan β = mb/m = 0,1 → β = 0,311053, ω = β·√(EA/(mb·L))
+  chk('Rayleigh / esatta, assiale (mb/m = 0,1)', axF(1, 1, 1, 1, 0.1).f * 2 * PI / (0.311053 * Math.sqrt(10)), 1, 2e-4);
+  chk('Eulero, cima libera con baricentro a 2L: K = π/0,860334', kFree(1, 2), PI / 0.860334, 1e-5);
+  chk('MS: σamm 150 MPa, FS 1,25, σ 100 MPa → +0,2', MS(150e6, 1.25, 100e6), 0.2, 1e-9);
+  chk('MS: σamm 100 MPa, FS 1,25, σ 100 MPa → −0,2', MS(100e6, 1.25, 100e6), -0.2, 1e-9);
+  console.info('selfTest', res.every(x => x.ok) ? 'ok' : 'FALLITO', JSON.stringify(res));
+}
+
+/* ---------- avvio ---------- */
+const tabs = K.tabs('seg', () => run());
+K.live('f', run);
+$('mat').addEventListener('change', e => { e.stopPropagation(); pickMat($('mat').value); });
+$('lv').addEventListener('change', () => { ['nlo', 'nhi', 'ny', 'frl', 'fra'].forEach(id => { $(id).value = ''; }); });
+$('bc').addEventListener('change', () => { $('kk').value = ''; });
+$('tl').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const k = b.dataset.k; if (k === 'lat' || k === 'ax') V3.fm = k; else V3.bm = k; view3(); });
+$('bars').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (b) { BAR = b.dataset.b; drawBars(); return; } const g = e.target.closest('g.b'); if (g) pickMat(g.dataset.k); });
+$('bars').addEventListener('keydown', e => { const g = e.target.closest && e.target.closest('g.b'); if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pickMat(g.dataset.k); } });
+$('tbl').addEventListener('click', e => { const tr = e.target.closest('tr[data-k]'); if (tr) pickMat(tr.dataset.k); });
+function example() {
+  K.wipe('f');
+  K.fill({ mat: 'al7075', lv: 'vegac', bc: 'free', R: fz(0.47), t: fz(1.6), L: fz(1.2), mass: fz(1500, 0), hcg: fz(1.6), dT: fz(60, 0) });
+  prevMat = 'al7075'; $('mp').open = false; run();
+}
+$('ex').onclick = example;
+$('clr').onclick = () => { K.wipe('f'); run(); };
+if (window.ResizeObserver) {
+  const seen = new Map(), ro = new ResizeObserver(es => es.forEach(en => {
+    const el = en.target, w = el.clientWidth + 'x' + el.clientHeight; if (!el.clientWidth || seen.get(el) === w) return; seen.set(el, w);
+    if (el.id === 'v2') drawLoads(); else if (el.id === 'bars') drawBars(); else if (el.id === 'v3' && NO3D) side2D();
+  }));
+  ['v2', 'bars', 'v3'].forEach(id => ro.observe($(id)));
+}
+const st = K.keep(['mat', 'R', 't', 'L', 'mass', 'hcg', 'E', 'nu', 'rho', 'sy', 'su', 'al', 'lv', 'nlo', 'nhi', 'ny', 'frl', 'fra', 'bc', 'kk', 'dT', 'kq', 'km', 'kp', 'fosy', 'fosu']);
+['mat', 'lv', 'bc'].forEach(id => { if (!$(id).value) $(id).selectedIndex = 0; });
+prevMat = $('mat').value;
+if (prevMat === 'my' || PROPS.some(K.given)) $('mp').open = true;
+if (!st) example(); else if (st.get('m')) tabs.set(st.get('m')); else run();
+if (/[?&]test\b/.test(location.search)) selfTest();
+</script>
+</body>
+</html>

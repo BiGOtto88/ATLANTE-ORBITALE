@@ -178,6 +178,35 @@ I calcoli lunghi girano in un Web Worker, così la vista resta fluida anche sul 
 (`<script id="motore">`): non tocca il DOM e si prova anche fuori dal browser. La pagina Evoluzione usa per la vita orbitale lo stesso
 motore (metodo numerico a inviluppo); il vecchio metodo a elementi medi resta come opzione rapida.
 
+## Laboratorio
+
+Il sito ha due posti. Il **Cielo** (`index.html`) mostra i satelliti veri. Il **Laboratorio** sono sei pagine di calcolo,
+una per materia, che partono dai numeri che hai oppure da un satellite reale del catalogo:
+
+| pagina | materia |
+|---|---|
+| `orbite.html` | Orbite e manovre (forma dell'orbita, Hohmann, bi-ellittica, cambio di piano, fasatura, fuga) |
+| `assetto.html` | Assetto e controllo (rotazione libera, coppie di disturbo, dimensionamento di ruote, magnetotorquer e propulsori, quaternioni) |
+| `propulsione.html` | Propulsione e lanciatori (equazione del razzo, stadi, ugello) |
+| `strutture.html` | Strutture e materiali (carichi del lancio, frequenze proprie, instabilità, materiali) |
+| `comunicazioni.html` | Comunicazioni e navigazione (bilancio del collegamento, copertura, GNSS) |
+| `sistemi.html` | Sistemi e missione (pannelli e batterie, termica, bilanci di massa, Δv e potenza) |
+
+Nell'app ci si arriva dal bottone **Laboratorio** in alto, dalla scheda di un satellite (bottone «Laboratorio»: la pagina
+parte dalla sua orbita, con `?sat=NUMERO` nell'indirizzo) e dall'ingresso. `calcolatore.html` rimanda a `orbite.html`.
+
+Le pagine si scrivono in `sorgente/laboratorio/` e si pubblicano con
+
+```
+python3 strumenti/costruisci_laboratorio.py            # tutte
+python3 strumenti/costruisci_laboratorio.py orbite     # una sola
+```
+
+che mette dentro ogni pagina lo stile e le funzioni comuni (`kit.css`, `kit.js`): così ogni pagina è un file solo e il
+flusso di GitHub la pubblica senza cartelle nuove. Le regole per scriverne una nuova (aspetto, testi, fisica, prove) sono in
+`sorgente/laboratorio/LEGGIMI-laboratorio.md`; `_modello.html` è un esempio completo e non va caricato. Ogni pagina ha una
+prova interna: aprila con `?test` nell'indirizzo e guarda la console del browser.
+
 ## File CCSDS
 
 Trascina un file sulla vista 3D (o caricalo dal pannello Dati):
@@ -193,6 +222,7 @@ Gli oggetti importati restano finché la pagina è aperta.
 
 ```
 index.html              la pagina del sito (generata)
+orbite.html, assetto.html, …  le sei pagine del laboratorio (generate da sorgente/laboratorio/)
 en/index.html           la stessa pagina in inglese, per i motori di ricerca (generata)
 manifest.webmanifest    nome, icone e colori dell'app installata
 sw.js                   tiene una copia del sito sul dispositivo per l'uso senza rete
@@ -203,7 +233,7 @@ vendor/                 three.js r128, satellite.js 5.0.0, Astronomy Engine 2.1.
 fonts/                  carattere B612
 icone/                  marchio, icone dell'app e immagine di copertina (copertina.svg → anteprima.jpg)
 LICENSE                 licenza MIT del codice dell'app
-sorgente/               la pagina sorgente dell'app
+sorgente/               la pagina sorgente dell'app e, in laboratorio/, quelle del laboratorio
 assistente/             il servizio dell'assistente (worker.js) e le istruzioni per attivarlo
 sitemap.xml             l'elenco delle pagine per i motori di ricerca (generato dalla conversione)
 strumenti/              aggiornamento dei dati, conversione della pagina, prove

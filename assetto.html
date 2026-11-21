@@ -3,414 +3,1861 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Calcolatore di assetto · Keplario</title>
-<meta name="description" content="Rotazione libera di un corpo rigido, disturbi su un satellite e conversioni fra quaternioni, angoli di Eulero e matrice di rotazione. Inserisci i dati che hai, il resto lo calcola.">
+<title data-en="Attitude and control · Keplario">Assetto e controllo · Keplario</title>
+<meta name="description" content="Rotazione libera di un corpo rigido, coppie di disturbo in orbita, ruote di reazione e magnetotorquer, quaternioni e angoli di Eulero." data-en-content="Free rotation of a rigid body, disturbance torques in orbit, reaction wheels and magnetorquers, quaternions and Euler angles.">
 <link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/assetto.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Assetto e controllo · Keplario","description":"Rotazione libera di un corpo rigido, coppie di disturbo in orbita, dimensionamento degli attuatori, quaternioni e angoli di Eulero.","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/assetto.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
 <style>
+/* Keplario · laboratorio: stile comune delle pagine di calcolo.
+   Stessi colori e caratteri dell'app (cruscotto scuro, B612), senza maiuscole forzate, sfumature o bagliori.
+   Regola dei colori: ciano = cose che si toccano e la prima serie dei grafici; verde = valori calcolati;
+   ambra = avvisi. Niente rosso o magenta. */
 @font-face{font-family:'B612';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-latin-400-normal.woff2) format('woff2')}
 @font-face{font-family:'B612';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-latin-700-normal.woff2) format('woff2')}
 @font-face{font-family:'B612 Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-400-normal.woff2) format('woff2')}
-:root{--bk:#03060a;--pn:rgba(12,16,22,.78);--ln:rgba(120,140,160,.22);--ln2:rgba(120,140,160,.4);--tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;--cy:#35d4f2;--am:#ffb224;--gr:#58e07f;--mono:"B612 Mono","DejaVu Sans Mono",monospace;--ui:"B612","DejaVu Sans",Verdana,sans-serif}
+@font-face{font-family:'B612 Mono';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-700-normal.woff2) format('woff2')}
+:root{
+  --bk:#000;--pn:#080a0d;--pn2:#10141a;--pn3:#171c24;--ln:#252b33;--ln2:#414b57;
+  --tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;
+  --cy:#35d4f2;--cy2:#1aa9c7;--gr:#58e07f;--vi:#a995ff;--ic:#cfe3f5;--am:#ffb224;
+  --ui:"B612","DejaVu Sans",Verdana,sans-serif;--mono:"B612 Mono","DejaVu Sans Mono",Consolas,monospace;
+  --num:"B612","DejaVu Sans",Verdana,sans-serif;  /* numeri: B612 ha cifre di larghezza uguale e una virgola stretta (in B612 Mono la virgola sembra uno spazio) */
+  --r:6px;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:radial-gradient(1200px 700px at 75% -10%,#0d2233 0,#03060a 60%) fixed,var(--bk);color:var(--tx);font-family:var(--ui);line-height:1.5;min-height:100vh}
-main{max-width:1080px;margin:0 auto;padding:32px 22px 70px}
-header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-h1{font-size:30px;margin:0;letter-spacing:-.01em}
-.sub{color:var(--tx2);font-size:15px;margin:4px 0 0}
-.topics{display:flex;gap:6px;flex-wrap:wrap}
-.chip{border-radius:999px;border:1px solid var(--ln2);background:rgba(255,255,255,.03);color:var(--tx2);padding:7px 14px;font:inherit;font-size:14px;cursor:pointer;transition:all .2s ease}
-.chip:hover:not(:disabled){color:var(--tx);border-color:var(--cy)}
-.chip[aria-pressed=true]{border-color:var(--cy);color:var(--cy);background:rgba(53,212,242,.08)}
-.chip:disabled{opacity:.4;cursor:not-allowed}
-.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:820px){.grid{grid-template-columns:1fr}}
-.card{border:1px solid var(--ln);background:var(--pn);border-radius:18px;padding:16px 18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.card h3{font-size:14px;letter-spacing:0;text-transform:none;color:var(--tx2);margin:2px 0 10px;font-weight:700}
-.field{display:grid;grid-template-columns:1fr 118px;gap:10px;align-items:center;margin:7px 0;font-size:14px;color:var(--tx2)}
-input[type=text],input:not([type]){background:rgba(0,0,0,.5);border:1px solid var(--ln2);border-radius:10px;color:var(--tx);padding:7px 10px;font:inherit;font-family:var(--mono);font-size:14px;width:100%;transition:border-color .2s}
-input:focus-visible,button:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
-input:hover{border-color:var(--tx3)}
-.hint{font-size:12.5px;color:var(--tx3);margin:8px 0 0}
-.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 2px;font-size:15px;cursor:pointer;user-select:none}
-.toggle input{position:absolute;opacity:0;pointer-events:none}
-.sw{width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;transition:background .25s ease;flex:none}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
-.toggle input:checked + .sw{background:var(--cy)}
-.toggle input:checked + .sw::after{transform:translateX(20px)}
-.toggle input:focus-visible + .sw{outline:2px solid var(--cy);outline-offset:2px}
-button.go{width:100%;border-radius:14px;border:0;background:linear-gradient(135deg,#35d4f2,#2a9fd6);color:#02131b;font:inherit;font-weight:700;font-size:16px;padding:13px 16px;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease;box-shadow:0 8px 24px -10px rgba(53,212,242,.6)}
-button.go:hover{transform:translateY(-1px);box-shadow:0 12px 30px -10px rgba(53,212,242,.8)}
-button.go:active{transform:translateY(0) scale(.99)}
-.viewer{position:relative;border:1px solid var(--ln);background:#02050a;border-radius:18px;overflow:hidden;aspect-ratio:1/1;min-height:300px}
-.viewer svg,.viewer canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.bar{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
-.play{width:42px;height:42px;border-radius:50%;border:1px solid var(--ln2);background:rgba(255,255,255,.04);color:var(--tx);cursor:pointer;font-size:16px;transition:all .2s ease;flex:none}
-.play:hover{border-color:var(--cy);color:var(--cy)}
-.bar input[type=range]{flex:1;min-width:160px;accent-color:var(--cy)}
-.tlab{font-family:var(--mono);font-size:13px;color:var(--gr);min-width:150px;text-align:right}
-.res{margin-top:16px}
-.row{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:7px 2px;border-bottom:1px solid var(--ln);animation:in .5s ease both}
-.row:last-child{border-bottom:0}
-.row span:first-child{color:var(--tx2)}
-.row span:last-child{font-family:var(--mono);color:var(--gr);text-align:right}
-@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.msg{border-radius:12px;background:rgba(255,178,36,.1);border:1px solid rgba(255,178,36,.35);color:var(--am);font-size:14px;padding:10px 14px;margin:0 0 12px}
-.note{font-size:13px;color:var(--tx3);margin:12px 2px 0}
-.legend{display:flex;gap:14px;font-size:12.5px;color:var(--tx3);margin-top:10px;flex-wrap:wrap}
-.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.back{margin:0 0 10px;font-size:14px}.back a{color:var(--tx2);text-decoration:none}.back a:hover{color:var(--cy)}
-.seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
-.sec[hidden]{display:none}
-.row.sub2 span:last-child{color:var(--am)}
-.vec{font-family:var(--mono)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;background:var(--bk)}
+body{color:var(--tx);font:15px/1.5 var(--ui);min-height:100vh}
+a{color:var(--cy)}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* barra in alto: Keplario, Cielo, le sei materie, lingua */
+.kb{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.92);border-bottom:1px solid var(--ln);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.kb-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:6px;padding:0 18px;height:50px}
+.kb-home{font-weight:700;color:var(--tx);text-decoration:none;font-size:15px;margin-right:10px;white-space:nowrap}
+.kb-sky{color:var(--tx2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:var(--r);white-space:nowrap}
+.kb-sky:hover{color:var(--tx);background:var(--pn2)}
+.kb-sep{width:1px;height:20px;background:var(--ln);margin:0 6px;flex:none}
+.kb-nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.kb-nav::-webkit-scrollbar{display:none}
+.kb-nav a{color:var(--tx2);text-decoration:none;font-size:14px;padding:14px 9px 12px;white-space:nowrap;border-bottom:2px solid transparent}
+.kb-nav a:hover{color:var(--tx)}
+.kb-nav a[aria-current=page]{color:var(--tx);border-bottom-color:var(--cy)}
+.kb-lang{flex:none;margin-left:6px}
+@media (max-width:760px){
+  .kb-in{flex-wrap:wrap;height:auto;padding:0 12px;row-gap:0}
+  .kb-home{padding:13px 0}
+  .kb-sep{display:none}
+  .kb-lang{margin-left:auto}
+  .kb-nav{order:5;flex-basis:100%;margin:0 -12px;padding:0 6px;border-top:1px solid var(--ln)}
+  .kb-nav a{padding:11px 9px 9px}
+}
+
+main{max-width:1240px;margin:0 auto;padding:30px 18px 80px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:18px 28px;flex-wrap:wrap;margin-bottom:20px}
+.ph h1{font-size:28px;line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.005em}
+.ph .lead{color:var(--tx2);margin:0;max-width:62ch}
+
+/* bottoni */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--ln2);background:var(--pn);color:var(--tx);font:inherit;font-size:14px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,color .15s}
+.btn:hover:not(:disabled){border-color:var(--cy);color:var(--cy)}
+.btn:active:not(:disabled){background:var(--pn2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--cy);border-color:var(--cy);color:#00141a;font-weight:700}
+.btn.pri:hover:not(:disabled){background:#62e0f7;color:#00141a}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:13px}
+.btn.icon{width:36px;padding:0}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+
+/* schede di modo (orbita, manovre, ...) */
+.seg{display:flex;gap:0;border-bottom:1px solid var(--ln);margin:0 0 18px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{background:none;border:0;border-bottom:2px solid transparent;color:var(--tx2);font:inherit;font-size:15px;padding:10px 14px 9px;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.seg button:hover{color:var(--tx)}
+.seg button[aria-selected=true]{color:var(--tx);border-bottom-color:var(--cy)}
+
+/* griglia: dati a sinistra, vista e risultati a destra */
+.lab{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:22px;align-items:start}
+.lab > *{min-width:0}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.stack{display:grid;gap:14px}
+.pnl{background:var(--pn);border:1px solid var(--ln);border-radius:var(--r);padding:14px 16px 16px}
+.pnl > h2,.pnl > h3{font-size:14px;font-weight:700;color:var(--tx);margin:0 0 4px}
+.pnl > .why{font-size:13px;color:var(--tx3);margin:0 0 10px}
+.pnl + .acts{margin-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* campi: etichetta a sinistra, numero a destra. Un campo vuoto mostra in verde il valore ricavato. */
+.f{display:grid;grid-template-columns:minmax(0,1fr) 116px 54px;gap:8px;align-items:center;margin:6px 0}
+.f > .u{font-size:13px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f > label,.f > .lb{font-size:14px;color:var(--tx2);line-height:1.3}
+.f input,.f select{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 9px;font:inherit;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.f select{font-family:var(--ui);text-align:left;padding-right:4px}
+.f input:hover,.f select:hover{border-color:var(--tx3)}
+.f input:focus{border-color:var(--cy);outline:none;box-shadow:0 0 0 1px var(--cy)}
+.f input::placeholder{color:var(--tx3);opacity:1}
+.f input.der::placeholder{color:var(--gr)}
+.f input.bad{border-color:var(--am);box-shadow:0 0 0 1px var(--am)}
+.f.wide{grid-template-columns:1fr}
+.f.nou{grid-template-columns:minmax(0,1fr) 178px}
+@media (max-width:420px){.f{grid-template-columns:minmax(0,1fr) 104px 46px}.f.nou{grid-template-columns:minmax(0,1fr) 158px}}
+.f.wide input{text-align:left}
+.ck{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2);margin:8px 0;cursor:pointer}
+.ck input{width:17px;height:17px;accent-color:var(--cy);margin:0}
+.hint{font-size:13px;color:var(--tx3);margin:8px 0 0}
+.hint b{color:var(--tx2);font-weight:400}
+
+/* partire da un satellite reale */
+.sat{position:relative}
+.sat input{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 10px;font:inherit;font-size:14px}
+.sat input:focus{border-color:var(--cy);outline:none}
+.sat ul{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:var(--r);max-height:280px;overflow:auto;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.sat li{padding:7px 9px;border-radius:4px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;gap:10px}
+.sat li small{color:var(--tx3);font-family:var(--num);font-variant-numeric:tabular-nums;font-size:12px}
+.sat li[aria-selected=true],.sat li:hover{background:var(--pn3);color:var(--cy)}
+.satnote{font-size:13px;color:var(--tx3);margin:6px 0 0}
+.satnote a{color:var(--cy)}
+
+/* messaggi */
+.msg{border-left:2px solid var(--am);background:rgba(255,178,36,.06);color:#ffd27a;padding:8px 12px;font-size:14px;margin:0 0 12px;border-radius:0 var(--r) var(--r) 0}
+.msg.info{border-left-color:var(--cy);background:rgba(53,212,242,.06);color:var(--tx)}
+.msg:empty{display:none}
+
+/* vista 2D/3D */
+.view{position:relative;width:100%;background:#000;border:1px solid var(--ln);border-radius:var(--r);overflow:hidden;aspect-ratio:16/11}
+@media (max-width:600px){.view{aspect-ratio:1/1}}
+.view.sq{aspect-ratio:1/1}
+.view > canvas,.view > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.view .cap{position:absolute;left:12px;bottom:10px;right:12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--tx2);pointer-events:none;text-shadow:0 1px 3px #000}
+.view .cap i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.view .cap i.dot{width:8px;height:8px;border-radius:50%}
+.view .tl{position:absolute;right:10px;top:10px;display:flex;gap:6px}
+.view .tl .btn{background:rgba(8,10,13,.8)}
+.view .ld{position:absolute;inset:0;display:grid;place-items:center;color:var(--tx3);font-size:13px}
+.bar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.bar input[type=range]{flex:1;min-width:150px;accent-color:var(--cy)}
+.bar .t{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--gr);min-width:140px;text-align:right}
+
+/* risultati */
+.out{margin-top:16px}
+.out h3{font-size:13.5px;font-weight:700;color:var(--tx2);margin:18px 0 4px}
+.out h3:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--ln);font-size:14px}
+.row > span:first-child{color:var(--tx2)}
+.row .v{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--gr);text-align:right;white-space:nowrap}
+.row .v small{color:var(--tx3);font-size:12.5px;margin-left:6px}
+.row .n{grid-column:1/-1;font-size:12.5px;color:var(--tx3);margin-top:-2px}
+.row.key .v{font-size:17px}
+.row.warn .v{color:var(--am)}
+.note{font-size:13px;color:var(--tx3);margin:12px 0 0;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 26px}
+
+/* grafici */
+.chart{position:relative;margin-top:14px;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:8px 8px 4px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ttl{font-size:13px;color:var(--tx2);margin:2px 4px 6px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.chart .ttl b{color:var(--tx);font-weight:700;margin-right:6px}
+.chart .ttl i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.chart .tip{position:absolute;pointer-events:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:4px;padding:5px 8px;font-size:12.5px;font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--tx);white-space:nowrap;z-index:5}
+.chart .tip span{display:block}
+.chart text{font-family:var(--num);font-size:11px;fill:var(--tx3)}
+.chart .ax{stroke:var(--ln2);stroke-width:1}
+.chart .gd{stroke:var(--ln);stroke-width:1}
+
+/* tabelle di dati */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+.tbl th{text-align:left;font-weight:400;color:var(--tx3);border-bottom:1px solid var(--ln2);padding:6px 8px 6px 0}
+.tbl td{border-bottom:1px solid var(--ln);padding:6px 8px 6px 0}
+.tbl td.num,.tbl th.num{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.tbl td.num{color:var(--gr)}
+
+/* piede */
+.foot{max-width:1240px;margin:0 auto;padding:22px 18px 40px;border-top:1px solid var(--ln);color:var(--tx3);font-size:13px;display:flex;gap:8px 20px;flex-wrap:wrap}
+.foot a{color:var(--tx2)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* solo per questa pagina */
+.pnl .sub{font-size:13.5px;font-weight:700;color:var(--tx2);margin:14px 0 2px}
+.pnl .links{margin-top:8px}
+.mx{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0 2px}
+.mx input{width:100%;min-width:0;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 8px;font:inherit;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.mx input:hover{border-color:var(--tx3)}
+.mx input:focus{border-color:var(--cy);outline:none;box-shadow:0 0 0 1px var(--cy)}
+.mx input::placeholder{color:var(--tx3);opacity:1}
+.mx input.der::placeholder{color:var(--gr)}
+.mx input.bad{border-color:var(--am);box-shadow:0 0 0 1px var(--am)}
+.bar label{font-size:13px;color:var(--tx2)}
+.bar .sp{font-size:13px;color:var(--tx2);font-family:var(--num);font-variant-numeric:tabular-nums;min-width:70px}
+.view svg text{font-family:var(--ui)}
+.view .st3{position:absolute;left:12px;top:11px;font-size:13px;color:var(--tx2);pointer-events:none;text-shadow:0 1px 3px #000}
+#v-rep{aspect-ratio:auto;height:clamp(260px,52vw,440px)}
+/* sul telefono altezza fissa: aspect-ratio 16/11 con min-height 260 px darebbe una larghezza minima di 378 px e la pagina scorrerebbe di lato */
+@media (max-width:600px){#v-free{aspect-ratio:auto;height:300px}#v-dist,#v-ctl{aspect-ratio:auto;height:350px}}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:14px;align-items:start}
+.info p,.info li{font-size:14px;color:var(--tx2);margin:8px 0}
+.info .eq{color:var(--tx);font-family:var(--num);overflow-x:auto}
+.info ul{padding-left:18px;margin:6px 0}
+.info .tbl{font-size:13px}
 </style>
 </head>
 <body>
 <main>
-<header>
-  <div>
-    <p class="back"><a href="./">← Keplario</a></p>
-    <h1>Calcolatore di assetto</h1>
-    <p class="sub">Scegli cosa vuoi capire, inserisci i dati che hai. Il resto lo ricava il calcolatore.</p>
-  </div>
-  <div class="topics" role="group" aria-label="Argomento">
-    <a class="chip" href="calcolatore.html" style="text-decoration:none">Orbite</a>
-    <button class="chip" type="button" aria-pressed="true">Assetto</button>
-    <button class="chip" type="button" disabled title="In arrivo">Strutture</button>
-    <button class="chip" type="button" disabled title="In arrivo">Propulsione</button>
-  </div>
-</header>
-
-<div class="seg" role="tablist" aria-label="Cosa vuoi calcolare">
-  <button class="chip" type="button" role="tab" data-m="free" aria-pressed="true">Rotazione libera</button>
-  <button class="chip" type="button" role="tab" data-m="dist" aria-pressed="false">Disturbi</button>
-  <button class="chip" type="button" role="tab" data-m="rep" aria-pressed="false">Quaternioni e angoli</button>
-</div>
-
-<div class="grid">
-<form id="f" novalidate>
-
-  <div class="sec" id="s-free">
-    <section class="card">
-      <h3>Inerzie principali</h3>
-      <div class="field"><label for="Ix">Ix (kg·m²)</label><input id="Ix" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="Iy">Iy (kg·m²)</label><input id="Iy" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="Iz">Iz (kg·m²)</label><input id="Iz" type="text" inputmode="decimal"></div>
-      <p class="hint">Oppure dai la massa e le tre dimensioni di un parallelepipedo:</p>
-      <div class="field"><label for="m">Massa (kg)</label><input id="m" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="da">Lunghezza lungo x (m)</label><input id="da" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="db">Lunghezza lungo y (m)</label><input id="db" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="dc">Lunghezza lungo z (m)</label><input id="dc" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Velocità angolare iniziale</h3>
-      <div class="field"><label for="wx">ωx (°/s)</label><input id="wx" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="wy">ωy (°/s)</label><input id="wy" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="wz">ωz (°/s)</label><input id="wz" type="text" inputmode="decimal"></div>
-    </section>
+  <div class="ph">
+    <div>
+      <h1 data-en="Attitude and control">Assetto e controllo</h1>
+      <p class="lead" data-en="Spin a rigid body with no external torque, estimate the torques that disturb it in orbit, size wheels, magnetorquers and thrusters, convert between quaternions, Euler angles and matrices.">Fai ruotare un corpo rigido senza coppie esterne, stima le coppie che lo disturbano in orbita, dimensiona ruote, magnetotorquer e propulsori, passa da quaternioni ad angoli di Eulero e matrici.</p>
+    </div>
   </div>
 
-  <div class="sec" id="s-dist" hidden>
-    <section class="card">
-      <h3>Orbita</h3>
-      <div class="field"><label for="h">Quota (km)</label><input id="h" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="r">Oppure raggio orbitale (km)</label><input id="r" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Gradiente di gravità</h3>
-      <div class="field"><label for="Imax">Inerzia massima (kg·m²)</label><input id="Imax" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="Imin">Inerzia minima (kg·m²)</label><input id="Imin" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="th">Disallineamento θ (°)</label><input id="th" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Pressione solare</h3>
-      <div class="field"><label for="A">Superficie esposta (m²)</label><input id="A" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="q">Riflettività (0–1)</label><input id="q" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="L">Distanza centro di pressione, baricentro (m)</label><input id="L" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Resistenza atmosferica</h3>
-      <div class="field"><label for="Cd">Coefficiente di resistenza</label><input id="Cd" type="text" inputmode="decimal" value="2.2"></div>
-      <div class="field"><label for="rho">Densità (kg/m³)</label><input id="rho" type="text" inputmode="decimal"></div>
-      <p class="hint">Se lasci vuota la densità, la stimo dalla quota (ordine di grandezza, attività solare media).</p>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Campo magnetico</h3>
-      <div class="field"><label for="md">Dipolo residuo (A·m²)</label><input id="md" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Per la reazione</h3>
-      <div class="field"><label for="Is">Inerzia del satellite (kg·m²)</label><input id="Is" type="text" inputmode="decimal"></div>
-    </section>
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" id="tb-free" data-m="free" aria-controls="m-free" aria-selected="true" data-en="Free rotation">Rotazione libera</button>
+    <button role="tab" id="tb-dist" data-m="dist" aria-controls="m-dist" aria-selected="false" data-en="Disturbances">Disturbi</button>
+    <button role="tab" id="tb-ctl" data-m="ctl" aria-controls="m-ctl" aria-selected="false" data-en="Control">Controllo</button>
+    <button role="tab" id="tb-rep" data-m="rep" aria-controls="m-rep" aria-selected="false" data-en="Quaternions and angles">Quaternioni e angoli</button>
+    <button role="tab" id="tb-info" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
   </div>
 
-  <div class="sec" id="s-rep" hidden>
-    <section class="card">
-      <h3>Quaternione (scalare ultimo)</h3>
-      <div class="field"><label for="qx">qx</label><input id="qx" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="qy">qy</label><input id="qy" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="qz">qz</label><input id="qz" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="qw">qw</label><input id="qw" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Asse e angolo</h3>
-      <div class="field"><label for="ax">Asse x</label><input id="ax" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="ay">Asse y</label><input id="ay" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="az">Asse z</label><input id="az" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="an">Angolo (°)</label><input id="an" type="text" inputmode="decimal"></div>
-    </section>
-    <section class="card" style="margin-top:14px">
-      <h3>Angoli di Eulero (sequenza 3-2-1)</h3>
-      <div class="field"><label for="roll">Rollio φ (°)</label><input id="roll" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="pitch">Beccheggio θ (°)</label><input id="pitch" type="text" inputmode="decimal"></div>
-      <div class="field"><label for="yaw">Imbardata ψ (°)</label><input id="yaw" type="text" inputmode="decimal"></div>
-      <p class="hint">Basta un gruppo solo. Se ne compili più di uno, uso prima il quaternione, poi asse e angolo.</p>
-    </section>
-  </div>
+  <!-- ===================== rotazione libera ===================== -->
+  <section id="m-free" class="lab" role="tabpanel" aria-labelledby="tb-free">
+    <form class="stack" id="f-free" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Principal inertias">Inerzie principali</h2>
+        <p class="why" data-en="Give the three inertias, or the mass and the sides of a solid box: the inertias appear in green.">Dai le tre inerzie, oppure la massa e i lati di un parallelepipedo pieno: le inerzie compaiono in verde.</p>
+        <div class="f"><label for="Ix">I<sub>x</sub></label><input id="Ix" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <div class="f"><label for="Iy">I<sub>y</sub></label><input id="Iy" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <div class="f"><label for="Iz">I<sub>z</sub></label><input id="Iz" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <p class="sub" data-en="Solid box">Parallelepipedo pieno</p>
+        <div class="f"><label for="mass" data-en="Mass">Massa</label><input id="mass" inputmode="decimal"><span class="u">kg</span></div>
+        <div class="f"><label for="lx" data-en="Side along x">Lato lungo x</label><input id="lx" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="ly" data-en="Side along y">Lato lungo y</label><input id="ly" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="lz" data-en="Side along z">Lato lungo z</label><input id="lz" inputmode="decimal"><span class="u">m</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Initial angular velocity">Velocità angolare iniziale</h2>
+        <p class="why" data-en="In body axes. Empty fields count as zero.">In assi corpo. I campi vuoti valgono zero.</p>
+        <div class="f"><label for="wx">ω<sub>x</sub></label><input id="wx" inputmode="decimal"><span class="u">°/s</span></div>
+        <div class="f"><label for="wy">ω<sub>y</sub></label><input id="wy" inputmode="decimal"><span class="u">°/s</span></div>
+        <div class="f"><label for="wz">ω<sub>z</sub></label><input id="wz" inputmode="decimal"><span class="u">°/s</span></div>
+        <p class="hint" data-en="Spin it about the axis with inertia:">Fallo girare attorno all'asse di inerzia:</p>
+        <div class="links" id="axb">
+          <button class="btn sm" type="button" data-ax="max" data-en="largest">massima</button>
+          <button class="btn sm" type="button" data-ax="mid" data-en="intermediate">intermedia</button>
+          <button class="btn sm" type="button" data-ax="min" data-en="smallest">minima</button>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex-free" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr-free" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="The example is a 6U CubeSat (12 kg, 10 × 22.6 × 36.6 cm) spinning about its intermediate axis.">L'esempio è un CubeSat 6U (12 kg, 10 × 22,6 × 36,6 cm) che gira attorno all'asse intermedio.</p>
+    </form>
+    <div>
+      <div id="msg-free"></div>
+      <div id="inf-free"></div>
+      <div class="view" id="v-free" role="img" aria-label="Corpo rigido che ruota: assi del corpo, momento angolare H fisso e velocità angolare ω" data-en-aria-label="Rigid body in rotation: body axes, fixed angular momentum H and angular velocity ω">
+        <div class="cap" id="cap-free">
+          <span style="color:var(--cy)"><i></i>x</span>
+          <span style="color:var(--gr)"><i></i>y</span>
+          <span style="color:var(--vi)"><i></i>z</span>
+          <span style="color:var(--ic)"><i></i><span data-en="H, fixed in space">H, fisso nello spazio</span></span>
+          <span style="color:var(--tx2)"><i></i>ω</span>
+          <span id="trl"></span>
+        </div>
+      </div>
+      <div class="bar">
+        <button class="btn icon" type="button" id="play" aria-label="Metti in pausa"></button>
+        <button class="btn" type="button" id="restart" data-en="Restart">Riparti</button>
+        <label for="spd" class="vh" data-en="Animation speed">Velocità dell'animazione</label>
+        <input id="spd" type="range" min="-1" max="2" step="0.05" value="0">
+        <span class="sp" id="spdv">×1</span>
+        <span class="t" id="tlab">t = 0 s</span>
+      </div>
+      <div class="out" id="out-free"></div>
+      <div id="ch-free"></div>
+    </div>
+  </section>
 
-  <div style="margin-top:14px"><button class="go" type="submit">Calcola</button></div>
-  <button type="button" class="chip" id="demo" style="margin-top:10px">Compila un esempio</button>
-</form>
+  <!-- ===================== disturbi ===================== -->
+  <section id="m-dist" class="lab" role="tabpanel" aria-labelledby="tb-dist" hidden>
+    <form class="stack" id="f-dist" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Start from a real satellite">Parti da un satellite reale</h2>
+        <div id="sat"></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Orbit">Orbita</h2>
+        <p class="why" data-en="Give the altitude or the radius. The inclination sets the magnetic field.">Dai la quota o il raggio. L'inclinazione serve per il campo magnetico.</p>
+        <div class="f"><label for="h" data-en="Altitude">Quota</label><input id="h" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="r" data-en="Orbit radius">Raggio dell'orbita</label><input id="r" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="inc" data-en="Inclination">Inclinazione</label><input id="inc" inputmode="decimal"><span class="u">°</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Gravity gradient">Gradiente di gravità</h2>
+        <p class="why" data-en="The difference between largest and smallest inertia is enough. Empty angle: worst case, 45°.">Basta la differenza fra l'inerzia massima e la minima. Angolo vuoto: caso peggiore, 45°.</p>
+        <div class="f"><label for="Imax" data-en="Largest inertia">Inerzia massima</label><input id="Imax" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <div class="f"><label for="Imin" data-en="Smallest inertia">Inerzia minima</label><input id="Imin" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <div class="f"><label for="dI" data-en="Difference ΔI">Differenza ΔI</label><input id="dI" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <div class="f"><label for="th" data-en="Offset from local vertical θ">Scarto dalla verticale θ</label><input id="th" inputmode="decimal"><span class="u">°</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Solar radiation pressure">Pressione della radiazione solare</h2>
+        <div class="f"><label for="As" data-en="Sunlit area">Area illuminata</label><input id="As" inputmode="decimal"><span class="u">m²</span></div>
+        <div class="f"><label for="cps" data-en="Arm cp − cg">Braccio cp − cg</label><input id="cps" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="refl" data-en="Reflectance q">Riflettività q</label><input id="refl" inputmode="decimal"><span class="u">0–1</span></div>
+        <div class="f"><label for="sinc" data-en="Sun incidence i">Incidenza del Sole i</label><input id="sinc" inputmode="decimal"><span class="u">°</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Atmospheric drag">Resistenza atmosferica</h2>
+        <p class="why" data-en="Empty area and arm: the page uses the solar ones. Empty density: from the table.">Area e braccio vuoti: la pagina usa quelli della pressione solare. Densità vuota: dalla tabella.</p>
+        <div class="f"><label for="Aa" data-en="Area facing the flow">Area contro il flusso</label><input id="Aa" inputmode="decimal"><span class="u">m²</span></div>
+        <div class="f"><label for="cpa" data-en="Arm cp − cg">Braccio cp − cg</label><input id="cpa" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="Cd" data-en="Drag coefficient C<sub>d</sub>">Coefficiente C<sub>d</sub></label><input id="Cd" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="rho" data-en="Air density ρ">Densità dell'aria ρ</label><input id="rho" inputmode="decimal"><span class="u">kg/m³</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Magnetic field">Campo magnetico</h2>
+        <p class="why" data-en="λ goes from 1 at the magnetic equator to 2 at the poles. Empty: from the inclination, or 2.">λ va da 1 all'equatore magnetico a 2 ai poli. Vuoto: dall'inclinazione, oppure 2.</p>
+        <div class="f"><label for="D" data-en="Residual dipole">Dipolo residuo</label><input id="D" inputmode="decimal"><span class="u">A·m²</span></div>
+        <div class="f"><label for="lam" data-en="Latitude factor λ">Fattore di latitudine λ</label><input id="lam" inputmode="decimal"><span class="u"></span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex-dist" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr-dist" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="The example is a small satellite in a 700 km sun-synchronous orbit.">L'esempio è un piccolo satellite in orbita eliosincrona a 700 km.</p>
+    </form>
+    <div>
+      <div id="msg-dist"></div>
+      <div id="inf-dist"></div>
+      <div class="view" id="v-dist" role="img" aria-label="Schema delle quattro coppie di disturbo sul satellite" data-en-aria-label="Sketch of the four disturbance torques on the satellite">
+        <div class="cap" id="cap-dist"></div>
+      </div>
+      <div class="out" id="out-dist"></div>
+      <div id="ch-dist"></div>
+    </div>
+  </section>
 
-<section>
-  <div id="msg"></div>
-  <div class="viewer" id="viewer"></div>
-  <div class="bar" id="bar">
-    <button class="play" id="play" type="button" aria-label="Avvia il moto">▶</button>
-    <button class="chip" id="reset" type="button">Riparti</button>
-    <label style="font-size:13px;color:var(--tx3)">Velocità <input id="spd" type="range" min="0.2" max="5" step="0.1" value="1" style="width:110px;accent-color:var(--cy)"></label>
-    <span class="tlab" id="tlab">—</span>
-  </div>
-  <div class="legend">
-    <span><i style="background:#ff6b6b"></i>asse x</span>
-    <span><i style="background:#58e07f"></i>asse y</span>
-    <span><i style="background:#5aa0ff"></i>asse z</span>
-    <span><i style="background:#ffb224"></i>momento angolare H (fisso nello spazio)</span>
-  </div>
-  <div class="res" id="res"></div>
-</section>
-</div>
-<p class="note">Assi principali d'inerzia. Rotazione libera senza coppie esterne. Gli angoli di Eulero sono 3-2-1 (imbardata, beccheggio, rollio), il quaternione ha lo scalare in ultima posizione.</p>
+  <!-- ===================== controllo ===================== -->
+  <section id="m-ctl" class="lab" role="tabpanel" aria-labelledby="tb-ctl" hidden>
+    <form class="stack" id="f-ctl" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Disturbance and orbit">Disturbo e orbita</h2>
+        <p class="why" data-en="The worst torque that the control has to beat.">La coppia peggiore che il controllo deve vincere.</p>
+        <div class="f"><label for="Td" data-en="Disturbance torque">Coppia di disturbo</label><input id="Td" inputmode="decimal"><span class="u">N·m</span></div>
+        <div class="links"><button class="btn sm" type="button" id="useDist" data-en="use the total from Disturbances">usa il totale dei Disturbi</button></div>
+        <div class="f"><label for="hc" data-en="Altitude">Quota</label><input id="hc" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="Pc" data-en="Orbit period">Periodo dell'orbita</label><input id="Pc" inputmode="decimal"><span class="u">min</span></div>
+        <div class="f"><label for="Bc" data-en="Magnetic field">Campo magnetico</label><input id="Bc" inputmode="decimal"><span class="u">µT</span></div>
+        <div class="f"><label for="mg" data-en="Margin factor">Fattore di margine</label><input id="mg" inputmode="decimal"><span class="u">×</span></div>
+        <p class="hint" data-en="Empty field: the weakest field along the orbit, at the magnetic equator. The margin multiplies every sized value.">Campo vuoto: il più debole lungo l'orbita, all'equatore magnetico. Il margine moltiplica tutti i valori dimensionati.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Slew">Manovra</h2>
+        <div class="f"><label for="sa" data-en="Slew angle">Angolo da percorrere</label><input id="sa" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="st" data-en="Slew time">Tempo della manovra</label><input id="st" inputmode="decimal"><span class="u">s</span></div>
+        <div class="f"><label for="Isl" data-en="Inertia about the slew axis">Inerzia attorno all'asse</label><input id="Isl" inputmode="decimal"><span class="u">kg·m²</span></div>
+        <div class="f"><label for="acc" data-en="Pointing accuracy">Precisione di puntamento</label><input id="acc" inputmode="decimal"><span class="u">°</span></div>
+        <p class="hint" data-en="The accuracy is only needed for the momentum wheel.">La precisione serve solo per la ruota di momento.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Thrusters for momentum dumping">Propulsori per lo scarico</h2>
+        <div class="f"><label for="Lt" data-en="Moment arm">Braccio</label><input id="Lt" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="isp" data-en="Specific impulse">Impulso specifico</label><input id="isp" inputmode="decimal"><span class="u">s</span></div>
+        <div class="f"><label for="tb" data-en="Burn time">Durata dell'accensione</label><input id="tb" inputmode="decimal"><span class="u">s</span></div>
+        <div class="f"><label for="life" data-en="Mission life">Durata della missione</label><input id="life" inputmode="decimal"><span class="u" data-en="years">anni</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex-ctl" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr-ctl" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" data-en="The example takes the disturbances of the 700 km satellite and a 30° slew in 60 s.">L'esempio prende i disturbi del satellite a 700 km e una manovra di 30° in 60 s.</p>
+    </form>
+    <div>
+      <div id="msg-ctl"></div>
+      <div class="view" id="v-ctl" role="img" aria-label="Manovra bang-bang vista dall'alto: il corpo accelera fino a metà e poi frena, la ruota gira al contrario" data-en-aria-label="Bang-bang slew seen from above: the body speeds up to half way, then brakes, while the wheel turns the other way">
+        <div class="tl"><button class="btn icon" type="button" id="cplay" aria-label="Metti in pausa"></button></div>
+        <div class="cap">
+          <span style="color:var(--tx3)"><i></i><span data-en="start">inizio</span></span>
+          <span style="color:var(--gr)"><i></i><span data-en="target">arrivo</span></span>
+          <span style="color:var(--cy)"><i></i><span data-en="pointing">puntamento</span></span>
+          <span style="color:var(--vi)"><i></i><span data-en="wheel torque on the body">coppia della ruota sul corpo</span></span>
+          <span style="color:var(--ic)"><i></i><span data-en="wheel, turning the other way">ruota, gira al contrario</span></span>
+        </div>
+      </div>
+      <div class="out" id="out-ctl"></div>
+      <div class="cols"><div id="ch-ang"></div><div id="ch-rate"></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== quaternioni e angoli ===================== -->
+  <section id="m-rep" class="lab" role="tabpanel" aria-labelledby="tb-rep" hidden>
+    <form class="stack" id="f-rep" novalidate autocomplete="off">
+      <p class="hint" style="margin:0" data-en="Type in one group only: the others show the same rotation in green. Click a green group to edit it.">Scrivi in un gruppo solo: gli altri mostrano in verde la stessa rotazione. Tocca un gruppo verde per modificarlo.</p>
+      <div class="pnl">
+        <h2 data-en="Quaternion">Quaternione</h2>
+        <p class="why" data-en="Scalar last: q = (e sin ϑ/2, cos ϑ/2).">Scalare per ultimo: q = (e sin ϑ/2, cos ϑ/2).</p>
+        <div class="f"><label for="q1">q<sub>1</sub></label><input id="q1" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="q2">q<sub>2</sub></label><input id="q2" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="q3">q<sub>3</sub></label><input id="q3" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="q4" data-en="q<sub>4</sub> (scalar)">q<sub>4</sub> (scalare)</label><input id="q4" inputmode="decimal"><span class="u"></span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Euler angles 3-2-1">Angoli di Eulero 3-2-1</h2>
+        <p class="why" data-en="First yaw about z, then pitch about the new y, then roll about the new x.">Prima l'imbardata attorno a z, poi il beccheggio attorno al nuovo y, infine il rollio attorno al nuovo x.</p>
+        <div class="f"><label for="psi" data-en="Yaw ψ">Imbardata ψ</label><input id="psi" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="the" data-en="Pitch θ">Beccheggio θ</label><input id="the" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="phi" data-en="Roll φ">Rollio φ</label><input id="phi" inputmode="decimal"><span class="u">°</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Attitude matrix A">Matrice di assetto A</h2>
+        <p class="why" data-en="v<sub>body</sub> = A v<sub>ref</sub>. Each row is a body axis written in the reference frame.">v<sub>corpo</sub> = A v<sub>rif</sub>. Ogni riga è un asse del corpo scritto nel riferimento.</p>
+        <div class="mx">
+          <input id="a11" inputmode="decimal" aria-label="A11"><input id="a12" inputmode="decimal" aria-label="A12"><input id="a13" inputmode="decimal" aria-label="A13">
+          <input id="a21" inputmode="decimal" aria-label="A21"><input id="a22" inputmode="decimal" aria-label="A22"><input id="a23" inputmode="decimal" aria-label="A23">
+          <input id="a31" inputmode="decimal" aria-label="A31"><input id="a32" inputmode="decimal" aria-label="A32"><input id="a33" inputmode="decimal" aria-label="A33">
+        </div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Axis and angle">Asse e angolo</h2>
+        <div class="f"><label for="ex" data-en="Axis e<sub>x</sub>">Asse e<sub>x</sub></label><input id="ex" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="ey" data-en="Axis e<sub>y</sub>">Asse e<sub>y</sub></label><input id="ey" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="ez" data-en="Axis e<sub>z</sub>">Asse e<sub>z</sub></label><input id="ez" inputmode="decimal"><span class="u"></span></div>
+        <div class="f"><label for="ang" data-en="Angle ϑ">Angolo ϑ</label><input id="ang" inputmode="decimal"><span class="u">°</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="ex-rep" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clr-rep" data-en="Clear">Svuota</button>
+      </div>
+    </form>
+    <div>
+      <div id="msg-rep"></div>
+      <div id="inf-rep"></div>
+      <div class="view" id="v-rep" role="img" aria-label="Assetto del corpo rispetto al riferimento" data-en-aria-label="Body attitude relative to the reference frame">
+        <div class="st3" id="rep-ph"></div>
+        <div class="tl">
+          <button class="btn sm" type="button" id="an-ax" data-en="axis and angle">asse e angolo</button>
+          <button class="btn sm" type="button" id="an-eu" data-en="3-2-1 sequence">sequenza 3-2-1</button>
+        </div>
+        <div class="cap">
+          <span style="color:var(--tx3)"><i></i><span data-en="reference X Y Z">riferimento X Y Z</span></span>
+          <span style="color:var(--cy)"><i></i>x</span>
+          <span style="color:var(--gr)"><i></i>y</span>
+          <span style="color:var(--vi)"><i></i>z</span>
+          <span style="color:var(--ic)"><i></i><span data-en="rotation axis e">asse di rotazione e</span></span>
+        </div>
+      </div>
+      <div class="out" id="out-rep"></div>
+    </div>
+  </section>
+
+  <!-- ===================== come funziona ===================== -->
+  <section id="m-info" role="tabpanel" aria-labelledby="tb-info" hidden>
+    <div class="info">
+      <div class="pnl">
+        <h2 data-en="Free rotation">Rotazione libera</h2>
+        <p data-en="The body is rigid and no external torque acts on it. In principal axes the Euler equations hold:">Il corpo è rigido e nessuna coppia esterna agisce su di lui. In assi principali valgono le equazioni di Eulero:</p>
+        <p class="eq">I<sub>x</sub> ω̇<sub>x</sub> = (I<sub>y</sub> − I<sub>z</sub>) ω<sub>y</sub> ω<sub>z</sub><br>I<sub>y</sub> ω̇<sub>y</sub> = (I<sub>z</sub> − I<sub>x</sub>) ω<sub>z</sub> ω<sub>x</sub><br>I<sub>z</sub> ω̇<sub>z</sub> = (I<sub>x</sub> − I<sub>y</sub>) ω<sub>x</sub> ω<sub>y</sub></p>
+        <p data-en="The attitude moves with the quaternion (scalar last): q̇ = ½ q ⊗ (ω, 0). The seven equations are integrated with fourth-order Runge-Kutta, step h = min(0.01 s, 0.02/|ω|), and q is brought back to unit norm at every step.">L'assetto avanza con il quaternione (scalare per ultimo): q̇ = ½ q ⊗ (ω, 0). Le sette equazioni sono integrate con Runge-Kutta del quarto ordine, passo h = min(0,01 s; 0,02/|ω|), e a ogni passo q torna a norma 1.</p>
+        <p data-en="|H| and the energy T = ½ ωᵀ I ω stay constant. The self-test checks that over 60 s they change by less than one part in a million.">|H| e l'energia T = ½ ωᵀ I ω restano costanti. La prova interna controlla che in 60 s cambino meno di una parte su un milione.</p>
+        <p data-en="Stability: about the largest and the smallest inertia axis the motion is stable, about the intermediate one it is not. There a perturbation grows as e<sup>σt</sup>, with σ = ω √((I<sub>2</sub> − I<sub>1</sub>)(I<sub>3</sub> − I<sub>2</sub>)/(I<sub>1</sub> I<sub>3</sub>)) and I<sub>1</sub> &lt; I<sub>2</sub> &lt; I<sub>3</sub>. It is what Vladimir Dzhanibekov saw in 1985 with a wing nut in orbit. If the body loses energy (flexible antennas, sloshing propellant), only the largest inertia axis stays stable: Explorer 1 went into a flat spin this way in 1958.">Stabilità: attorno all'asse di inerzia massima e a quello di inerzia minima il moto è stabile, attorno all'intermedio no. Lì una perturbazione cresce come e<sup>σt</sup>, con σ = ω √((I<sub>2</sub> − I<sub>1</sub>)(I<sub>3</sub> − I<sub>2</sub>)/(I<sub>1</sub> I<sub>3</sub>)) e I<sub>1</sub> &lt; I<sub>2</sub> &lt; I<sub>3</sub>. È quello che Vladimir Džanibekov vide nel 1985 con un dado ad alette in orbita. Se il corpo perde energia (antenne flessibili, propellente che si muove), resta stabile solo l'asse di inerzia massima: così Explorer 1 finì a ruotare di piatto nel 1958.</p>
+        <p data-en="Polhode period: T = 4 K(k)/p, from the solution with Jacobi elliptic functions (Landau and Lifshitz, § 37). K is the complete elliptic integral of the first kind, computed with the arithmetic-geometric mean. Near the intermediate axis the body flips over every T/2.">Periodo della polodia: T = 4 K(k)/p, dalla soluzione con le funzioni ellittiche di Jacobi (Landau e Lifšic, § 37). K è l'integrale ellittico completo di prima specie, calcolato con la media aritmetico-geometrica. Vicino all'asse intermedio il corpo si ribalta ogni T/2.</p>
+        <p data-en="Axisymmetric body (I<sub>x</sub> = I<sub>y</sub> = I<sub>t</sub>, I<sub>z</sub> = I<sub>s</sub>): seen from the body, ω turns about the symmetry axis at λ = (I<sub>s</sub> − I<sub>t</sub>)/I<sub>t</sub> · ω<sub>z</sub>. In space the symmetry axis draws a cone of half-angle θ about H, with cos θ = I<sub>s</sub> ω<sub>z</sub>/H, at the rate H/I<sub>t</sub>.">Corpo assialsimmetrico (I<sub>x</sub> = I<sub>y</sub> = I<sub>t</sub>, I<sub>z</sub> = I<sub>s</sub>): visto dal corpo, ω gira attorno all'asse di simmetria alla velocità λ = (I<sub>s</sub> − I<sub>t</sub>)/I<sub>t</sub> · ω<sub>z</sub>. Nello spazio l'asse di simmetria descrive attorno a H un cono di semiapertura θ, con cos θ = I<sub>s</sub> ω<sub>z</sub>/H, alla velocità H/I<sub>t</sub>.</p>
+        <p data-en="Solid box with sides a, b, c: I<sub>x</sub> = m (b² + c²)/12, and likewise for the others. In the 3D view the inertial frame is turned so that H points up.">Parallelepipedo pieno di lati a, b, c: I<sub>x</sub> = m (b² + c²)/12, e così gli altri. Nella vista 3D il riferimento inerziale è girato in modo che H punti in alto.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Disturbances">Disturbi</h2>
+        <p data-en="Largest values of each torque, as in Wertz and Larson (SMAD, § 11.1):">Valori massimi di ciascuna coppia, come in Wertz e Larson (SMAD, § 11.1):</p>
+        <p class="eq">T<sub>g</sub> = 3μ/(2r³) · |I<sub>max</sub> − I<sub>min</sub>| · sin 2θ<br>T<sub>s</sub> = (F<sub>s</sub>/c) · A<sub>s</sub> · (1 + q) · cos i · (c<sub>ps</sub> − c<sub>g</sub>)<br>T<sub>a</sub> = ½ ρ V² · C<sub>d</sub> · A · (c<sub>pa</sub> − c<sub>g</sub>)<br>T<sub>m</sub> = D · B,&nbsp; B = λ M/r³</p>
+        <p data-en="θ is the offset between the body axis and the local vertical. F<sub>s</sub> = 1361 W/m² (Kopp and Lean 2011), c = 299 792 458 m/s, q is the reflectance, i the angle between the Sun and the surface normal. V = √(μ/r) with the air at rest. M = 7.96·10¹⁵ T·m³ (SMAD), that is 30.7 µT at the equator on the ground. λ = √(1 + 3 sin² φ<sub>m</sub>) goes from 1 at the magnetic equator to 2 at the poles. From the inclination i the page takes the highest magnetic latitude, φ<sub>m</sub> = min(90°, i + 9.2°), where 9.2° is the tilt of the Earth's dipole (NOAA, 2025).">θ è lo scarto fra l'asse del corpo e la verticale locale. F<sub>s</sub> = 1361 W/m² (Kopp e Lean 2011), c = 299 792 458 m/s, q è la riflettività, i l'angolo fra il Sole e la normale alla superficie. V = √(μ/r), con l'aria ferma. M = 7,96·10¹⁵ T·m³ (SMAD), cioè 30,7 µT all'equatore a terra. λ = √(1 + 3 sin² φ<sub>m</sub>) va da 1 all'equatore magnetico a 2 ai poli. Dall'inclinazione i la pagina prende la latitudine magnetica più alta, φ<sub>m</sub> = min(90°, i + 9,2°), dove 9,2° è l'inclinazione del dipolo terrestre (NOAA, 2025).</p>
+        <p data-en="Total: the sum of the largest values. The torques are not always aligned and not all present at once (in eclipse the solar pressure is gone), so the sum is an upper bound.">Totale: la somma dei valori massimi. Le coppie non sono sempre allineate né presenti tutte insieme (in eclisse la pressione solare sparisce), quindi la somma è un limite superiore.</p>
+        <p data-en="Air density: the table below, interpolated on a log scale between 200 and 1000 km. These are rounded values for average solar activity. The JB-2006 model for moderate activity (ECSS-E-ST-10-04C, table G-4, F10.7 = 140) gives values 15–45% higher. At 600 km the density is about 5 times higher at solar maximum and about 18 times lower at solar minimum. Above 1000 km the table ends and drag counts as zero, unless you give the density.">Densità dell'aria: la tabella qui sotto, interpolata in scala logaritmica fra 200 e 1000 km. Sono valori arrotondati per attività solare media. Il modello JB-2006 per attività moderata (ECSS-E-ST-10-04C, tabella G-4, F10.7 = 140) dà valori più alti del 15–45%. A 600 km la densità è circa 5 volte più alta con il Sole al massimo e circa 18 volte più bassa al minimo. Sopra 1000 km la tabella finisce e la resistenza vale zero, a meno che tu dia la densità.</p>
+        <table class="tbl" id="rhoTbl"></table>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Control">Controllo</h2>
+        <p data-en="First-level sizing, as in SMAD (§ 11.1):">Dimensionamento di primo livello, come in SMAD (§ 11.1):</p>
+        <ul>
+          <li data-en="Reaction wheel, cyclic torque: h = T<sub>D</sub> · P/4 · 0.707. The torque builds up for at most a quarter of an orbit, then changes sign; 0.707 is the rms value of a sine.">Ruota di reazione, coppia ciclica: h = T<sub>D</sub> · P/4 · 0,707. La coppia si accumula al più per un quarto d'orbita, poi cambia verso; 0,707 è il valore efficace di una sinusoide.</li>
+          <li data-en="Constant torque: h = T<sub>D</sub> · P every orbit, to be dumped.">Coppia costante: h = T<sub>D</sub> · P a ogni orbita, da scaricare.</li>
+          <li data-en="Bang-bang slew: half the time at full torque, half at the opposite torque. T = 4θI/t², ω<sub>max</sub> = 2θ/t, peak momentum I ω<sub>max</sub>.">Manovra bang-bang: metà tempo a coppia piena, metà a coppia opposta. T = 4θI/t², ω<sub>max</sub> = 2θ/t, momento di picco I ω<sub>max</sub>.</li>
+          <li data-en="Momentum wheel: h = T<sub>D</sub> P/(4θ<sub>a</sub>), so that the disturbance moves the axis by no more than θ<sub>a</sub> in a quarter of an orbit.">Ruota di momento: h = T<sub>D</sub> P/(4θ<sub>a</sub>), perché il disturbo sposti l'asse di non più di θ<sub>a</sub> in un quarto d'orbita.</li>
+          <li data-en="Magnetorquer: D = T<sub>D</sub>/B, with the weakest field along the orbit, B = M/r³ (λ = 1).">Magnetotorquer: D = T<sub>D</sub>/B, con il campo più debole lungo l'orbita, B = M/r³ (λ = 1).</li>
+          <li data-en="Dumping with thrusters: F = h/(L t), propellant per year m = F t N/(I<sub>sp</sub> g<sub>0</sub>), with one dump per orbit (N per year) and g<sub>0</sub> = 9.80665 m/s².">Scarico con i propulsori: F = h/(L t), propellente in un anno m = F t N/(I<sub>sp</sub> g<sub>0</sub>), con uno scarico per orbita (N in un anno) e g<sub>0</sub> = 9,80665 m/s².</li>
+          <li data-en="The margin multiplies torques, momenta, dipole, thrust and propellant. The angular acceleration without control, T<sub>D</sub>/I, is shown without margin.">Il margine moltiplica coppie, momenti, dipolo, spinta e propellente. L'accelerazione angolare senza controllo, T<sub>D</sub>/I, è senza margine.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Quaternions and angles">Quaternioni e angoli</h2>
+        <p data-en="Quaternion with the scalar last: q = (e sin ϑ/2, cos ϑ/2), with e the rotation axis and ϑ the angle. q and −q give the same rotation: the page shows the one with q<sub>4</sub> ≥ 0.">Quaternione con lo scalare per ultimo: q = (e sin ϑ/2, cos ϑ/2), con e asse di rotazione e ϑ angolo. q e −q danno la stessa rotazione: la pagina mostra quello con q<sub>4</sub> ≥ 0.</p>
+        <p data-en="Attitude matrix A, as in Markley and Crassidis: it takes components from the reference frame to the body, v<sub>B</sub> = A v<sub>R</sub>.">Matrice di assetto A, come in Markley e Crassidis: porta le componenti dal riferimento al corpo, v<sub>B</sub> = A v<sub>R</sub>.</p>
+        <p class="eq">A = (q<sub>4</sub>² − |q<sub>1:3</sub>|²) I + 2 q<sub>1:3</sub> q<sub>1:3</sub>ᵀ − 2 q<sub>4</sub> [q<sub>1:3</sub>×]<br>A = R<sub>1</sub>(φ) R<sub>2</sub>(θ) R<sub>3</sub>(ψ)<br>ψ = atan2(A<sub>12</sub>, A<sub>11</sub>),&nbsp; θ = −asin A<sub>13</sub>,&nbsp; φ = atan2(A<sub>23</sub>, A<sub>33</sub>)</p>
+        <p data-en="At θ = ±90° roll and yaw blur into one angle (gimbal lock): the page sets φ = 0. From the matrix to the quaternion it uses Shepperd's method. If the matrix is not orthogonal, it first takes the nearest rotation matrix (the orthogonal factor of the polar decomposition).">A θ = ±90° rollio e imbardata si confondono in un angolo solo (blocco cardanico): la pagina pone φ = 0. Dalla matrice al quaternione usa il metodo di Shepperd. Se la matrice non è ortogonale, prima prende la matrice di rotazione più vicina (il fattore ortogonale della decomposizione polare).</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Limits">Limiti</h2>
+        <ul>
+          <li data-en="Rigid body: no flexible appendages, no moving propellant, no damping.">Corpo rigido: niente appendici flessibili, niente propellente che si muove, niente smorzamento.</li>
+          <li data-en="Disturbances as largest values: spherical Earth, centred dipole field, air at rest taken from a table, no eclipses.">Disturbi come valori massimi: Terra sferica, campo di dipolo centrato, aria ferma presa da una tabella, niente eclissi.</li>
+          <li data-en="Preliminary sizing: it does not replace a simulation with the closed-loop control.">Dimensionamento preliminare: non sostituisce una simulazione con il controllo in anello chiuso.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Sources">Fonti</h2>
+        <ul>
+          <li>J. R. Wertz (ed.), <i>Spacecraft Attitude Determination and Control</i>, Reidel, 1978.</li>
+          <li data-en="J. R. Wertz, W. J. Larson, <i>Space Mission Analysis and Design</i>, 3rd ed., 1999, § 11.1 (SMAD).">J. R. Wertz, W. J. Larson, <i>Space Mission Analysis and Design</i>, 3ª ed., 1999, § 11.1 (SMAD).</li>
+          <li>F. L. Markley, J. L. Crassidis, <i>Fundamentals of Spacecraft Attitude Determination and Control</i>, Springer, 2014.</li>
+          <li data-en="L. D. Landau, E. M. Lifshitz, <i>Mechanics</i>, § 37.">L. D. Landau, E. M. Lifšic, <i>Meccanica</i>, § 37.</li>
+          <li>S. W. Shepperd, «Quaternion from rotation matrix», <i>Journal of Guidance and Control</i> 1 (3), 1978.</li>
+          <li>G. Kopp, J. L. Lean, <i>Geophysical Research Letters</i> 38, L01706, 2011.</li>
+          <li data-en="ECSS-E-ST-10-04C, <i>Space environment</i>, 2008, table G-4.">ECSS-E-ST-10-04C, <i>Space environment</i>, 2008, tabella G-4.</li>
+          <li>NOAA NCEI, <i>Wandering geomagnetic poles</i> (WMM2025).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 </main>
 
 <script src="vendor/three.min.js"></script>
 <script src="vendor/OrbitControls.js"></script>
 <script>
-const $ = id => document.getElementById(id);
-const D = Math.PI / 180, MU = 398600.4418, RE = 6378.137;
-const num = id => { const v = $(id).value.trim(); if (v === '') return null; const x = Number(v.replace(',', '.')); return Number.isFinite(x) ? x : NaN; };
-const fmt = (x, d = 3) => Number.isFinite(x) ? x.toLocaleString('it-IT', { maximumFractionDigits: d, minimumFractionDigits: 0 }) : '—';
-const sci = x => !Number.isFinite(x) ? '—' : (x === 0 ? '0' : (Math.abs(x) >= 0.01 && Math.abs(x) < 10000 ? fmt(x, 4) : x.toExponential(2).replace('.', ',').replace('e', ' × 10^').replace('+', '')));
-const row = (l, v, cls = '') => `<div class="row ${cls}"><span>${l}</span><span>${v}</span></div>`;
-const msg = t => { $('msg').innerHTML = t ? `<p class="msg">${t}</p>` : ''; };
+/* Keplario · laboratorio: funzioni comuni a tutte le pagine di calcolo.
+   K.bar(...)       barra in alto con Cielo, le sei materie e la lingua
+   K.en, K.t(it,en) lingua (stessa scelta dell'app: #en/#it, ?lang=, localStorage «atlante-lingua», lingua del browser)
+   K.num(id)        legge un campo: null se vuoto, NaN se non è un numero (accetta virgola, spazi, 1e-3, −)
+   K.fmt, K.sig     numeri all'italiana o all'inglese (spazio per le migliaia)
+   K.der(id, x)     mostra in verde, dentro un campo lasciato vuoto, il valore che la pagina ha ricavato
+   K.rows(el, ...)  righe di risultati; K.msg(el, testo) avvisi
+   K.live(el, fn)   ricalcola a ogni modifica; K.keep(ids) ricorda i dati nell'indirizzo (#a=…&e=…)
+   K.sat(el, fn)    «parti da un satellite reale»: cerca nel catalogo data/active.txt e dà gli elementi medi del TLE
+   K.earth(THREE)   Terra realistica (giorno, notte, riflesso del mare, nuvole, atmosfera)
+   K.chart(el, ...) grafico a linee con assi, legenda e lettura al passaggio del puntatore */
+'use strict';
+const K = (() => {
+  const $ = id => typeof id === 'string' ? document.getElementById(id) : id;
 
-/* ---------- vettori e quaternioni (scalare ultimo) ---------- */
-const qmul = (a, b) => [a[3]*b[0] + a[0]*b[3] + a[1]*b[2] - a[2]*b[1], a[3]*b[1] - a[0]*b[2] + a[1]*b[3] + a[2]*b[0], a[3]*b[2] + a[0]*b[1] - a[1]*b[0] + a[2]*b[3], a[3]*b[3] - a[0]*b[0] - a[1]*b[1] - a[2]*b[2]];
-const qnorm = q => { const n = Math.hypot(...q); return q.map(x => x / n); };
-function qFromEuler(r, p, y) { const cr = Math.cos(r/2), sr = Math.sin(r/2), cp = Math.cos(p/2), sp = Math.sin(p/2), cy = Math.cos(y/2), sy = Math.sin(y/2);
-  return [sr*cp*cy - cr*sp*sy, cr*sp*cy + sr*cp*sy, cr*cp*sy - sr*sp*cy, cr*cp*cy + sr*sp*sy]; }
-function eulerFromQ(q) { const [x, y, z, w] = q;
-  return [Math.atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y)), Math.asin(Math.max(-1, Math.min(1, 2*(w*y - z*x)))), Math.atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))]; }
-function dcmFromQ(q) { const [x, y, z, w] = q;
-  return [[1-2*(y*y+z*z), 2*(x*y-w*z), 2*(x*z+w*y)], [2*(x*y+w*z), 1-2*(x*x+z*z), 2*(y*z-w*x)], [2*(x*z-w*y), 2*(y*z+w*x), 1-2*(x*x+y*y)]]; }
-const matVec = (R, v) => [0,1,2].map(i => R[i][0]*v[0] + R[i][1]*v[1] + R[i][2]*v[2]);
-
-/* ---------- 3D ---------- */
-const V = { ready: false, q: [0, 0, 0, 1], dims: [1, 1, 1], H: null };
-function setup3D() {
-  if (V.ready) return; V.ready = true;
-  const host = $('viewer');
-  const cv = document.createElement('canvas'); host.appendChild(cv);
-  const R = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
-  R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.setClearColor(0x000000, 0);
-  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
-  cam.position.set(2.6, 2.1, 3.2);
-  scene.add(new THREE.AmbientLight(0x8a96a6, 1.0)); const sun = new THREE.DirectionalLight(0xffffff, 1.4); sun.position.set(3, 4, 2); scene.add(sun);
-  const ref = new THREE.Group(); ref.rotation.x = -Math.PI / 2; scene.add(ref);   // z verso l'alto, come nei libri
-  const body = new THREE.Group(); ref.add(body);
-  const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x9aa8b8, metalness: 0.4, roughness: 0.45 })); body.add(box);
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), new THREE.LineBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.55 })); body.add(edges);
-  const ax = (dir, col) => { const a = new THREE.ArrowHelper(new THREE.Vector3(...dir), new THREE.Vector3(), 1.4, col, 0.16, 0.09); body.add(a); return a; };
-  ax([1,0,0], 0xff6b6b); ax([0,1,0], 0x58e07f); ax([0,0,1], 0x5aa0ff);
-  // riferimento fisso: tre assi tenui
-  const fx = (dir) => { const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(...dir).multiplyScalar(2.1)]); ref.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x5b6672, transparent: true, opacity: 0.6 }))); };
-  fx([1,0,0]); fx([0,1,0]); fx([0,0,1]);
-  const Harr = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(), 1.9, 0xffb224, 0.2, 0.11); Harr.visible = false; ref.add(Harr);
-  const controls = new THREE.OrbitControls(cam, cv); controls.enableDamping = true; controls.enablePan = false;
-  Object.assign(V, { R, scene, cam, body, box, edges, Harr, controls, cv });
-  V.size = () => { const w = host.clientWidth, h = host.clientHeight; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
-  addEventListener('resize', V.size); V.size();
-  (function loop() { requestAnimationFrame(loop); controls.update(); R.render(scene, cam); })();
-}
-function setDims(d) {
-  const mx = Math.max(...d); const s = d.map(x => Math.max(0.12, x / mx * 1.25));
-  V.box.scale.set(...s); V.edges.scale.set(...s);
-}
-function setAtt(q) { V.q = q; V.body.quaternion.set(q[0], q[1], q[2], q[3]); }
-function setH(v) { if (!v) { V.Harr.visible = false; return; } const n = Math.hypot(...v); if (n < 1e-12) { V.Harr.visible = false; return; }
-  V.Harr.visible = true; V.Harr.setDirection(new THREE.Vector3(v[0]/n, v[1]/n, v[2]/n)); }
-
-/* ---------- rotazione libera ---------- */
-const S = { mode: 'free', I: null, w: null, q: [0,0,0,1], w0: null, q0: [0,0,0,1], t: 0, playing: false, last: 0 };
-function inertias() {
-  let I = [num('Ix'), num('Iy'), num('Iz')];
-  const m = num('m'), d = [num('da'), num('db'), num('dc')];
-  const haveI = I.every(x => x !== null), haveBox = m !== null && d.every(x => x !== null);
-  if (!haveI && haveBox) { const [a, b, c] = d; I = [m/12*(b*b + c*c), m/12*(a*a + c*c), m/12*(a*a + b*b)]; }
-  else if (!haveI) return { err: 'Servono le tre inerzie principali, oppure la massa e le tre lunghezze del parallelepipedo.' };
-  if (I.some(x => !(x > 0))) return { err: 'Le inerzie devono essere positive.' };
-  const [x, y, z] = I; if (x + y < z * 0.999999 || y + z < x * 0.999999 || x + z < y * 0.999999) return { err: 'Queste inerzie non sono possibili per un corpo reale: la somma di due non può essere minore della terza.' };
-  let dims = haveBox ? d : [Math.sqrt(6*(y + z - x)), Math.sqrt(6*(x + z - y)), Math.sqrt(6*(x + y - z))];
-  return { I, dims };
-}
-function free() {
-  const r = inertias(); if (r.err) { msg(r.err); $('res').innerHTML = ''; return; }
-  const w = [num('wx'), num('wy'), num('wz')];
-  if (w.some(x => x === null)) { msg('Servono le tre componenti della velocità angolare (anche zero).'); return; }
-  const [I1, I2, I3] = r.I, W = w.map(x => x * D);
-  const H = [I1*W[0], I2*W[1], I3*W[2]], Hn = Math.hypot(...H), T = 0.5*(I1*W[0]**2 + I2*W[1]**2 + I3*W[2]**2);
-  const ord = [0,1,2].sort((a, b) => r.I[a] - r.I[b]), names = ['x','y','z'];
-  const lo = r.I[ord[0]], mid = r.I[ord[1]], hi = r.I[ord[2]];
-  let out = row('Momento angolare H', `${sci(Hn)} kg·m²/s`) + row('Energia cinetica', `${sci(T)} J`) + row('Velocità angolare', `${fmt(Math.hypot(...w), 3)} °/s`);
-  out += row('H in assi corpo', `(${sci(H[0])}; ${sci(H[1])}; ${sci(H[2])})`);
-  if (Hn > 0) {
-    const Ie = Hn*Hn/(2*T), tol = 1e-6*mid;
-    let txt;
-    if (Math.abs(hi - mid) < tol && Math.abs(mid - lo) < tol) txt = 'Corpo sferico: ruota come un blocco attorno a ω, senza oscillazioni.';
-    else if (Math.abs(Ie - mid) < 1e-4*mid) txt = `Vicino alla separatrice: il moto è instabile, il corpo si ribalta periodicamente (asse ${names[ord[1]]} intermedio).`;
-    else if (Ie > mid) txt = `Ruota attorno all'asse di inerzia massima (${names[ord[2]]}): stabile.`;
-    else txt = `Ruota attorno all'asse di inerzia minima (${names[ord[0]]}): stabile se non c'è dissipazione. Con attrito interno passa all'asse massimo.`;
-    out += row('Inerzia effettiva H²/2T', `${sci(Ie)} kg·m²`) + row('Esito', txt, 'sub2');
-  } else out += row('Esito', 'Fermo: nessuna rotazione da studiare.', 'sub2');
-  const nuts = (Math.abs(I1 - I2) < 1e-9*I1 || Math.abs(I2 - I3) < 1e-9*I2 || Math.abs(I1 - I3) < 1e-9*I1);
-  if (nuts && Hn > 0) {   // simmetrico: periodo di precessione
-    const sym = Math.abs(I1 - I2) < 1e-9*I1 ? 2 : (Math.abs(I2 - I3) < 1e-9*I2 ? 0 : 1);
-    const Is = r.I[sym], It = r.I[(sym + 1) % 3], ws = W[sym];
-    if (Math.abs(Is - It) > 1e-12) { const lam = (Is - It)/It*ws; out += row('Frequenza di nutazione nel corpo', `${fmt(Math.abs(lam)/D, 3)} °/s`) + row('Periodo di nutazione', Math.abs(lam) > 1e-12 ? `${fmt(2*Math.PI/Math.abs(lam), 2)} s` : '—'); }
+  /* ---------- lingua ---------- */
+  const lang = (() => {
+    const h = (location.hash || '').slice(1);
+    if (h === 'en' || h === 'it') return h;
+    const q = (location.search.match(/[?&]lang=(en|it)\b/) || [])[1]; if (q) return q;
+    try { const s = localStorage.getItem('atlante-lingua'); if (s === 'en' || s === 'it') return s; } catch (e) {}
+    return /^it\b/i.test(navigator.language || 'it') ? 'it' : 'en';
+  })();
+  const en = lang === 'en';
+  const t = (it, e) => en ? e : it;
+  function applyLang(root) {
+    document.documentElement.lang = lang;
+    if (!en) return;
+    (root || document).querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-en'); });
+    for (const a of ['title', 'aria-label', 'placeholder', 'content', 'alt'])
+      (root || document).querySelectorAll('[data-en-' + a + ']').forEach(el => el.setAttribute(a, el.getAttribute('data-en-' + a)));
   }
-  $('res').innerHTML = out; msg('');
-  S.I = r.I; S.w0 = W; S.w = W.slice(); S.q0 = [0,0,0,1]; S.q = [0,0,0,1]; S.t = 0;
-  setDims(r.dims); setAtt(S.q); setH(H);   // con q = identità il corpo coincide con il riferimento: H fisso = H in assi corpo
-  $('bar').style.display = 'flex'; $('tlab').textContent = 't = 0 s';
-}
-function deriv(w, q, I) {
-  const dw = [ ((I[1] - I[2])*w[1]*w[2]) / I[0], ((I[2] - I[0])*w[2]*w[0]) / I[1], ((I[0] - I[1])*w[0]*w[1]) / I[2] ];
-  const dq = qmul(q, [w[0], w[1], w[2], 0]).map(x => 0.5*x);
-  return { dw, dq };
-}
-function step(dt) {
-  const I = S.I; let w = S.w, q = S.q;
-  const add = (a, b, s) => a.map((x, i) => x + b[i]*s);
-  const k1 = deriv(w, q, I), k2 = deriv(add(w, k1.dw, dt/2), add(q, k1.dq, dt/2), I), k3 = deriv(add(w, k2.dw, dt/2), add(q, k2.dq, dt/2), I), k4 = deriv(add(w, k3.dw, dt), add(q, k3.dq, dt), I);
-  w = w.map((x, i) => x + dt/6*(k1.dw[i] + 2*k2.dw[i] + 2*k3.dw[i] + k4.dw[i]));
-  q = qnorm(q.map((x, i) => x + dt/6*(k1.dq[i] + 2*k2.dq[i] + 2*k3.dq[i] + k4.dq[i])));
-  S.w = w; S.q = q;
-}
-function tick(now) {
-  if (!S.playing) return;
-  const dt = Math.min(0.05, (now - (S.last || now)) / 1000) * Number($('spd').value); S.last = now;
-  const n = Math.max(1, Math.ceil(dt / 0.005)); for (let k = 0; k < n; k++) step(dt / n);
-  S.t += dt; setAtt(S.q); $('tlab').textContent = `t = ${fmt(S.t, 1)} s`;
-  requestAnimationFrame(tick);
-}
 
-/* ---------- disturbi ---------- */
-function rhoEst(h) {   // ordine di grandezza, attività solare media
-  const T = [[200, 2.5e-10], [300, 2.0e-11], [400, 3.0e-12], [500, 6.0e-13], [600, 1.5e-13], [800, 1.6e-14], [1000, 4e-15]];
-  if (h < T[0][0] || h > T[T.length-1][0]) return null;
-  for (let i = 0; i < T.length - 1; i++) if (h <= T[i+1][0]) { const f = (h - T[i][0]) / (T[i+1][0] - T[i][0]); return Math.exp(Math.log(T[i][1]) + f*(Math.log(T[i+1][1]) - Math.log(T[i][1]))); }
-}
-function dist() {
-  let r = num('r'), h = num('h');
-  if (r === null && h !== null) r = h + RE; if (h === null && r !== null) h = r - RE;
-  if (r === null) { msg('Serve almeno la quota o il raggio orbitale.'); $('res').innerHTML = ''; return; }
-  if (!(r > RE)) { msg('Il raggio orbitale deve superare quello terrestre (6378 km).'); return; }
-  const rm = r * 1000, mu = MU * 1e9, n = Math.sqrt(MU / r**3), P = 2*Math.PI / n, V0 = Math.sqrt(MU / r) * 1000;
-  let out = row('Raggio orbitale', `${fmt(r, 1)} km · quota ${fmt(h, 1)} km`) + row('Periodo orbitale', `${fmt(P / 60, 2)} min`) + row('Velocità', `${fmt(V0 / 1000, 3)} km/s`);
-  const T = [];
-  const Imax = num('Imax'), Imin = num('Imin'), th = num('th');
-  if (Imax !== null && Imin !== null) {
-    const k = 3*mu / (2*rm**3) * Math.abs(Imax - Imin);
-    out += row('Gradiente di gravità, massimo', `${sci(k)} N·m`); T.push(['gradiente di gravità', k]);
-    if (th !== null) out += row(`Gradiente di gravità a θ = ${fmt(th, 1)}°`, `${sci(k*Math.abs(Math.sin(2*th*D)))} N·m`);
+  /* ---------- barra in alto ---------- */
+  const SUBJ = [
+    ['orbite', 'Orbite e manovre', 'Orbits and manoeuvres'],
+    ['assetto', 'Assetto e controllo', 'Attitude and control'],
+    ['propulsione', 'Propulsione e lanciatori', 'Propulsion and launchers'],
+    ['strutture', 'Strutture e materiali', 'Structures and materials'],
+    ['comunicazioni', 'Comunicazioni e navigazione', 'Communications and navigation'],
+    ['sistemi', 'Sistemi e missione', 'Systems and mission'],
+  ];
+  const sky = () => en ? 'en/' : './';
+  function bar(cur) {
+    const satQ = (location.search.match(/[?&](sat=\d+)/) || [])[1], q = satQ ? '?' + satQ : '';
+    const h = document.createElement('header'); h.className = 'kb';
+    h.innerHTML = '<div class="kb-in"><a class="kb-home" href="' + sky() + '">Keplario</a>' +
+      '<a class="kb-sky" href="' + sky() + '#cielo">' + t('Cielo', 'Sky') + '</a><span class="kb-sep" aria-hidden="true"></span>' +
+      '<nav class="kb-nav" aria-label="' + t('Laboratorio', 'Lab') + '">' +
+      SUBJ.map(s => '<a href="' + s[0] + '.html' + q + '"' + (s[0] === cur ? ' aria-current="page"' : '') + '>' + (en ? s[2] : s[1]) + '</a>').join('') +
+      '</nav><button class="btn sm kb-lang" type="button" title="' + (en ? 'Italiano' : 'English') + '">' + (en ? 'IT' : 'EN') + '</button></div>';
+    document.body.prepend(h);
+    h.querySelector('.kb-lang').onclick = () => {
+      try { localStorage.setItem('atlante-lingua', en ? 'it' : 'en'); } catch (e) {}
+      const u = new URL(location.href); u.searchParams.delete('lang'); if (u.hash === '#en' || u.hash === '#it') u.hash = '';
+      location.replace(u.href);
+    };
+    const cn = h.querySelector('[aria-current=page]'); if (cn && cn.scrollIntoView) setTimeout(() => cn.scrollIntoView({ block: 'nearest', inline: 'center' }), 0);
+    const f = document.createElement('footer'); f.className = 'foot';
+    f.innerHTML = '<span>' + t('Strumento didattico: non usarlo per operazioni di volo.', 'A learning tool: not for flight operations.') + '</span>' +
+      '<a href="' + sky() + '">' + t('Torna al cielo', 'Back to the sky') + '</a><a href="LICENZE.txt">' + t('Licenze', 'Licences') + '</a>';
+    document.body.append(f);
   }
-  const A = num('A'), q = num('q'), L = num('L');
-  if (A !== null && L !== null) {
-    const refl = q === null ? 0.6 : q;
-    const F = 1361 / 299792458 * A * (1 + refl), t = F * Math.abs(L);
-    out += row('Pressione solare, forza', `${sci(F)} N`) + row('Pressione solare, coppia', `${sci(t)} N·m`); T.push(['pressione solare', t]);
-    if (q === null) out += row('', 'Riflettività non data: uso 0,6.', 'sub2');
+  function init(cur) { applyLang(); bar(cur); }
+
+  /* ---------- numeri ---------- */
+  function num(id) {
+    const el = $(id); if (!el) return null;
+    let v = String(el.value).trim(); if (v === '') return null;
+    v = v.replace(/[\s  ']/g, '').replace(/−/g, '-').replace(/[×x]10\^?/i, 'e');
+    // separatore decimale: con punto e virgola insieme vale l'ultimo dei due (1.234,5 e 1,234.5);
+    // da soli, un punto o una virgola sono decimali (0.366 e 0,366); ripetuti sono migliaia (1.234.567)
+    const dot = v.lastIndexOf('.'), com = v.lastIndexOf(',');
+    if (dot >= 0 && com >= 0) v = dot > com ? v.replace(/,/g, '') : v.replace(/\./g, '').replace(',', '.');
+    else if ((v.match(/\./g) || []).length > 1) v = v.replace(/\./g, '');
+    else if ((v.match(/,/g) || []).length > 1) v = v.replace(/,/g, '');
+    else v = v.replace(',', '.');
+    const x = Number(v); return Number.isFinite(x) ? x : NaN;
   }
-  const Cd = num('Cd') ?? 2.2; let rho = num('rho'), rhoNote = '';
-  if (rho === null && h !== null) { rho = rhoEst(h); if (rho) rhoNote = ' (stima)'; }
-  if (A !== null && L !== null && rho) {
-    const t = 0.5*rho*V0**2*Cd*A*Math.abs(L);
-    out += row(`Resistenza atmosferica${rhoNote}`, `${sci(t)} N·m · densità ${sci(rho)} kg/m³`); T.push(['resistenza atmosferica', t]);
-  } else if (A !== null && L !== null && !rho) out += row('Resistenza atmosferica', 'Fuori dal campo della stima (200–1000 km): dai tu la densità.', 'sub2');
-  const md = num('md');
-  if (md !== null) { const B = 3.12e-5 * (RE / r)**3, t = md*B; out += row('Campo magnetico (equatore)', `${sci(B*1e9)} nT`) + row('Coppia magnetica, massima', `${sci(2*t)} N·m`); T.push(['campo magnetico', 2*t]); }
-  if (!T.length) { msg('Con questi dati calcolo solo l\'orbita. Aggiungi le inerzie, la superficie e la distanza del centro di pressione, oppure il dipolo.'); $('res').innerHTML = out; return; }
-  T.sort((a, b) => b[1] - a[1]);
-  const tot = T.reduce((s, x) => s + x[1], 0);
-  out += row('Disturbo dominante', `${T[0][0]} (${fmt(T[0][1]/tot*100, 0)}% del totale)`, 'sub2') + row('Somma nel caso peggiore', `${sci(tot)} N·m`);
-  const Is = num('Is') ?? Imax;
-  if (Is) out += row('Accelerazione angolare peggiore', `${sci(tot/Is/D)} °/s²`) + row('Momento accumulato in un\'orbita', `${sci(tot*P)} N·m·s`) + row('', 'Calcolato con coppia costante per tutta l\'orbita: per una ruota di reazione è un limite superiore.', 'sub2');
-  $('res').innerHTML = out; msg('');
-  setH(null); setDims([1, 1, 1]); setAtt([0, 0, 0, 1]);
-}
+  const DEC = en ? '.' : ',';
+  function group(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmt(x, d) {
+    if (x == null || !Number.isFinite(x)) return '—';
+    d = d == null ? 2 : d;
+    let s = Math.abs(x).toFixed(d); const p = s.split('.');
+    const neg = x < 0 && Number(s) !== 0;
+    return (neg ? '−' : '') + group(p[0]) + (p[1] ? DEC + p[1] : '');
+  }
+  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function sig(x, n) {     // n cifre significative; potenze di dieci fuori da 10⁻³…10⁷
+    if (x == null || !Number.isFinite(x)) return '—';
+    n = n || 4; if (x === 0) return '0';
+    const ax = Math.abs(x), e = Math.floor(Math.log10(ax));
+    if (e < -3 || e > 7) {
+      const m = x / Math.pow(10, e);
+      return fmt(m, n - 1).replace(new RegExp('\\' + DEC + '?0+$'), '') + '·10' + String(e).split('').map(c => SUP[c]).join('');
+    }
+    return fmt(x, Math.max(0, n - 1 - e));
+  }
+  const plain = (x, d) => (x == null || !Number.isFinite(x)) ? '' : fmt(x, d).replace(/ /g, ' ');
 
-/* ---------- rappresentazioni ---------- */
-function rep() {
-  const Q = ['qx','qy','qz','qw'].map(num), A = ['ax','ay','az','an'].map(num), E = ['roll','pitch','yaw'].map(num);
-  const hasQ = Q.some(x => x !== null), hasA = A.some(x => x !== null), hasE = E.some(x => x !== null);
-  if (!hasQ && !hasA && !hasE) { msg('Compila quaternione, asse e angolo, oppure gli angoli di Eulero.'); $('res').innerHTML = ''; return; }
-  let q, src;
-  if (hasQ) { if (Q.some(x => x === null)) { msg('Il quaternione vuole tutte e quattro le componenti.'); return; } if (Math.hypot(...Q) < 1e-9) { msg('Il quaternione non può essere nullo.'); return; } q = qnorm(Q); src = 'quaternione';
-    if (Math.abs(Math.hypot(...Q) - 1) > 1e-3) msg('Il quaternione non aveva norma 1: l\'ho normalizzato.'); else msg(''); }
-  else if (hasA) { if (A.some(x => x === null)) { msg('Servono i tre numeri dell\'asse e l\'angolo.'); return; } const n = Math.hypot(A[0], A[1], A[2]); if (n < 1e-9) { msg('L\'asse non può essere nullo.'); return; }
-    const s = Math.sin(A[3]*D/2) / n; q = [A[0]*s, A[1]*s, A[2]*s, Math.cos(A[3]*D/2)]; src = 'asse e angolo'; msg(''); }
-  else { if (E.some(x => x === null)) { msg('Servono i tre angoli di Eulero (anche zero).'); return; } q = qFromEuler(E[0]*D, E[1]*D, E[2]*D); src = 'angoli di Eulero'; msg(''); }
-  if (q[3] < 0) q = q.map(x => -x);   // stessa rotazione, scalare positivo
-  const e = eulerFromQ(q), ang = 2*Math.acos(Math.min(1, q[3])), sn = Math.hypot(q[0], q[1], q[2]), axis = sn < 1e-9 ? [1, 0, 0] : q.slice(0, 3).map(x => x / sn), R = dcmFromQ(q);
-  let out = row('Partito da', src, 'sub2');
-  out += row('Quaternione (x; y; z; w)', `${fmt(q[0], 5)}; ${fmt(q[1], 5)}; ${fmt(q[2], 5)}; ${fmt(q[3], 5)}`);
-  out += row('Asse di rotazione', sn < 1e-9 ? 'qualsiasi (nessuna rotazione)' : `(${fmt(axis[0], 5)}; ${fmt(axis[1], 5)}; ${fmt(axis[2], 5)})`) + row('Angolo', `${fmt(ang/D, 4)}°`);
-  out += row('Rollio φ', `${fmt(e[0]/D, 4)}°`) + row('Beccheggio θ', `${fmt(e[1]/D, 4)}°`) + row('Imbardata ψ', `${fmt(e[2]/D, 4)}°`);
-  if (Math.abs(Math.abs(e[1]) - Math.PI/2) < 1e-4) out += row('', 'Beccheggio a ±90°: rollio e imbardata non sono distinguibili (blocco cardanico).', 'sub2');
-  out += R.map((rw, i) => row(`Matrice, riga ${i + 1}`, rw.map(x => fmt(x, 5)).join(' ; '), 'vec')).join('');
-  $('res').innerHTML = out;
-  S.playing = false; $('play').textContent = '▶'; $('bar').style.display = 'none';
-  setDims([1.6, 1, 0.6]); setH(null); setAtt(q);
-}
+  /* ---------- campi ricavati e campi in conflitto ---------- */
+  function der(id, x, d) {
+    const el = $(id); if (!el) return;
+    if (el.dataset.ph === undefined) el.dataset.ph = el.placeholder || '';
+    if (el.value.trim() !== '') return;
+    const ok = x != null && Number.isFinite(x);
+    el.placeholder = ok ? (typeof d === 'string' ? d : (d == null ? sig(x, 5) : plain(x, d))) : el.dataset.ph;
+    el.classList.toggle('der', ok);
+  }
+  function clear(scope) {
+    (scope ? $(scope) : document).querySelectorAll('input').forEach(el => {
+      if (el.dataset.ph !== undefined) el.placeholder = el.dataset.ph;
+      el.classList.remove('der', 'bad');
+    });
+  }
+  function bad(id, on) { const el = $(id); if (el) el.classList.toggle('bad', on !== false); }
+  const given = id => { const el = $(id); return !!el && el.value.trim() !== ''; };
 
-/* ---------- comandi ---------- */
-function run(ev) {
-  if (ev) ev.preventDefault();
-  setup3D(); S.playing = false; $('play').textContent = '▶';
-  const all = [...document.querySelectorAll('input[type=text]')];
-  if (all.some(i => i.value.trim() !== '' && !Number.isFinite(Number(i.value.trim().replace(',', '.'))))) { msg('Controlla i valori: alcuni non sono numeri.'); return; }
-  $('bar').style.display = S.mode === 'free' ? 'flex' : 'none'; $('viewer').style.display = S.mode === 'dist' ? 'none' : ''; document.querySelector('.legend').style.display = S.mode === 'dist' ? 'none' : '';
-  ({ free, dist, rep })[S.mode]();
+  /* ---------- risultati e avvisi ---------- */
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // voce: ['#', 'Titolo'] oppure [etichetta, valore, unità, nota, classe]  (valore già formattato)
+  function rows(el, list) {
+    $(el).innerHTML = list.filter(Boolean).map(r => r[0] === '#' ? '<h3>' + r[1] + '</h3>' :
+      '<div class="row' + (r[4] ? ' ' + r[4] : '') + '"><span>' + r[0] + '</span><span class="v">' + r[1] + (r[2] ? '<small>' + r[2] + '</small>' : '') + '</span>' +
+      (r[3] ? '<span class="n">' + r[3] + '</span>' : '') + '</div>').join('');
+  }
+  function msg(el, text, kind) { $(el).innerHTML = text ? '<p class="msg' + (kind ? ' ' + kind : '') + '">' + text + '</p>' : ''; }
+
+  /* ---------- ricalcolo e memoria nell'indirizzo ---------- */
+  function live(scope, fn, ms) {
+    let tm = 0; const go = () => { clearTimeout(tm); tm = setTimeout(fn, ms == null ? 160 : ms); };
+    $(scope).addEventListener('input', go); $(scope).addEventListener('change', go); return go;
+  }
+  let keepIds = [], keepExtra = {};
+  function keep(ids, extra) {          // salva i campi compilati nell'indirizzo, così il calcolo si può condividere
+    keepIds = ids; keepExtra = extra || {};
+    const h = (location.hash || '').slice(1);
+    if (h && h.includes('=')) {
+      const p = new URLSearchParams(h);
+      ids.forEach(id => { const el = $(id); if (!el || !p.has(id)) return; if (el.type === 'checkbox') el.checked = p.get(id) === '1'; else el.value = p.get(id); });
+      return p;
+    }
+    return null;
+  }
+  function save(extra) {
+    const p = new URLSearchParams();
+    Object.entries(Object.assign({}, keepExtra, extra || {})).forEach(([k, v]) => { if (v != null && v !== '') p.set(k, v); });
+    keepIds.forEach(id => { const el = $(id); if (!el) return; if (el.type === 'checkbox') { if (el.checked) p.set(id, '1'); } else if (el.value.trim() !== '') p.set(id, el.value.trim()); });
+    const s = p.toString(); try { history.replaceState(null, '', location.pathname + location.search + (s ? '#' + s : '')); } catch (e) {}
+  }
+  function fill(map) { Object.entries(map).forEach(([id, v]) => { const el = $(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }); }
+  function wipe(scope) { $(scope).querySelectorAll('input:not([type=checkbox]):not([type=range]):not([data-keep])').forEach(el => { el.value = ''; }); clear(scope); }
+
+  /* ---------- costanti e utilità di meccanica orbitale ---------- */
+  const MU = 398600.4418, RE = 6378.137, J2 = 1.08262668e-3, D2R = Math.PI / 180, G0 = 9.80665, OMEGA_E = 7.2921159e-5;
+  function kepler(M, e) { let E = e < 0.8 ? M : Math.PI; for (let k = 0; k < 50; k++) { const d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E)); E -= d; if (Math.abs(d) < 1e-13) break; } return E; }
+  function nuFromM(M, e) { const E = kepler(((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), e); return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)); }
+  function gmst(date) {   // tempo siderale medio di Greenwich, rad (IAU 1982)
+    const jd = date.getTime() / 86400000 + 2440587.5, T = (jd - 2451545) / 36525;
+    let s = 67310.54841 + (876600 * 3600 + 8640184.812866) * T + 0.093104 * T * T - 6.2e-6 * T * T * T;
+    return ((s % 86400 + 86400) % 86400) / 86400 * 2 * Math.PI;
+  }
+  // perifocale → inerziale (ECI). Angoli in radianti.
+  function pqw2eci(x, y, i, raan, argp) {
+    const cw = Math.cos(argp), sw = Math.sin(argp), ci = Math.cos(i), si = Math.sin(i), co = Math.cos(raan), so = Math.sin(raan);
+    const x1 = x * cw - y * sw, y1 = x * sw + y * cw, y2 = y1 * ci, z2 = y1 * si;
+    return [x1 * co - y2 * so, x1 * so + y2 * co, z2];
+  }
+
+  /* ---------- satelliti reali dal catalogo dell'app ---------- */
+  let CAT = null;
+  function catalog() {
+    if (CAT) return CAT;
+    CAT = fetch('data/active.txt').then(r => { if (!r.ok) throw new Error('catalogo'); return r.text(); }).then(txt => {
+      const L = txt.split(/\r?\n/), out = [];
+      for (let k = 0; k < L.length - 2; k++) {
+        if (L[k + 1].startsWith('1 ') && L[k + 2].startsWith('2 ') && !L[k].startsWith('1 ') && !L[k].startsWith('2 ')) {
+          out.push({ name: L[k].trim().replace(/^0 /, ''), l1: L[k + 1], l2: L[k + 2], norad: +L[k + 1].slice(2, 7) }); k += 2;
+        }
+      }
+      return out;
+    });
+    CAT.catch(() => { CAT = null; });
+    return CAT;
+  }
+  function elements(s) {   // elementi medi del TLE (non osculanti): bastano per i calcoli del laboratorio
+    const l1 = s.l1, l2 = s.l2;
+    const i = +l2.slice(8, 16), raan = +l2.slice(17, 25), e = +('0.' + l2.slice(26, 33).trim()), argp = +l2.slice(34, 42), M = +l2.slice(43, 51), nrev = +l2.slice(52, 63);
+    const yy = +l1.slice(18, 20), day = +l1.slice(20, 32), year = yy < 57 ? 2000 + yy : 1900 + yy;
+    const epoch = new Date(Date.UTC(year, 0, 1) + (day - 1) * 86400000);
+    const n = nrev * 2 * Math.PI / 86400, a = Math.cbrt(MU / (n * n));
+    const nu = nuFromM(M * D2R, e) / D2R;
+    return { name: s.name, norad: s.norad, i, raan, e, argp, M, nu: (nu + 360) % 360, a, n, revDay: nrev, epoch, hp: a * (1 - e) - RE, ha: a * (1 + e) - RE, T: 2 * Math.PI / n };
+  }
+  const POP = [25544, 20580, 48274, 40697, 41866, 49260, 43013, 39084];
+  let satN = 0;
+  function sat(host, onPick) {
+    host = $(host); host.classList.add('sat'); const id = 'sat' + (++satN);
+    host.innerHTML = '<label class="vh" for="' + id + 'Q">' + t('Cerca un satellite', 'Search for a satellite') + '</label>' +
+      '<input id="' + id + 'Q" type="search" autocomplete="off" spellcheck="false" placeholder="' + t('Nome o numero NORAD, es. ISS', 'Name or NORAD number, e.g. ISS') + '" role="combobox" aria-expanded="false" aria-controls="' + id + 'L">' +
+      '<ul id="' + id + 'L" role="listbox" hidden></ul><p class="satnote">' + t('Oppure inserisci i tuoi numeri qui sotto.', 'Or type your own numbers below.') + '</p>';
+    const q = host.querySelector('input'), ul = host.querySelector('ul'), note = host.querySelector('.satnote');
+    let list = [], sel = -1;
+    const close = () => { ul.hidden = true; q.setAttribute('aria-expanded', 'false'); sel = -1; };
+    const draw = () => {
+      ul.innerHTML = list.map((s, k) => '<li role="option" id="' + id + 'O' + k + '" aria-selected="' + (k === sel) + '" data-k="' + k + '"><span>' + esc(s.name) + '</span><small>' + s.norad + '</small></li>').join('');
+      ul.hidden = !list.length; q.setAttribute('aria-expanded', String(!!list.length));
+      if (sel >= 0) q.setAttribute('aria-activedescendant', id + 'O' + sel); else q.removeAttribute('aria-activedescendant');
+    };
+    const search = () => catalog().then(cat => {
+      const v = q.value.trim().toLowerCase();
+      if (!v) list = POP.map(n => cat.find(s => s.norad === n)).filter(Boolean);
+      else if (/^\d+$/.test(v)) list = cat.filter(s => String(s.norad).startsWith(v)).slice(0, 12);
+      else { const a = cat.filter(s => s.name.toLowerCase().startsWith(v)), b = cat.filter(s => !s.name.toLowerCase().startsWith(v) && s.name.toLowerCase().includes(v)); list = a.concat(b).slice(0, 12); }
+      sel = -1; draw();
+    }).catch(() => { note.textContent = t('Catalogo non disponibile: inserisci i dati a mano.', 'Catalogue not available: type the data by hand.'); });
+    const pick = s => {
+      close(); q.value = s.name; const el = elements(s);
+      note.innerHTML = t('Elementi medi del TLE del ', 'Mean TLE elements, epoch ') + el.epoch.toISOString().slice(0, 16).replace('T', ' ') + ' UTC · <a href="' + sky() + '#sat-' + s.norad + '">' + t('vedilo nel cielo', 'see it in the sky') + '</a>';
+      onPick(el);
+    };
+    q.addEventListener('focus', search); q.addEventListener('input', search);
+    q.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { sel = Math.min(list.length - 1, sel + 1); draw(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); draw(); e.preventDefault(); }
+      else if (e.key === 'Enter') { if (list[sel >= 0 ? sel : 0]) pick(list[sel >= 0 ? sel : 0]); e.preventDefault(); }
+      else if (e.key === 'Escape') close();
+    });
+    ul.addEventListener('mousedown', e => { const li = e.target.closest('li'); if (li) { e.preventDefault(); pick(list[+li.dataset.k]); } });
+    q.addEventListener('blur', () => setTimeout(close, 120));
+    // ?sat=25544 nell'indirizzo (arriva dalla scheda di un satellite nel cielo)
+    const want = +((location.search.match(/[?&]sat=(\d+)/) || [])[1] || 0);
+    if (want) catalog().then(cat => { const s = cat.find(x => x.norad === want); if (s) pick(s); }).catch(() => {});
+    return { pick };
+  }
+
+  /* ---------- Terra realistica (three.js r128) ---------- */
+  function earth(THREE, R, opt) {
+    R = R || 1; opt = opt || {};
+    const TL = new THREE.TextureLoader(), tx = n => { const x = TL.load('tex/' + n + '.jpg'); x.anisotropy = 8; return x; };
+    const sun = (opt.sun || new THREE.Vector3(5, 2.5, 4)).clone().normalize();
+    const g = new THREE.Group();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { day: { value: tx('day') }, night: { value: tx('night') }, spec: { value: tx('spec') }, sun: { value: sun } },
+      vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+      fragmentShader: 'uniform sampler2D day,night,spec; uniform vec3 sun; varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vec3 n=normalize(vN); vec3 L=normalize((viewMatrix*vec4(sun,0.)).xyz); float d=dot(n,L); float k=smoothstep(-0.12,0.18,d); vec3 dc=texture2D(day,vUv).rgb; vec3 nc=texture2D(night,vUv).rgb*1.4; vec3 c=mix(nc,dc*(0.25+0.95*max(d,0.)),k); float sp=texture2D(spec,vUv).r; vec3 h=normalize(L+vV); c+=sp*pow(max(dot(n,h),0.),48.)*0.45*k; float f=pow(1.-max(dot(n,vV),0.),3.); c+=vec3(.25,.5,1.)*f*0.3*(0.2+k); gl_FragColor=vec4(c,1.); }'
+    });
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), mat); g.add(ball);
+    const cm = new THREE.MeshPhongMaterial({ transparent: true, opacity: 0.5, depthWrite: false });
+    TL.load('tex/clouds.jpg', x => { cm.alphaMap = x; cm.needsUpdate = true; });
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(R * 1.008, 96, 72), cm); g.add(clouds);
+    const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 64, 48), new THREE.ShaderMaterial({
+      transparent: true, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+      fragmentShader: 'varying vec3 vN; void main(){ float i=pow(0.72-dot(vN,vec3(0.,0.,1.)),3.); gl_FragColor=vec4(.3,.55,1.,1.)*i*0.42; }'
+    }));
+    g.add(atm);
+    return { group: g, ball, clouds, setSun(v) { mat.uniforms.sun.value.copy(v).normalize(); } };
+  }
+  function stars(THREE, n, r) {
+    n = n || 1400; r = r || 80;
+    const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    for (let k = 0; k < n; k++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * 6.283, s = Math.sqrt(1 - u * u), rr = r * (1 + Math.random() * 0.4);
+      pos.set([rr * s * Math.cos(a), rr * u, rr * s * Math.sin(a)], k * 3);
+      const b = 0.45 + Math.random() * 0.55; col.set([b, b, b * (0.92 + Math.random() * 0.12)], k * 3);
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return new THREE.Points(g, new THREE.PointsMaterial({ size: r * 0.0018, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
+  }
+  // ECI (km) → coordinate three.js con l'asse y in alto e il raggio terrestre come unità
+  const v3 = (THREE, p, unit) => new THREE.Vector3(p[0] / (unit || RE), p[2] / (unit || RE), -p[1] / (unit || RE));
+  // scena pronta: renderer, camera, controlli, ridimensionamento, ciclo di disegno che si ferma fuori dallo schermo
+  function scene3(THREE, host, opt) {
+    host = $(host); opt = opt || {};
+    const cv = document.createElement('canvas'); host.prepend(cv);
+    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(opt.fov || 38, 1, 0.01, 2000);
+    scene.add(new THREE.AmbientLight(0x8a8a9a, opt.ambient == null ? 0.9 : opt.ambient));
+    const light = new THREE.DirectionalLight(0xfff1e0, 1.5); light.position.set(5, 2.5, 4); scene.add(light);
+    let controls = null;
+    if (THREE.OrbitControls && opt.controls !== false) { controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = false; }
+    const size = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+    if (window.ResizeObserver) new ResizeObserver(size).observe(host); else addEventListener('resize', size);
+    size();
+    let vis = true, hooks = [];
+    if (window.IntersectionObserver) new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(host);
+    let last = performance.now();
+    (function loop(now) {
+      requestAnimationFrame(loop);
+      if (!vis || document.hidden) { last = now; return; }
+      const dt = Math.min(0.1, (now - last) / 1000); last = now;
+      hooks.forEach(f => f(dt, now));
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    })(last);
+    return { THREE, renderer, scene, camera, controls, light, cv, size, onFrame(f) { hooks.push(f); } };
+  }
+  const has3D = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } };
+
+  /* ---------- grafici a linee ---------- */
+  const C = { cy: '#35d4f2', gr: '#58e07f', vi: '#a995ff', ic: '#cfe3f5', am: '#ffb224', tx3: '#85919d' };
+  function ticks(lo, hi, n) {
+    if (!(hi > lo)) { hi = lo + 1; }
+    const span = hi - lo, step0 = span / (n || 5), mag = Math.pow(10, Math.floor(Math.log10(step0))), r = step0 / mag;
+    const step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag, out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    return { out, step };
+  }
+  function tickFmt(v, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e6 || (Math.abs(v) < 1e-3 && v !== 0) ? sig(v, 2) : fmt(v, Math.min(d, 6)); }
+  // o = { title, x: [...], series: [{ name, y: [...], color, dash }], xLabel, yLabel, yFmt(v), xFmt(v), marks: [{ x, label }], yMin, yMax, h }
+  function chart(host, o) {
+    host = $(host); host.classList.add('chart');
+    const draw = () => {
+      const W = Math.max(280, host.clientWidth - 16), H = o.h || 230, L = 56, Rm = 14, T = 10, B = 34;
+      const xs = o.x, all = [];
+      o.series.forEach(s => s.y.forEach(v => { if (Number.isFinite(v)) all.push(v); }));
+      let y0 = o.yMin != null ? o.yMin : Math.min(...all), y1 = o.yMax != null ? o.yMax : Math.max(...all);
+      if (y0 === y1) { y0 -= 1; y1 += 1; }
+      const pad = (y1 - y0) * 0.06; if (o.yMin == null) y0 -= pad; if (o.yMax == null) y1 += pad;
+      const x0 = xs[0], x1 = xs[xs.length - 1];
+      const X = v => L + (v - x0) / (x1 - x0 || 1) * (W - L - Rm), Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+      const ty = ticks(y0, y1, 5), tx = ticks(x0, x1, Math.max(3, Math.floor(W / 110)));
+      let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(o.title || '') + '">';
+      ty.out.forEach(v => { if (v < y0 || v > y1) return; s += '<line class="gd" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(v) : tickFmt(v, ty.step)) + '</text>'; });
+      tx.out.forEach(v => { if (v < x0 || v > x1) return; s += '<line class="gd" y1="' + T + '" y2="' + (H - B) + '" x1="' + X(v) + '" x2="' + X(v) + '" opacity=".6"/><text x="' + X(v) + '" y="' + (H - B + 15) + '" text-anchor="middle">' + (o.xFmt ? o.xFmt(v) : tickFmt(v, tx.step)) + '</text>'; });
+      s += '<line class="ax" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + (H - B) + '" y2="' + (H - B) + '"/>';
+      if (o.xLabel) s += '<text x="' + (W - Rm) + '" y="' + (H - 4) + '" text-anchor="end">' + esc(o.xLabel) + '</text>';
+      if (o.yLabel) s += '<text x="' + 4 + '" y="' + (T + 2) + '" text-anchor="start" dominant-baseline="hanging" opacity="0">' + '</text>';
+      (o.marks || []).forEach(m => { if (m.x < x0 || m.x > x1) return; s += '<line x1="' + X(m.x) + '" x2="' + X(m.x) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="' + (m.color || C.tx3) + '" stroke-dasharray="3 3"/><text x="' + (X(m.x) + 4) + '" y="' + (T + 11) + '" style="fill:' + (m.color || C.tx3) + '">' + esc(m.label || '') + '</text>'; });
+      (o.bands || []).forEach(b => { s += '<rect x="' + X(b.x0) + '" width="' + Math.max(0, X(b.x1) - X(b.x0)) + '" y="' + T + '" height="' + (H - T - B) + '" fill="' + (b.color || '#fff') + '" opacity="' + (b.op || 0.06) + '"/>'; });
+      o.series.forEach(se => {
+        let d = '', pen = false;
+        se.y.forEach((v, k) => { if (!Number.isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(xs[k]).toFixed(1) + ' ' + Y(Math.max(y0, Math.min(y1, v))).toFixed(1); pen = true; });
+        s += '<path d="' + d + '" fill="none" stroke="' + (se.color || C.cy) + '" stroke-width="2" stroke-linejoin="round"' + (se.dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+      });
+      s += '<line class="hx" y1="' + T + '" y2="' + (H - B) + '" stroke="' + C.ic + '" stroke-opacity=".5" visibility="hidden"/>';
+      o.series.forEach((se, k) => { s += '<circle data-k="' + k + '" r="4" fill="' + (se.color || C.cy) + '" stroke="#000" stroke-width="2" visibility="hidden"/>'; });
+      s += '<rect x="' + L + '" y="' + T + '" width="' + (W - L - Rm) + '" height="' + (H - T - B) + '" fill="transparent" style="cursor:crosshair"/></svg>';
+      const head = '<div class="ttl"><b>' + esc(o.title || '') + '</b>' + (o.yLabel ? '<span>' + esc(o.yLabel) + '</span>' : '') +
+        (o.series.length > 1 ? o.series.map(se => '<span style="color:' + (se.color || C.cy) + '"><i></i><span style="color:var(--tx2)">' + esc(se.name) + '</span></span>').join('') : '') + '</div>';
+      host.innerHTML = head + s + '<div class="tip" hidden></div>';
+      const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), hx = svg.querySelector('.hx'), dots = svg.querySelectorAll('circle'), hit = svg.querySelector('rect:last-of-type');
+      const show = ev => {
+        const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+        const xv = x0 + (px - L) / (W - L - Rm) * (x1 - x0);
+        let k = 0, best = Infinity; xs.forEach((v, j) => { const d = Math.abs(v - xv); if (d < best) { best = d; k = j; } });
+        hx.setAttribute('x1', X(xs[k])); hx.setAttribute('x2', X(xs[k])); hx.setAttribute('visibility', 'visible');
+        let html = '<span style="color:var(--tx2)">' + (o.xName ? esc(o.xName) + ' ' : '') + (o.xFmt ? o.xFmt(xs[k]) : sig(xs[k], 4)) + '</span>';
+        o.series.forEach((se, j) => { const v = se.y[k]; const c = dots[j]; if (Number.isFinite(v)) { c.setAttribute('cx', X(xs[k])); c.setAttribute('cy', Y(Math.max(y0, Math.min(y1, v)))); c.setAttribute('visibility', 'visible'); } else c.setAttribute('visibility', 'hidden');
+          html += '<span style="color:' + (se.color || C.cy) + '">' + (o.series.length > 1 ? esc(se.name) + ' ' : '') + (o.yFmt ? o.yFmt(v) : sig(v, 4)) + (o.unit ? ' ' + esc(o.unit) : '') + '</span>'; });
+        tip.innerHTML = html; tip.hidden = false;
+        const hr = host.getBoundingClientRect(), tw = tip.offsetWidth, cx = ev.clientX - hr.left;
+        tip.style.left = Math.min(hr.width - tw - 6, Math.max(6, cx + 12)) + 'px'; tip.style.top = (ev.clientY - hr.top - 46) + 'px';
+      };
+      const hide = () => { tip.hidden = true; hx.setAttribute('visibility', 'hidden'); dots.forEach(c => c.setAttribute('visibility', 'hidden')); };
+      hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show); hit.addEventListener('pointerleave', hide);
+    };
+    draw();
+    if (!host._ro && window.ResizeObserver) { let w = host.clientWidth; host._ro = new ResizeObserver(() => { if (host._draw && Math.abs(host.clientWidth - w) > 4) { w = host.clientWidth; host._draw(); } }); host._ro.observe(host); }
+    host._draw = draw;
+  }
+
+  function unchart(host) { host = $(host); if (!host) return; host._draw = null; host.innerHTML = ''; }   // toglie un grafico (non si ridisegna più)
+
+  /* ---------- salvare i risultati ---------- */
+  function csv(name, head, data) {
+    const sep = en ? ',' : ';', dec = v => typeof v === 'number' ? (en ? String(v) : String(v).replace('.', ',')) : '"' + String(v).replace(/"/g, '""') + '"';
+    const txt = [head.map(dec).join(sep)].concat(data.map(r => r.map(dec).join(sep))).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + txt], { type: 'text/csv' })); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ---------- schede di modo ---------- */
+  function tabs(host, onChange) {     // <div class="seg" role="tablist"><button role="tab" data-m="..." aria-controls="...">
+    host = $(host); const bs = [...host.querySelectorAll('[role=tab]')];
+    const set = m => { bs.forEach(b => { const on = b.dataset.m === m; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; const p = $(b.getAttribute('aria-controls')); if (p) p.hidden = !on; }); onChange && onChange(m); };
+    host.addEventListener('click', e => { const b = e.target.closest('[role=tab]'); if (b) set(b.dataset.m); });
+    host.addEventListener('keydown', e => { const k = bs.indexOf(document.activeElement); if (k < 0) return; let j = k; if (e.key === 'ArrowRight') j = (k + 1) % bs.length; else if (e.key === 'ArrowLeft') j = (k - 1 + bs.length) % bs.length; else return; bs[j].focus(); set(bs[j].dataset.m); e.preventDefault(); });
+    return { set, get: () => (bs.find(b => b.getAttribute('aria-selected') === 'true') || bs[0]).dataset.m };
+  }
+
+  return { $, lang, en, t, init, applyLang, SUBJ, sky, num, fmt, sig, plain, der, clear, bad, given, esc, rows, msg, live, keep, save, fill, wipe,
+    MU, RE, J2, D2R, G0, OMEGA_E, kepler, nuFromM, gmst, pqw2eci, catalog, elements, sat, earth, stars, v3, scene3, has3D, C, chart, unchart, ticks, csv, tabs };
+})();
+</script>
+<script>
+'use strict';
+K.init('assetto');
+const { $, t, sig, fmt } = K;
+function num(id) {                        // K.num legge «0.366» come 366 (migliaia all'italiana): qui un punto dopo lo zero, o in inglese, è sempre la virgola decimale
+  const el = $(id); if (!el) return null;
+  const v = String(el.value).trim().replace(/[\s\u00a0\u202f']/g, '').replace(/−/g, '-');
+  if (v === '') return null;
+  if (/^-?0\.\d+$/.test(v) || (K.en && /^-?\d*\.\d+(e[-+]?\d+)?$/i.test(v))) return Number(v);
+  return K.num(id);
 }
-function setMode(m) {
-  S.mode = m; S.playing = false; $('play').textContent = '▶';
-  document.querySelectorAll('.seg .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
-  ['free', 'dist', 'rep'].forEach(k => $('s-' + k).hidden = k !== m); $('viewer').style.display = m === 'dist' ? 'none' : ''; document.querySelector('.legend').style.display = m === 'dist' ? 'none' : '';
-  $('res').innerHTML = ''; msg('');
+const D2R = K.D2R, R2D = 180 / Math.PI;
+const MU = K.MU * 1e9, RE = K.RE * 1e3;          // m³/s², m
+const MAG = 7.96e15;                              // T·m³: momento del dipolo terrestre per μ0/4π (SMAD)
+const TILT = 9.2;                                 // °: inclinazione del dipolo sull'asse di rotazione (NOAA, WMM2025)
+const FS = 1361, CL = 299792458, YEAR = 365.25 * 86400;
+const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const TEST = /[?&]test\b/.test(location.search);
+const COL = { cy: K.C.cy, gr: K.C.gr, vi: K.C.vi, ic: K.C.ic, tx: '#e6eaee', tx2: '#9aa5b1', tx3: '#85919d', ln: '#252b33', ln2: '#414b57' };
+const S = (x, n) => sig(x, n || 4);
+const SEPV = K.en ? ', ' : '; ';
+const dc = s => K.en ? String(s) : String(s).replace('.', ',');       // esempi con la virgola in italiano
+function nice(x, d) {                                                   // al più d decimali, senza zeri in coda
+  if (x == null || !Number.isFinite(x)) return '';
+  const dec = K.en ? '.' : ',';
+  let s = fmt(x, d).replace(/ /g, ' ');
+  if (s.includes(dec)) s = s.replace(/0+$/, '').replace(/[.,]$/, '');
+  return s === '−0' ? '0' : s;
 }
-const DEMO = {
-  free: { Ix: 10, Iy: 15, Iz: 20, wx: 0.2, wy: 8, wz: 0.2 },
-  dist: { h: 500, Imax: 120, Imin: 40, th: 20, A: 2, q: 0.5, L: 0.1, md: 0.5, Is: 80 },
-  rep: { roll: 30, pitch: 20, yaw: 45 }
+const dv = x => Math.abs(x) >= 1e-3 && Math.abs(x) < 1e7 ? nice(x, 6) : S(x, 5);   // valore ricavato per un campo
+const raw = x => { const v = Math.abs(x) < 1e-3 || Math.abs(x) >= 1e7 ? x.toExponential(4) : String(+x.toPrecision(6)); return K.en ? v : v.replace('.', ','); };   // valore copiato in un campo
+const ICON = {
+  pause: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 2h3v10H3zM8 2h3v10H8z" fill="currentColor"/></svg>',
+  play: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 2v10l8.5-5z" fill="currentColor"/></svg>'
 };
-$('demo').addEventListener('click', () => { document.querySelectorAll('input[type=text]').forEach(i => { if (i.id !== 'Cd') i.value = ''; });
-  Object.entries(DEMO[S.mode]).forEach(([k, v]) => $(k).value = v); run(); });
-document.querySelectorAll('.seg .chip').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.m); }));
-$('f').addEventListener('submit', run);
-$('play').addEventListener('click', () => { if (S.mode !== 'free' || !S.I) return; S.playing = !S.playing; $('play').textContent = S.playing ? '❚❚' : '▶'; if (S.playing) { S.last = 0; requestAnimationFrame(tick); } });
-$('reset').addEventListener('click', () => { if (!S.I) return; S.w = S.w0.slice(); S.q = [0,0,0,1]; S.t = 0; setAtt(S.q); $('tlab').textContent = 't = 0 s'; });
-setup3D(); setMode('free'); $('demo').click();
+const tabs = K.tabs('seg', onTab);
+let booted = false;
+
+/* ---------- campi: lettura, controlli, messaggi ---------- */
+function lab(id) { const l = document.querySelector('label[for="' + id + '"]'); return l ? l.textContent.trim() : ($(id) && $(id).getAttribute('aria-label')) || id; }
+function readF(ids) {                     // legge i campi; quelli che non sono numeri diventano ambra
+  const v = {}, nn = [];
+  ids.forEach(id => { const x = num(id); if (Number.isNaN(x)) { nn.push(id); K.bad(id); v[id] = null; } else v[id] = x; });
+  return { v, err: nn.length ? t('Questi valori non sono numeri: ', 'These values are not numbers: ') + nn.map(lab).join(', ') + '.' : '' };
+}
+function positive(v, ids, out) {           // i valori dati devono essere > 0
+  const no = ids.filter(id => v[id] != null && !(v[id] > 0));
+  no.forEach(id => { K.bad(id); v[id] = null; });
+  if (no.length) out.push(t('Devono essere maggiori di zero: ', 'These must be greater than zero: ') + no.map(lab).join(', ') + '.');
+}
+function noChart(id) { const h = $(id); h.innerHTML = ''; h.classList.remove('chart'); }
+const sup = n => String(n).replace('-', '⁻').replace(/\d/g, c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[c]);
+
+/* ---------- quaternioni (scalare per ultimo), matrici, angoli ---------- */
+const qmul = (a, b) => [                  // prodotto di Hamilton a ⊗ b
+  a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+  a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+  a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+  a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
+const qnorm = q => { const n = Math.hypot(q[0], q[1], q[2], q[3]); return q.map(x => x / n); };
+const qpos = q => q[3] < 0 ? q.map(x => -x) : q;
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const qrot = (q, v) => { const p = qmul(qmul(q, [v[0], v[1], v[2], 0]), [-q[0], -q[1], -q[2], q[3]]); return [p[0], p[1], p[2]]; };   // vettore del corpo → riferimento
+function qToA(q) {                        // matrice di assetto: riferimento → corpo (Markley e Crassidis)
+  const [x, y, z, w] = q;
+  return [[w * w + x * x - y * y - z * z, 2 * (x * y + z * w), 2 * (x * z - y * w)],
+          [2 * (x * y - z * w), w * w - x * x + y * y - z * z, 2 * (y * z + x * w)],
+          [2 * (x * z + y * w), 2 * (y * z - x * w), w * w - x * x - y * y + z * z]];
+}
+function aToQ(A) {                        // metodo di Shepperd
+  const tr = A[0][0] + A[1][1] + A[2][2], c = [tr, A[0][0], A[1][1], A[2][2]];
+  let k = 0; for (let i = 1; i < 4; i++) if (c[i] > c[k]) k = i;
+  let q;
+  if (k === 0) { const s = 2 * Math.sqrt(1 + tr); q = [(A[1][2] - A[2][1]) / s, (A[2][0] - A[0][2]) / s, (A[0][1] - A[1][0]) / s, s / 4]; }
+  else if (k === 1) { const s = 2 * Math.sqrt(1 + 2 * A[0][0] - tr); q = [s / 4, (A[0][1] + A[1][0]) / s, (A[0][2] + A[2][0]) / s, (A[1][2] - A[2][1]) / s]; }
+  else if (k === 2) { const s = 2 * Math.sqrt(1 + 2 * A[1][1] - tr); q = [(A[0][1] + A[1][0]) / s, s / 4, (A[1][2] + A[2][1]) / s, (A[2][0] - A[0][2]) / s]; }
+  else { const s = 2 * Math.sqrt(1 + 2 * A[2][2] - tr); q = [(A[0][2] + A[2][0]) / s, (A[1][2] + A[2][1]) / s, s / 4, (A[0][1] - A[1][0]) / s]; }
+  return qpos(qnorm(q));
+}
+function eulToQ(psi, th, phi) {           // 3-2-1: imbardata ψ, beccheggio θ, rollio φ (rad)
+  const cr = Math.cos(phi / 2), sr = Math.sin(phi / 2), cp = Math.cos(th / 2), sp = Math.sin(th / 2), cy = Math.cos(psi / 2), sy = Math.sin(psi / 2);
+  return [sr * cp * cy - cr * sp * sy, cr * sp * cy + sr * cp * sy, cr * cp * sy - sr * sp * cy, cr * cp * cy + sr * sp * sy];
+}
+function aToEul(A) {                      // → [ψ, θ, φ] in rad; a θ = ±90° pone φ = 0
+  const c = Math.hypot(A[0][0], A[0][1]), th = Math.atan2(-A[0][2], c);
+  if (c < 1e-10) return [Math.atan2(-A[1][0], A[1][1]), th, 0];
+  return [Math.atan2(A[0][1], A[0][0]), th, Math.atan2(A[1][2], A[2][2])];
+}
+function axToQ(e, ang) { const n = Math.hypot(e[0], e[1], e[2]), s = Math.sin(ang / 2) / n; return qpos([e[0] * s, e[1] * s, e[2] * s, Math.cos(ang / 2)]); }
+function qToAx(q) { q = qpos(q); const s = Math.hypot(q[0], q[1], q[2]); return { e: s < 1e-14 ? null : [q[0] / s, q[1] / s, q[2] / s], ang: 2 * Math.atan2(s, q[3]) }; }
+const qdist = (a, b) => 2 * Math.acos(Math.min(1, Math.abs(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3])));
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+function invT3(M) {                       // (M⁻¹)ᵀ
+  const d = det3(M);
+  return [[(M[1][1] * M[2][2] - M[1][2] * M[2][1]) / d, -(M[1][0] * M[2][2] - M[1][2] * M[2][0]) / d, (M[1][0] * M[2][1] - M[1][1] * M[2][0]) / d],
+          [-(M[0][1] * M[2][2] - M[0][2] * M[2][1]) / d, (M[0][0] * M[2][2] - M[0][2] * M[2][0]) / d, -(M[0][0] * M[2][1] - M[0][1] * M[2][0]) / d],
+          [(M[0][1] * M[1][2] - M[0][2] * M[1][1]) / d, -(M[0][0] * M[1][2] - M[0][2] * M[1][0]) / d, (M[0][0] * M[1][1] - M[0][1] * M[1][0]) / d]];
+}
+function polar(M) {                       // rotazione più vicina: fattore ortogonale della decomposizione polare (Newton)
+  let X = M.map(r => r.slice());
+  for (let k = 0; k < 80; k++) {
+    const Y = invT3(X), N = X.map((r, i) => r.map((x, j) => 0.5 * (x + Y[i][j])));
+    let d = 0; N.forEach((r, i) => r.forEach((x, j) => { d = Math.max(d, Math.abs(x - X[i][j])); }));
+    X = N; if (d < 1e-15) break;
+  }
+  return X;
+}
+function orthErr(M) { let e = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { let s = 0; for (let k = 0; k < 3; k++) s += M[k][i] * M[k][j]; e += (s - (i === j ? 1 : 0)) ** 2; } return Math.sqrt(e); }
+function qFromTo(u, v) {                  // rotazione minima che porta il versore u su v
+  const d = u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+  if (d < -1 + 1e-12) { const c = cross(u, Math.abs(u[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]), n = Math.hypot(...c); return [c[0] / n, c[1] / n, c[2] / n, 0]; }
+  const c = cross(u, v); return qnorm([c[0], c[1], c[2], 1 + d]);
+}
+
+/* ---------- rotazione libera: equazioni di Eulero e RK4 ---------- */
+const eulerDot = (I, w) => [(I[1] - I[2]) * w[1] * w[2] / I[0], (I[2] - I[0]) * w[2] * w[0] / I[1], (I[0] - I[1]) * w[0] * w[1] / I[2]];
+function rk4(I, w, q, h) {                // un passo di Runge-Kutta 4 su ω (Eulero) e q (q̇ = ½ q ⊗ ω)
+  const f = (w, q) => [eulerDot(I, w), qmul(q, [w[0], w[1], w[2], 0]).map(x => x / 2)];
+  const add = (a, b, s) => a.map((x, i) => x + b[i] * s);
+  const [a1, b1] = f(w, q), [a2, b2] = f(add(w, a1, h / 2), add(q, b1, h / 2)), [a3, b3] = f(add(w, a2, h / 2), add(q, b2, h / 2)), [a4, b4] = f(add(w, a3, h), add(q, b3, h));
+  return [w.map((x, i) => x + h / 6 * (a1[i] + 2 * a2[i] + 2 * a3[i] + a4[i])), qnorm(q.map((x, i) => x + h / 6 * (b1[i] + 2 * b2[i] + 2 * b3[i] + b4[i])))];
+}
+function rk4w(I, w, h) {                  // solo ω, per i grafici
+  const add = (a, b, s) => [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s];
+  const k1 = eulerDot(I, w), k2 = eulerDot(I, add(w, k1, h / 2)), k3 = eulerDot(I, add(w, k2, h / 2)), k4 = eulerDot(I, add(w, k3, h));
+  return [0, 1, 2].map(i => w[i] + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+}
+const hStep = wn => Math.min(0.01, 0.02 / Math.max(wn, 1e-9));   // passo: ω h ≤ 0,02
+function ellK(m) {                        // integrale ellittico completo di prima specie, media aritmetico-geometrica
+  if (!(m < 1)) return Infinity;
+  let a = 1, b = Math.sqrt(1 - m);
+  for (let i = 0; i < 60 && Math.abs(a - b) > 1e-16 * a; i++) { const an = (a + b) / 2; b = Math.sqrt(a * b); a = an; }
+  return Math.PI / (2 * a);
+}
+function polhode(I, w) {                  // periodo di ω nel corpo (Jacobi); null se fermo o sferico
+  const o = [0, 1, 2].sort((a, b) => I[a] - I[b]), I1 = I[o[0]], I2 = I[o[1]], I3 = I[o[2]];
+  const H2 = (I[0] * w[0]) ** 2 + (I[1] * w[1]) ** 2 + (I[2] * w[2]) ** 2, E2 = I[0] * w[0] ** 2 + I[1] * w[1] ** 2 + I[2] * w[2] ** 2;
+  if (!(E2 > 0) || I3 - I1 <= 1e-9 * I3) return null;
+  const dd = H2 - E2 * I2;
+  if (Math.abs(dd) <= 1e-13 * H2) return { T: Infinity, sep: true };
+  let p2, m;
+  if (dd > 0) { p2 = (I3 - I2) * (H2 - E2 * I1) / (I1 * I2 * I3); m = (I2 - I1) * (E2 * I3 - H2) / ((I3 - I2) * (H2 - E2 * I1)); }
+  else { p2 = (I2 - I1) * (E2 * I3 - H2) / (I1 * I2 * I3); m = (I3 - I2) * (H2 - E2 * I1) / ((I2 - I1) * (E2 * I3 - H2)); }
+  if (!(p2 > 0)) return null;
+  m = Math.min(Math.max(m, 0), 1 - 1e-16);
+  return { T: 4 * ellK(m) / Math.sqrt(p2), m, around: dd > 0 ? o[2] : o[0] };
+}
+
+/* ---------- vista 3D: pezzi comuni ---------- */
+function arrow3(color, r) {               // freccia con asta e punta vere (le linee WebGL sono larghe 1 px)
+  r = r || 0.018;
+  const m = new THREE.MeshBasicMaterial({ color }), g = new THREE.Group(), hl0 = r * 9;
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1, 10), m), head = new THREE.Mesh(new THREE.ConeGeometry(r * 3, hl0, 18), m);
+  g.add(shaft, head);
+  const Y = new THREE.Vector3(0, 1, 0);
+  g.userData.set = (dir, len) => {
+    const hl = Math.min(hl0, len * 0.45);
+    shaft.scale.set(1, Math.max(1e-3, len - hl), 1); shaft.position.set(0, (len - hl) / 2, 0);
+    head.scale.set(1, hl / hl0, 1); head.position.set(0, len - hl / 2, 0);
+    g.quaternion.setFromUnitVectors(Y, dir.clone().normalize());
+  };
+  return g;
+}
+function tag3(text, color) {              // etichetta che guarda sempre la camera
+  const c = document.createElement('canvas'); c.width = 96; c.height = 64;
+  const tx = new THREE.CanvasTexture(c);
+  const draw = () => { const x = c.getContext('2d'); x.clearRect(0, 0, 96, 64); x.font = '700 40px B612, "DejaVu Sans", sans-serif'; x.fillStyle = color; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, 48, 34); tx.needsUpdate = true; };
+  draw(); if (document.fonts && document.fonts.load) document.fonts.load('700 40px B612').then(draw).catch(() => {});
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, depthWrite: false }));
+  s.scale.set(0.3, 0.2, 1); return s;
+}
+function box3() {                         // parallelepipedo opaco con spigoli sottili, lato 1 (si scala)
+  const g = new THREE.Group(), geo = new THREE.BoxGeometry(1, 1, 1);
+  g.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: 0x5f6873 })));
+  g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0xc9d1da, transparent: true, opacity: 0.55 })));
+  return g;
+}
+function ring3(r, color) {
+  const p = []; for (let k = 0; k <= 128; k++) { const a = k / 128 * 2 * Math.PI; p.push(new THREE.Vector3(r * Math.cos(a), r * Math.sin(a), 0)); }
+  return new THREE.Line(new THREE.BufferGeometry().setFromPoints(p), new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.8 }));
+}
+function no3D(host) { if (!$(host).querySelector('.ld')) $(host).insertAdjacentHTML('afterbegin', '<div class="ld">' + t('La vista 3D ha bisogno di WebGL: i calcoli funzionano lo stesso.', 'The 3D view needs WebGL: the calculations still work.') + '</div>'); }
+const has3 = () => !!window.THREE && K.has3D();
+
+/* ===================== rotazione libera ===================== */
+const AX = ['x', 'y', 'z'], AXC = [COL.cy, COL.gr, COL.vi];
+const FREE = { I: null, w0: [0, 0, 0], w: [0, 0, 0], q0: [0, 0, 0, 1], q: [0, 0, 0, 1], time: 0, play: !RM, speed: 1, spin: 1, L: [1, 1, 1], w0n: 0 };
+let F3 = null;
+
+function solveFree() {
+  K.clear('f-free');
+  const ids = ['Ix', 'Iy', 'Iz', 'mass', 'lx', 'ly', 'lz', 'wx', 'wy', 'wz'];
+  const { v, err } = readF(ids), warn = err ? [err] : [];
+  positive(v, ['Ix', 'Iy', 'Iz', 'mass', 'lx', 'ly', 'lz'], warn);
+  const Ig = [v.Ix, v.Iy, v.Iz], d = [v.lx, v.ly, v.lz], m = v.mass, II = ['Ix', 'Iy', 'Iz'], LL = ['lx', 'ly', 'lz'];
+  const box = (m, d) => [m / 12 * (d[1] ** 2 + d[2] ** 2), m / 12 * (d[0] ** 2 + d[2] ** 2), m / 12 * (d[0] ** 2 + d[1] ** 2)];
+  const sides = (m, I) => [Math.sqrt(6 * (I[1] + I[2] - I[0]) / m), Math.sqrt(6 * (I[0] + I[2] - I[1]) / m), Math.sqrt(6 * (I[0] + I[1] - I[2]) / m)];
+  const allI = Ig.every(x => x != null), allD = d.every(x => x != null);
+  const off = (a, b) => Math.abs(a - b) > 1e-3 * Math.abs(b);
+  let I = null, dims = null; const bad = [];
+  if (allI) {
+    I = Ig;
+    if (m != null) {
+      const dd = sides(m, I);
+      LL.forEach((id, k) => { if (d[k] == null) K.der(id, dd[k]); else if (off(d[k], dd[k])) { K.bad(id); bad.push(lab(id) + ' = ' + S(dd[k]) + ' m'); } });
+      if (allD) dims = d; else if (dd.every(Number.isFinite)) dims = dd;
+    } else if (allD) {
+      const mm = 6 * (I[0] + I[1] + I[2]) / (d[0] ** 2 + d[1] ** 2 + d[2] ** 2), Ib = box(mm, d);
+      K.der('mass', mm);
+      II.forEach((id, k) => { if (off(I[k], Ib[k])) { K.bad(id); bad.push(lab(id) + ' = ' + S(Ib[k]) + ' kg·m²'); } });
+      dims = d;
+    }
+  } else if (m != null && allD) {
+    const Ib = box(m, d);
+    II.forEach((id, k) => { if (Ig[k] == null) K.der(id, Ib[k]); else if (off(Ig[k], Ib[k])) { K.bad(id); bad.push(lab(id) + ' = ' + S(Ib[k]) + ' kg·m²'); } });
+    I = Ig.map((x, k) => x != null ? x : Ib[k]); dims = d;
+  }
+  if (bad.length) warn.push(t('Inerzie e parallelepipedo non tornano. Con questi dati dovrebbe essere: ', 'Inertias and box do not agree. With these data it should be: ') + bad.join(SEPV) + '. ' + t('Uso le inerzie.', 'The page uses the inertias.'));
+  ['wx', 'wy', 'wz'].forEach(id => { if (v[id] == null) K.der(id, 0, '0'); });
+  if (!I) return { err: t('Servono le tre inerzie principali, oppure la massa e i tre lati del parallelepipedo.', 'The page needs the three principal inertias, or the mass and the three sides of the box.'), warn };
+  const [a, b, c] = I;
+  if (a + b < c * (1 - 1e-9) || b + c < a * (1 - 1e-9) || a + c < b * (1 - 1e-9)) {
+    const k = [0, 1, 2].sort((p, q) => I[q] - I[p])[0], o = [0, 1, 2].filter(j => j !== k);
+    II.forEach(id => K.bad(id));
+    return { err: t('Queste inerzie non sono possibili per un corpo vero: la somma di due deve essere almeno la terza, invece ', 'These inertias are impossible for a real body: any two must add up to at least the third, but ') + 'I' + AX[o[0]] + ' + I' + AX[o[1]] + ' = ' + S(I[o[0]] + I[o[1]]) + ' < I' + AX[k] + ' = ' + S(I[k]) + ' kg·m².', warn };
+  }
+  if (!dims) dims = [Math.sqrt(Math.max(0, b + c - a)), Math.sqrt(Math.max(0, a + c - b)), Math.sqrt(Math.max(0, a + b - c))];
+  const W = [v.wx, v.wy, v.wz].map(x => (x == null ? 0 : x) * D2R);
+  return { I, dims, W, warn };
+}
+
+function freeSeries(I, W0, tEnd) {        // ω nel tempo, per il grafico
+  const N = 600, dS = tEnd / N, wn = Math.hypot(...W0);
+  const k = Math.max(1, Math.ceil(dS / Math.min(0.02 / Math.max(wn, 1e-9), 0.05))), h = dS / k;
+  let w = W0.slice(); const ts = [0], ys = [[w[0] * R2D], [w[1] * R2D], [w[2] * R2D]];
+  for (let i = 1; i <= N; i++) { for (let j = 0; j < k; j++) w = rk4w(I, w, h); ts.push(i * dS); for (let c = 0; c < 3; c++) ys[c].push(w[c] * R2D); }
+  return { ts, ys };
+}
+
+function runFree() {
+  const s = solveFree(); if (booted) K.save({ m: tabs.get() });
+  if (s.err) {
+    K.msg('msg-free', [s.err].concat(s.warn).join('<br>')); K.msg('inf-free', ''); K.rows('out-free', []); noChart('ch-free');
+    FREE.I = null; if (F3) F3.body.visible = false; return;
+  }
+  K.msg('msg-free', s.warn.join('<br>'));
+  const I = s.I, W = s.W, Hb = I.map((x, k) => x * W[k]), Hn = Math.hypot(...Hb), T = 0.5 * (I[0] * W[0] ** 2 + I[1] * W[1] ** 2 + I[2] * W[2] ** 2), wn = Math.hypot(...W);
+  const o = [0, 1, 2].sort((a, b) => I[a] - I[b]), iMin = o[0], iMid = o[1], iMax = o[2];
+  const eq = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(a, b);
+  const sph = eq(I[iMin], I[iMax]), sym = sph ? -1 : eq(I[iMin], I[iMid]) ? iMax : eq(I[iMid], I[iMax]) ? iMin : -1;
+  const spin = wn > 0 ? [0, 1, 2].reduce((a, k) => Math.abs(Hb[k]) > Math.abs(Hb[a]) ? k : a, 0) : iMax;
+  const pol = wn > 0 ? polhode(I, W) : null, Ie = T > 0 ? Hn * Hn / (2 * T) : null;
+  const rows = [['#', t('Momento angolare ed energia', 'Angular momentum and energy')],
+    [t('Momento angolare |H|', 'Angular momentum |H|'), S(Hn), 'N·m·s', t('in assi corpo ', 'in body axes ') + '(' + Hb.map(x => S(x, 3)).join(SEPV) + ')', 'key'],
+    [t('Energia cinetica di rotazione', 'Rotational kinetic energy'), S(T), 'J'],
+    [t('Velocità angolare |ω|', 'Angular velocity |ω|'), S(wn * R2D), '°/s', wn > 0 ? t('un giro in ', 'one turn in ') + S(2 * Math.PI / wn, 3) + ' s' : null],
+    ['#', t('Assi principali', 'Principal axes')]];
+  const Il = k => 'I' + AX[k] + ' = ' + S(I[k]) + ' kg·m²';
+  if (sph) rows.push([t('Inerzie', 'Inertias'), t('uguali', 'equal'), '', Il(0)]);
+  else if (sym >= 0) {
+    const tr = [0, 1, 2].filter(k => k !== sym);
+    rows.push([t('Asse di simmetria', 'Symmetry axis'), AX[sym], '', Il(sym) + (I[sym] > I[tr[0]] ? t(': corpo schiacciato, inerzia massima', ': oblate body, largest inertia') : t(': corpo allungato, inerzia minima', ': prolate body, smallest inertia'))]);
+    rows.push([t('Assi trasversali', 'Transverse axes'), AX[tr[0]] + ', ' + AX[tr[1]], '', 'I = ' + S(I[tr[0]]) + ' kg·m²']);
+  } else {
+    rows.push([t('Asse di inerzia massima', 'Largest-inertia axis'), AX[iMax], '', Il(iMax)]);
+    rows.push([t('Asse intermedio', 'Intermediate axis'), AX[iMid], '', Il(iMid)]);
+    rows.push([t('Asse di inerzia minima', 'Smallest-inertia axis'), AX[iMin], '', Il(iMin)]);
+  }
+  if (Ie != null) rows.push([t('Inerzia efficace H²/2T', 'Effective inertia H²/2T'), S(Ie), 'kg·m²', sph ? null : t('sta fra la minima e la massima: sopra l\'intermedia la polodia gira attorno all\'asse massimo, sotto attorno al minimo', 'lies between the smallest and the largest: above the intermediate one the polhode circles the largest axis, below it the smallest')]);
+  let verdict = '';
+  const inter = !sph && sym < 0 && spin === iMid;
+  if (wn === 0) verdict = t('Il corpo è fermo: dai almeno una componente di ω.', 'The body is at rest: give at least one component of ω.');
+  else if (sph) verdict = t('Le tre inerzie sono uguali: ω resta parallela a H e il corpo gira attorno a un asse fisso.', 'The three inertias are equal: ω stays parallel to H and the body turns about a fixed axis.');
+  else if (sym >= 0) {
+    const tr = (sym + 1) % 3, Is = I[sym], It = I[tr], ws = W[sym], lam = (Is - It) / It * ws, nut = Math.acos(Math.max(-1, Math.min(1, Is * ws / Hn))), Om = Hn / It;
+    rows.push(['#', t('Nutazione', 'Nutation')]);
+    if (Math.abs(lam) > 1e-15 && nut > 1e-9 && nut < Math.PI - 1e-9) {
+      rows.push([t('Velocità di nutazione nel corpo λ', 'Body nutation rate λ'), S(Math.abs(lam) * R2D), '°/s', t('periodo ', 'period ') + S(2 * Math.PI / Math.abs(lam), 3) + ' s; ' + (lam * ws > 0 ? t('nello stesso verso della rotazione', 'same sense as the spin') : t('in verso opposto alla rotazione', 'opposite to the spin'))]);
+      rows.push([t('Angolo di nutazione', 'Nutation angle'), fmt(nut * R2D, 3), '°', t('fra l\'asse ', 'between axis ') + AX[sym] + t(' e H', ' and H')]);
+      rows.push([t('Precessione attorno a H', 'Precession about H'), S(Om * R2D), '°/s', t('l\'asse ', 'axis ') + AX[sym] + t(' fa un giro del cono in ', ' goes round the cone in ') + S(2 * Math.PI / Om, 3) + ' s']);
+      verdict = t('Corpo assialsimmetrico: l\'asse ', 'Axisymmetric body: axis ') + AX[sym] + t(' descrive attorno a H un cono di ', ' draws a cone of ') + fmt(nut * R2D, 2) + t('° (nutazione) e lo percorre in ', '° about H (nutation) and goes round it in ') + S(2 * Math.PI / Om, 3) + ' s. ' +
+        (Is > It ? t('Gira attorno all\'asse di inerzia massima: è stabile anche se il corpo perde energia.', 'It spins about the largest inertia axis: stable even if the body loses energy.') : t('Gira attorno all\'asse di inerzia minima: è stabile solo per un corpo perfettamente rigido.', 'It spins about the smallest inertia axis: stable only for a perfectly rigid body.'));
+    } else {
+      rows.push([t('Nutazione', 'Nutation'), t('nessuna', 'none'), '', t('ω è lungo un asse principale', 'ω lies along a principal axis')]);
+      verdict = t('Gira attorno a un asse principale senza nutazione: H e ω restano allineati.', 'It spins about a principal axis with no nutation: H and ω stay aligned.');
+    }
+  } else {
+    rows.push(['#', t('Moto', 'Motion')]);
+    const sg = Math.abs(W[iMid]) * Math.sqrt((I[iMid] - I[iMin]) * (I[iMax] - I[iMid]) / (I[iMin] * I[iMax]));
+    if (pol && pol.sep) rows.push([t('Periodo della polodia', 'Polhode period'), '∞', 's', t('sulla separatrice: equilibrio instabile', 'on the separatrix: unstable equilibrium')]);
+    else if (pol) rows.push([t('Periodo della polodia', 'Polhode period'), S(pol.T), 's', t('ω torna uguale nel corpo; dagli integrali ellittici di Jacobi', 'ω repeats in the body; from Jacobi elliptic integrals')]);
+    if (inter) {
+      rows.push([t('Crescita della perturbazione 1/σ', 'Perturbation growth time 1/σ'), S(1 / sg, 3), 's', t('ogni 1/σ la perturbazione cresce di un fattore e', 'every 1/σ the perturbation grows by a factor e')]);
+      if (pol && !pol.sep) rows.push([t('Un ribaltamento ogni', 'One flip every'), S(pol.T / 2, 3), 's', t('metà periodo della polodia', 'half the polhode period')]);
+      verdict = pol && pol.sep ? t('Gira esattamente attorno all\'asse intermedio (', 'It spins exactly about the intermediate axis (') + AX[iMid] + t('): è un equilibrio instabile. Basta una perturbazione minima per farlo ribaltare: prova ω', '): an unstable equilibrium. The smallest perturbation makes it flip over: try ω') + AX[iMin] + ' = 0,1 °/s.'.replace(',', K.en ? '.' : ',') :
+        t('Gira attorno all\'asse intermedio (', 'It spins about the intermediate axis (') + AX[iMid] + t('): è instabile. Una piccola perturbazione cresce di un fattore e ogni ', '): unstable. A small perturbation grows by a factor e every ') + S(1 / sg, 3) + t(' s e il corpo si ribalta ogni ', ' s and the body flips over every ') + S(pol.T / 2, 3) + ' s.';
+    } else if (Ie > I[iMid]) verdict = t('Gira vicino all\'asse di inerzia massima (', 'It spins near the largest inertia axis (') + AX[iMax] + t('): è stabile, anche se il corpo perde energia.', '): stable, even if the body loses energy.');
+    else verdict = t('Gira vicino all\'asse di inerzia minima (', 'It spins near the smallest inertia axis (') + AX[iMin] + t('): è stabile solo per un corpo perfettamente rigido. Con antenne flessibili o propellente che si muove l\'energia cala e il moto passa all\'asse di inerzia massima, come successe a Explorer 1 nel 1958.', '): stable only for a perfectly rigid body. With flexible antennas or moving propellant the energy drops and the motion moves to the largest inertia axis, as happened to Explorer 1 in 1958.');
+  }
+  K.msg('inf-free', verdict, 'info');
+  K.rows('out-free', rows);
+  // grafico di ω nel tempo
+  const Tspin = wn > 0 ? 2 * Math.PI / wn : 60;
+  let tEnd = wn === 0 ? 60 : pol && Number.isFinite(pol.T) && !sph ? 2.5 * pol.T : 6 * Tspin;
+  if (sym >= 0 && wn > 0) { const tr = (sym + 1) % 3, lam = Math.abs((I[sym] - I[tr]) / I[tr] * W[sym]); tEnd = lam > 0 ? 2.5 * 2 * Math.PI / lam : tEnd; }
+  tEnd = Math.min(Math.max(tEnd, wn > 0 ? 3 * Tspin : 60), wn > 0 ? 100 * Tspin : 60);
+  const fs = freeSeries(I, W, tEnd);
+  K.chart('ch-free', { title: t('Velocità angolare in assi corpo', 'Angular velocity in body axes'), x: fs.ts, xLabel: t('tempo, s', 'time, s'), yLabel: '°/s', unit: '°/s', xName: 't',
+    series: [{ name: 'ωx', y: fs.ys[0], color: COL.cy }, { name: 'ωy', y: fs.ys[1], color: COL.gr }, { name: 'ωz', y: fs.ys[2], color: COL.vi }] });
+  // stato della simulazione: H in alto nella vista
+  FREE.I = I; FREE.w0 = W.slice(); FREE.w0n = wn; FREE.spin = spin;
+  FREE.q0 = Hn > 0 ? qFromTo(Hb.map(x => x / Hn), [0, 0, 1]) : [0, 0, 0, 1];
+  const mx = Math.max(...s.dims) || 1; FREE.L = s.dims.map(x => Math.max(0.06, x / mx * 1.5));
+  freeReset(); freeShape();
+}
+function freeReset() { FREE.w = FREE.w0.slice(); FREE.q = FREE.q0.slice(); FREE.time = 0; if (F3) F3.tn = 0; freePose(); }
+function freeShape() {
+  if (!F3 || !FREE.I) return;
+  const L = FREE.L, V = F3; V.body.visible = true;
+  V.shape.scale.set(L[0], L[1], L[2]);
+  V.axes.forEach((a, k) => { const e = new THREE.Vector3(); e.setComponent(k, 1); const len = L[k] / 2 + 0.45; a.userData.set(e, len); V.tags[k].position.copy(e).multiplyScalar(len + 0.17); });
+  const hl = Math.max(...L) / 2 + 0.95; V.H.userData.set(new THREE.Vector3(0, 0, 1), hl); V.tagH.position.set(0, 0, hl + 0.18);
+  V.ring.scale.setScalar(Math.max(...L) / 2 + 0.5);
+  V.trail.material.color.set(AXC[FREE.spin]);
+  $('trl').innerHTML = '<span style="color:' + AXC[FREE.spin] + '"><i class="dot"></i>' + t('traccia della punta di ', 'path of the tip of ') + AX[FREE.spin] + '</span>';
+  freePose();
+}
+function freePose() {
+  if (!F3 || !FREE.I) return;
+  const V = F3, q = FREE.q, w = FREE.w, wn = Math.hypot(...w);
+  V.body.quaternion.set(q[0], q[1], q[2], q[3]);
+  if (wn > 1e-12 && FREE.w0n > 0) {
+    const L = 0.55 + 0.75 * Math.min(2, wn / FREE.w0n) * Math.max(...FREE.L) / 1.5, d = new THREE.Vector3(w[0], w[1], w[2]).normalize();
+    V.W.visible = V.tagW.visible = true; V.W.userData.set(d, L); V.tagW.position.copy(d).multiplyScalar(L + 0.16);
+  } else V.W.visible = V.tagW.visible = false;
+  $('tlab').textContent = 't = ' + fmt(FREE.time, 1) + ' s';
+}
+function freeTrail() {
+  const V = F3, k = FREE.spin, e = [0, 0, 0]; e[k] = FREE.L[k] / 2 + 0.45;
+  const p = qrot(FREE.q, e);
+  if (V.tn === V.NT) { V.tp.copyWithin(0, 3); V.tn--; }
+  V.tp.set(p, V.tn * 3); V.tn++;
+  V.trail.geometry.attributes.position.needsUpdate = true; V.trail.geometry.setDrawRange(0, V.tn);
+}
+function freeFrame(dt) {
+  if (!FREE.I) return;
+  if (FREE.play && dt > 0) {
+    let span = dt * FREE.speed; const h0 = hStep(Math.hypot(...FREE.w));
+    let n = Math.ceil(span / h0); if (n > 4000) { n = 4000; span = n * h0; }
+    const h = span / n; let w = FREE.w, q = FREE.q;
+    for (let k = 0; k < n; k++) [w, q] = rk4(FREE.I, w, q, h);
+    FREE.w = w; FREE.q = q; FREE.time += span;
+    freeTrail();
+  }
+  freePose();
+}
+function free3D() {
+  if (F3) return F3;
+  if (!has3()) { no3D('v-free'); return null; }
+  const V = K.scene3(THREE, 'v-free', { fov: 32 });
+  V.camera.position.set(4.6, 2.4, 5.2); V.camera.lookAt(0, 0, 0);
+  if (V.controls) { V.controls.minDistance = 3; V.controls.maxDistance = 16; }
+  const ref = new THREE.Group(); ref.rotation.x = -Math.PI / 2; V.scene.add(ref);   // riferimento inerziale: z in alto, lungo H
+  const body = new THREE.Group(); ref.add(body);
+  const shape = box3(); body.add(shape);
+  const axes = AXC.map(c => arrow3(c)), tags = AX.map((s, k) => tag3(s, AXC[k]));
+  axes.forEach(a => body.add(a)); tags.forEach(s => body.add(s));
+  const H = arrow3(COL.ic, 0.022), tagH = tag3('H', COL.ic); ref.add(H, tagH);
+  const W = arrow3(COL.tx2, 0.012), tagW = tag3('ω', COL.tx2); body.add(W, tagW);
+  const ring = ring3(1, 0x2b333d); ref.add(ring);
+  const NT = 1500, tp = new Float32Array(NT * 3), tg = new THREE.BufferGeometry();
+  tg.setAttribute('position', new THREE.BufferAttribute(tp, 3)); tg.setDrawRange(0, 0);
+  const trail = new THREE.Line(tg, new THREE.LineBasicMaterial({ color: COL.gr, transparent: true, opacity: 0.55 })); trail.frustumCulled = false; ref.add(trail);
+  F3 = { V, ref, body, shape, axes, tags, H, tagH, W, tagW, ring, trail, tp, tn: 0, NT };
+  V.onFrame(freeFrame);
+  freeShape();
+  return F3;
+}
+function playIcon() { const b = $('play'); b.innerHTML = FREE.play ? ICON.pause : ICON.play; b.setAttribute('aria-label', FREE.play ? t('Metti in pausa', 'Pause') : t('Avvia', 'Play')); }
+function setSpeed(f) { const v = Math.max(-1, Math.min(2, Math.log10(f))); $('spd').value = v; speedLabel(); }
+function speedLabel() { FREE.speed = Math.pow(10, +$('spd').value); $('spdv').textContent = t('tempo ×', 'time ×') + nice(FREE.speed, FREE.speed < 1 ? 2 : FREE.speed < 10 ? 1 : 0); }
+function autoSpeed() {                    // un giro in circa 4 s di animazione
+  const wn = Math.hypot(num('wx') || 0, num('wy') || 0, num('wz') || 0);
+  if (!(wn > 0)) return setSpeed(1);
+  const f = 90 / wn, e = Math.floor(Math.log10(f)), m = f / Math.pow(10, e);
+  setSpeed((m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * Math.pow(10, e));
+}
+
+/* ===================== disturbi ===================== */
+const RHO = [[200, 2.5e-10], [300, 2.0e-11], [400, 3.0e-12], [500, 6.0e-13], [600, 1.5e-13], [800, 1.6e-14], [1000, 4e-15]];   // kg/m³, attività solare media
+const JB = { 200: 3.17e-10, 300: 2.69e-11, 400: 4.22e-12, 500: 8.60e-13, 600: 2.06e-13, 800: 1.85e-14 };                     // ECSS-E-ST-10-04C, tab. G-4, attività moderata
+function rhoTable(h) {                    // interpolazione logaritmica; null fuori da 200–1000 km
+  if (!(h >= RHO[0][0] && h <= RHO[RHO.length - 1][0])) return null;
+  for (let i = 0; i < RHO.length - 1; i++) if (h <= RHO[i + 1][0]) { const f = (h - RHO[i][0]) / (RHO[i + 1][0] - RHO[i][0]); return Math.exp(Math.log(RHO[i][1]) + f * (Math.log(RHO[i + 1][1]) - Math.log(RHO[i][1]))); }
+  return null;
+}
+function lamFromInc(i) { const a = Math.abs(i) % 180, gl = Math.min(a, 180 - a), pm = Math.min(90, gl + TILT) * D2R; return Math.sqrt(1 + 3 * Math.sin(pm) ** 2); }
+const ggTorque = (r, dI, thDeg) => 3 * MU / (2 * r ** 3) * Math.abs(dI) * Math.abs(Math.sin(2 * thDeg * D2R));
+let DIST = null, distSat = null;
+
+function solveDist() {
+  K.clear('f-dist');
+  const ids = ['h', 'r', 'inc', 'Imax', 'Imin', 'dI', 'th', 'As', 'cps', 'refl', 'sinc', 'Aa', 'cpa', 'Cd', 'rho', 'D', 'lam'];
+  const { v, err } = readF(ids), warn = err ? [err] : [];
+  positive(v, ['r', 'Imax', 'Imin', 'As', 'Aa', 'Cd', 'rho'], warn);
+  let r = null;
+  if (v.h != null) r = RE + v.h * 1e3; else if (v.r != null) r = v.r * 1e3;
+  if (r == null) return { err: t('Dai la quota dell\'orbita, oppure il raggio.', 'Give the orbit altitude, or the radius.'), warn };
+  K.der('h', (r - RE) / 1e3, 1); K.der('r', r / 1e3, 1);
+  if (v.h != null && v.r != null && Math.abs(RE + v.h * 1e3 - v.r * 1e3) > 500) { K.bad('r'); warn.push(t('Quota e raggio non tornano: con quota ', 'Altitude and radius do not agree: at ') + fmt(v.h, 1) + t(' km il raggio è ', ' km altitude the radius is ') + fmt(r / 1e3, 1) + ' km.'); }
+  if (!(r > RE)) return { err: t('L\'orbita deve stare sopra la superficie: raggio maggiore di ', 'The orbit must be above the surface: radius larger than ') + fmt(K.RE, 0) + ' km.', warn };
+  const hk = (r - RE) / 1e3, V = Math.sqrt(MU / r), P = 2 * Math.PI * Math.sqrt(r ** 3 / MU);
+  // gradiente di gravità
+  let dI = null;
+  if (v.dI != null) {
+    dI = Math.abs(v.dI);
+    if (v.Imax != null && v.Imin != null && Math.abs(Math.abs(v.Imax - v.Imin) - dI) > 1e-6 * Math.max(dI, 1e-12)) { K.bad('dI'); warn.push(t('La differenza ΔI non torna: Imax − Imin = ', 'The difference ΔI does not agree: Imax − Imin = ') + S(Math.abs(v.Imax - v.Imin)) + ' kg·m².'); }
+  } else if (v.Imax != null && v.Imin != null) {
+    dI = Math.abs(v.Imax - v.Imin); K.der('dI', dI, dv(dI));
+    if (v.Imax < v.Imin) { K.bad('Imax'); warn.push(t('L\'inerzia massima è minore della minima: uso la differenza in valore assoluto.', 'The largest inertia is smaller than the smallest: the page uses the absolute difference.')); }
+  }
+  const th = v.th != null ? v.th : 45; if (v.th == null) K.der('th', 45, '45');
+  const Tg = dI != null ? ggTorque(r, dI, th) : null;
+  // pressione solare
+  let q = v.refl != null ? v.refl : 0.6; if (v.refl == null) K.der('refl', 0.6, nice(0.6, 1));
+  if (q < 0 || q > 1) { K.bad('refl'); warn.push(t('La riflettività va da 0 a 1: uso ', 'Reflectance goes from 0 to 1: the page uses ') + nice(Math.min(1, Math.max(0, q)), 2) + '.'); q = Math.min(1, Math.max(0, q)); }
+  const si = v.sinc != null ? v.sinc : 0; if (v.sinc == null) K.der('sinc', 0, '0');
+  const Fs = v.As != null ? FS / CL * v.As * (1 + q) * Math.max(0, Math.cos(si * D2R)) : null;
+  const Ts = Fs != null && v.cps != null ? Fs * Math.abs(v.cps) : null;
+  // resistenza
+  const Aa = v.Aa != null ? v.Aa : v.As; if (v.Aa == null && v.As != null) K.der('Aa', v.As, dv(v.As));
+  const cpa = v.cpa != null ? v.cpa : v.cps; if (v.cpa == null && v.cps != null) K.der('cpa', v.cps, dv(v.cps));
+  const Cd = v.Cd != null ? v.Cd : 2.2; if (v.Cd == null) K.der('Cd', 2.2, nice(2.2, 1));
+  let rho = v.rho, rhoSrc = 'user';
+  if (rho == null) { rho = rhoTable(hk); rhoSrc = rho != null ? 'table' : hk > 1000 ? 'above' : 'below'; if (rho != null) K.der('rho', rho); }
+  const Ta = rho != null && Aa != null && cpa != null ? 0.5 * rho * V * V * Cd * Aa * Math.abs(cpa) : (rhoSrc === 'above' && Aa != null && cpa != null ? 0 : null);
+  if (rhoSrc === 'below' && Aa != null) warn.push(t('Sotto 200 km la tabella di densità non arriva: dai tu la densità dell\'aria.', 'Below 200 km the density table does not reach: give the air density yourself.'));
+  // campo magnetico
+  let lam = v.lam, lamSrc = 'user';
+  if (lam == null) { lam = v.inc != null ? lamFromInc(v.inc) : 2; lamSrc = v.inc != null ? 'inc' : 'pole'; K.der('lam', lam, nice(lam, 3)); }
+  else if (lam < 1 || lam > 2) { K.bad('lam'); warn.push(t('λ va da 1 (equatore magnetico) a 2 (poli).', 'λ goes from 1 (magnetic equator) to 2 (poles).')); }
+  const B = lam * MAG / r ** 3, Tm = v.D != null ? Math.abs(v.D) * B : null;
+  return { r, hk, V, P, dI, th, q, si, Fs, Aa, cpa, Cd, rho, rhoSrc, lam, lamSrc, B, Tg, Ts, Ta, Tm, v, warn };
+}
+
+function runDist() {
+  const d = solveDist(); if (booted) K.save({ m: tabs.get() });
+  K.msg('inf-dist', '');
+  if (d.err) { K.msg('msg-dist', [d.err].concat(d.warn).join('<br>')); K.rows('out-dist', []); noChart('ch-dist'); DIST = null; distView(null); return; }
+  K.msg('msg-dist', d.warn.join('<br>'));
+  if (distSat && d.v.h != null && Math.abs(d.v.h - distSat.hp) < 0.05) K.msg('inf-dist', t('Uso il perigeo di ', 'Using the perigee of ') + K.esc(distSat.name) + ' (' + fmt(distSat.hp, 0) + ' km)' + t(': lì tutte le coppie sono più forti. Apogeo ', ': all torques are strongest there. Apogee ') + fmt(distSat.ha, 0) + ' km.', 'info');
+  const NM = [t('Gradiente di gravità', 'Gravity gradient'), t('Pressione solare', 'Solar pressure'), t('Resistenza atmosferica', 'Atmospheric drag'), t('Coppia magnetica', 'Magnetic torque')];
+  const vals = [d.Tg, d.Ts, d.Ta, d.Tm], have = vals.map(x => x != null);
+  const total = vals.reduce((s, x) => s + (x || 0), 0);
+  const dom = have.some(Boolean) && total > 0 ? vals.reduce((a, x, k) => (x || 0) > (vals[a] || 0) ? k : a, 0) : -1;
+  const miss = (list) => t('mancano: ', 'missing: ') + list.join(', ');
+  const notes = [
+    d.Tg != null ? 'ΔI = ' + S(d.dI) + ' kg·m², θ = ' + nice(d.th, 2) + '°' + (Math.abs(Math.abs(d.th) - 45) > 1e-9 ? t('; a 45° sarebbe ', '; at 45° it would be ') + S(ggTorque(d.r, d.dI, 45)) + ' N·m' : t(', il caso peggiore', ', the worst case')) : miss([lab('Imax') + ' ' + t('e', 'and') + ' ' + lab('Imin') + t(', oppure ', ', or ') + lab('dI')]),
+    d.Ts != null ? t('forza ', 'force ') + S(d.Fs) + ' N, q = ' + nice(d.q, 2) + ', i = ' + nice(d.si, 1) + '°' : miss([d.v.As == null ? lab('As') : null, d.v.cps == null ? lab('cps') : null].filter(Boolean)),
+    d.Ta != null ? (d.rhoSrc === 'above' ? t('sopra 1000 km la tabella finisce: trascurabile', 'above 1000 km the table ends: negligible') : 'ρ = ' + S(d.rho, 3) + ' kg/m³' + (d.rhoSrc === 'table' ? t(', dalla tabella', ', from the table') : '') + ', C<sub>d</sub> = ' + nice(d.Cd, 2) + ', V = ' + fmt(d.V / 1e3, 2) + ' km/s') : (d.rhoSrc === 'below' ? t('sotto 200 km: dai la densità', 'below 200 km: give the density') : miss([lab('Aa'), lab('cpa')])),
+    d.Tm != null ? 'D = ' + S(Math.abs(d.v.D), 3) + ' A·m², B = ' + S(d.B * 1e6, 3) + ' µT' : miss([lab('D')])];
+  const rows = [['#', t('Orbita', 'Orbit')],
+    [t('Raggio dell\'orbita', 'Orbit radius'), fmt(d.r / 1e3, 1), 'km'],
+    [t('Velocità', 'Speed'), fmt(d.V / 1e3, 3), 'km/s'],
+    [t('Periodo', 'Period'), fmt(d.P / 60, 2), 'min'],
+    [t('Densità dell\'aria', 'Air density'), d.rho != null ? S(d.rho, 3) : '—', d.rho != null ? 'kg/m³' : '', d.rhoSrc === 'table' ? t('tabella per attività solare media, vedi «Come funziona»', 'average solar activity table, see «How it works»') : d.rhoSrc === 'user' ? t('data da te', 'given by you') : d.rhoSrc === 'above' ? t('sopra 1000 km la tabella finisce', 'above 1000 km the table ends') : t('sotto 200 km la tabella non arriva', 'below 200 km the table does not reach')],
+    [t('Campo magnetico massimo', 'Largest magnetic field'), S(d.B * 1e6, 3), 'µT', 'λ = ' + nice(d.lam, 3) + (d.lamSrc === 'inc' ? t(', dall\'inclinazione', ', from the inclination') : d.lamSrc === 'pole' ? t(', ai poli (inclinazione non data)', ', at the poles (no inclination given)') : '')],
+    ['#', t('Coppie di disturbo, valori massimi', 'Disturbance torques, largest values')]];
+  vals.forEach((x, k) => rows.push([NM[k], x != null ? (x === 0 ? '≈ 0' : S(x)) : '—', x != null ? 'N·m' : '', notes[k], k === dom ? 'key' : '']));
+  if (dom >= 0) rows.push([t('Totale nel caso peggiore', 'Worst-case total'), S(total), 'N·m', t('somma dei valori massimi; la più forte è ', 'sum of the largest values; the strongest is ') + NM[dom].toLowerCase() + ' (' + fmt(vals[dom] / total * 100, 0) + ' %)']);
+  K.rows('out-dist', rows);
+  DIST = dom >= 0 ? { total, h: d.hk, inc: d.v.inc } : null;
+  // grafico: coppie e quota
+  const top = Math.max(1500, Math.ceil(d.hk * 1.15 / 100) * 100), hs = [];
+  for (let k = 0; k <= 260; k++) hs.push(200 + (top - 200) * k / 260);
+  const lg = x => x > 0 ? Math.log10(x) : NaN;
+  const ser = [];
+  if (d.Tg != null && d.Tg > 0) ser.push({ name: NM[0], color: COL.cy, y: hs.map(h => lg(ggTorque(RE + h * 1e3, d.dI, d.th))) });
+  if (d.Ts != null && d.Ts > 0) ser.push({ name: NM[1], color: COL.vi, y: hs.map(() => lg(d.Ts)) });
+  if (d.Aa != null && d.cpa != null && d.Aa * d.cpa !== 0) ser.push({ name: NM[2], color: COL.gr, y: hs.map(h => { const rr = RE + h * 1e3, rh = rhoTable(h); return rh == null ? NaN : lg(0.5 * rh * (MU / rr) * d.Cd * d.Aa * Math.abs(d.cpa)); }) });
+  if (d.Tm != null && d.Tm > 0) ser.push({ name: NM[3], color: COL.ic, y: hs.map(h => lg(Math.abs(d.v.D) * d.lam * MAG / (RE + h * 1e3) ** 3)) });
+  if (ser.length > 1) ser.push({ name: t('totale', 'total'), color: COL.tx2, dash: true, y: hs.map((h, k) => { let s = 0; ser.forEach(se => { const y = se.y[k]; if (Number.isFinite(y)) s += Math.pow(10, y); }); return lg(s); }) });
+  if (ser.length) {
+    const all = []; ser.forEach(se => se.y.forEach(y => { if (Number.isFinite(y)) all.push(y); }));
+    let y1 = Math.ceil(Math.max(...all)), y0 = Math.floor(Math.min(...all)); if (y1 - y0 < 4) y0 = y1 - 4; if (y1 - y0 > 9) y0 = y1 - 9;
+    const yFmt = y => !Number.isFinite(y) ? '—' : Math.abs(y - Math.round(y)) < 1e-9 ? '10' + sup(Math.round(y)) : S(Math.pow(10, y), 3);
+    K.chart('ch-dist', { title: t('Coppie di disturbo e quota', 'Disturbance torques and altitude'), x: hs, series: ser, xLabel: t('quota, km', 'altitude, km'), yLabel: t('N·m, scala logaritmica', 'N·m, log scale'), unit: 'N·m', xName: 'h', yFmt, yMin: y0, yMax: y1, h: 260,
+      marks: [{ x: d.hk, label: t('la tua quota', 'your altitude'), color: COL.gr }] });
+  } else noChart('ch-dist');
+  distView({ th: d.th, cps: d.v.cps, cpa: d.cpa, si: d.si, vals, dom, names: NM });
+}
+
+let DV = null;
+function distView(d) {                    // schema 2D delle quattro coppie
+  if (d !== undefined) DV = d;
+  const host = $('v-dist'), old = host.querySelector(':scope > svg'); if (old) old.remove();
+  const cap = $('cap-dist'); d = DV;
+  if (!d) { cap.innerHTML = ''; return; }
+  const W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const s = Math.min(W / 640, H / 440), cx = W / 2, cy = H * 0.41, gnd = H * 0.84, Rt = 2400 * s, ecy = gnd + Rt;
+  const bw = 62 * s, bh = 116 * s, f = x => x.toFixed(1), fs = Math.max(11.5, Math.min(13.5, 12.5 * s / 0.8));
+  let th = ((d.th % 180) + 180) % 180; if (th > 90) th -= 180;                // il disegno va da −90° a 90°
+  const thd = th === 0 ? 0 : Math.sign(th) * Math.max(Math.abs(th), 6), big = Math.abs(thd) !== Math.abs(th);
+  const a = thd * D2R, ca = Math.cos(a), sa = Math.sin(a), P = (x, y) => [cx + x * ca - y * sa, cy + x * sa + y * ca];
+  const mk = (id, c) => '<marker id="' + id + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="' + c + '"/></marker>';
+  let o = '<defs>' + mk('dm-vi', COL.vi) + mk('dm-gr', COL.gr) + mk('dm-ic', COL.ic) + '</defs>';
+  o += '<circle cx="' + f(cx) + '" cy="' + f(ecy) + '" r="' + f(Rt) + '" fill="#05080c" stroke="' + COL.ln2 + '"/>';
+  o += '<circle cx="' + f(cx) + '" cy="' + f(ecy) + '" r="' + f(ecy - cy) + '" fill="none" stroke="' + COL.ln + '" stroke-dasharray="5 6"/>';
+  o += '<line x1="' + f(cx) + '" y1="' + f(cy) + '" x2="' + f(cx) + '" y2="' + f(gnd) + '" stroke="' + COL.tx3 + '" stroke-dasharray="3 4"/>';
+  if (W >= 520) o += '<text x="' + f(cx + 7) + '" y="' + f(gnd - 8) + '" font-size="11.5" fill="' + COL.tx3 + '">' + t('verso il centro della Terra', 'towards the Earth centre') + '</text>';
+  // asse del corpo e angolo θ
+  const e1 = P(0, -(bh / 2 + 30 * s)), e2 = P(0, bh / 2 + 30 * s);
+  o += '<line x1="' + f(e1[0]) + '" y1="' + f(e1[1]) + '" x2="' + f(e2[0]) + '" y2="' + f(e2[1]) + '" stroke="' + COL.cy + '" stroke-dasharray="6 4"/>';
+  const ra = bh / 2 + 22 * s;
+  o += '<line x1="' + f(cx) + '" y1="' + f(cy) + '" x2="' + f(cx) + '" y2="' + f(cy - ra - 14 * s) + '" stroke="' + COL.tx3 + '" stroke-dasharray="3 4"/>';
+  if (thd) {
+    const p1 = [cx, cy - ra], p2 = P(0, -ra), pm = P(0, 0), am = a / 2;
+    o += '<path d="M' + f(p1[0]) + ' ' + f(p1[1]) + 'A' + f(ra) + ' ' + f(ra) + ' 0 0 ' + (thd > 0 ? 1 : 0) + ' ' + f(p2[0]) + ' ' + f(p2[1]) + '" fill="none" stroke="' + COL.cy + '" stroke-width="1.5"/>';
+    o += '<text x="' + f(pm[0] + (ra + 13 * s + 4) * Math.sin(am) + (thd > 0 ? 3 : -3)) + '" y="' + f(cy - (ra + 13 * s + 4) * Math.cos(am)) + '" font-size="' + fs + '" fill="' + COL.cy + '" text-anchor="' + (thd > 0 ? 'start' : 'end') + '">θ</text>';
+  }
+  // Sole: raggi paralleli che arrivano sulla faccia sinistra con incidenza i
+  const si = Math.max(-80, Math.min(80, d.si || 0)), ar = a + si * D2R, dir = [Math.cos(ar), Math.sin(ar)], len = 120 * s;
+  [-0.3, 0, 0.3].forEach(yy => { const pf = P(-bw / 2 - 4, yy * bh), p0 = [pf[0] - dir[0] * len, pf[1] - dir[1] * len]; o += '<line x1="' + f(p0[0]) + '" y1="' + f(p0[1]) + '" x2="' + f(pf[0]) + '" y2="' + f(pf[1]) + '" stroke="' + COL.vi + '" stroke-width="1.6" marker-end="url(#dm-vi)" opacity=".9"/>'; });
+  // flusso d'aria: arriva da davanti (la velocità punta a destra)
+  const xr = cx + Math.abs(bw / 2 * ca) + Math.abs(bh / 2 * sa) + 10 * s;
+  [-0.3, 0, 0.3].forEach(yy => { const y = cy + yy * bh; o += '<line x1="' + f(xr + 110 * s) + '" y1="' + f(y) + '" x2="' + f(xr) + '" y2="' + f(y) + '" stroke="' + COL.gr + '" stroke-width="1.6" marker-end="url(#dm-gr)" opacity=".9"/>'; });
+  // campo magnetico: linee parallele in alto a destra
+  [0, 1, 2].forEach(k => { const x0 = W * 0.62 + k * 26 * s, y0 = H * 0.30; o += '<line x1="' + f(x0) + '" y1="' + f(y0) + '" x2="' + f(x0 + 34 * s) + '" y2="' + f(y0 - 46 * s) + '" stroke="' + COL.ic + '" stroke-width="1.4" marker-end="url(#dm-ic)" opacity=".6"/>'; });
+  o += '<text x="' + f(W * 0.62 + 92 * s) + '" y="' + f(H * 0.30 - 40 * s) + '" font-size="' + fs + '" fill="' + COL.ic + '">B</text>';
+  // corpo, dipolo, baricentro e centri di pressione
+  o += '<g transform="rotate(' + thd.toFixed(2) + ' ' + f(cx) + ' ' + f(cy) + ')"><rect x="' + f(cx - bw / 2) + '" y="' + f(cy - bh / 2) + '" width="' + f(bw) + '" height="' + f(bh) + '" rx="3" fill="#161b22" stroke="' + COL.tx2 + '"/>' +
+    '<line x1="' + f(cx - bw * 0.3) + '" y1="' + f(cy + bh * 0.3) + '" x2="' + f(cx + bw * 0.22) + '" y2="' + f(cy + bh * 0.3) + '" stroke="' + COL.ic + '" stroke-width="1.4" marker-end="url(#dm-ic)"/></g>';
+  const mx = Math.max(Math.abs(d.cps || 0), Math.abs(d.cpa || 0)) || 1, off = x => Math.max(0.08, Math.min(0.32, 0.3 * Math.abs(x || 0) / mx)) * bh;
+  const cp = (ofs, c) => { const p = P(0, ofs), r = 4.5; return '<line x1="' + f(cx) + '" y1="' + f(cy) + '" x2="' + f(p[0]) + '" y2="' + f(p[1]) + '" stroke="' + c + '" stroke-width="1.5"/><path d="M' + f(p[0]) + ' ' + f(p[1] - r) + 'L' + f(p[0] + r) + ' ' + f(p[1]) + 'L' + f(p[0]) + ' ' + f(p[1] + r) + 'L' + f(p[0] - r) + ' ' + f(p[1]) + 'z" fill="' + c + '"/>'; };
+  if (d.cps != null) o += cp(-off(d.cps), COL.vi);
+  if (d.cpa != null) o += cp(off(d.cpa), COL.gr);
+  o += '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="5.5" fill="#000" stroke="' + COL.tx + '" stroke-width="1.4"/><path d="M' + f(cx) + ' ' + f(cy) + 'V' + f(cy - 5.5) + 'A5.5 5.5 0 0 1 ' + f(cx + 5.5) + ' ' + f(cy) + 'z M' + f(cx) + ' ' + f(cy) + 'V' + f(cy + 5.5) + 'A5.5 5.5 0 0 1 ' + f(cx - 5.5) + ' ' + f(cy) + 'z" fill="' + COL.tx + '"/>';
+  // etichette con i valori
+  const tl = (x, y, anc, c, k) => { const v = d.vals[k], st = k === d.dom; return '<text x="' + f(x) + '" y="' + f(y) + '" text-anchor="' + anc + '" font-size="' + fs + '" fill="' + c + '">' + K.esc(d.names[k].toLowerCase()) + '</text>' +
+    '<text x="' + f(x) + '" y="' + f(y + fs + 5) + '" text-anchor="' + anc + '" font-size="' + (st ? fs + 2 : fs) + '" font-weight="' + (st ? 700 : 400) + '" fill="' + (v != null ? COL.tx : COL.tx3) + '">' + (v != null ? (v === 0 ? '≈ 0' : S(v, 3)) + ' N·m' : '—') + '</text>'; };
+  o += tl(12, 20, 'start', COL.vi, 1) + tl(W - 12, 20, 'end', COL.ic, 3) + tl(W - 12, cy + 0.28 * bh + 24 * s + 10, 'end', COL.gr, 2) + tl(12, cy + 0.28 * bh + 24 * s + 10, 'start', COL.cy, 0);
+  host.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + o + '</svg>');
+  cap.innerHTML = '<span style="color:var(--tx)"><i class="dot"></i>' + t('baricentro', 'centre of mass') + '</span>' +
+    (d.cps != null ? '<span style="color:var(--vi)"><i class="dot"></i>' + t('cp solare', 'solar cp') + '</span>' : '') +
+    (d.cpa != null ? '<span style="color:var(--gr)"><i class="dot"></i>' + t('cp aerodinamico', 'aerodynamic cp') + '</span>' : '') +
+    (big ? '<span>' + t('θ esagerato nel disegno', 'θ exaggerated in the drawing') + '</span>' : '');
+}
+
+/* ===================== controllo ===================== */
+function bang(ts, th, tm) {               // manovra bang-bang: [angolo, velocità] al tempo tm
+  const a = 4 * th / (ts * ts);
+  if (tm <= 0) return [0, 0];
+  if (tm >= ts) return [th, 0];
+  if (tm <= ts / 2) return [0.5 * a * tm * tm, a * tm];
+  const r = ts - tm; return [th - 0.5 * a * r * r, a * r];
+}
+const CT = { st: null, play: !RM, tm: RM ? 99 : 0, prev: 0, raf: 0, el: null };
+
+function solveCtl() {
+  K.clear('f-ctl');
+  const ids = ['Td', 'hc', 'Pc', 'Bc', 'mg', 'sa', 'st', 'Isl', 'acc', 'Lt', 'isp', 'tb', 'life'];
+  const { v, err } = readF(ids), warn = err ? [err] : [];
+  positive(v, ['hc', 'Pc', 'Bc', 'mg', 'sa', 'st', 'Isl', 'acc', 'Lt', 'isp', 'tb', 'life'], warn);
+  if (v.Td != null && v.Td < 0) v.Td = Math.abs(v.Td);
+  let r = null;
+  if (v.hc != null) r = RE + v.hc * 1e3; else if (v.Pc != null) r = Math.cbrt(MU * (v.Pc * 60 / (2 * Math.PI)) ** 2);
+  let P = null, Bmin = null;
+  if (r != null) {
+    P = 2 * Math.PI * Math.sqrt(r ** 3 / MU); Bmin = MAG / r ** 3;
+    K.der('hc', (r - RE) / 1e3, 1); K.der('Pc', P / 60, 2);
+    if (v.hc != null && v.Pc != null && Math.abs(v.Pc * 60 - P) > 1e-3 * P) { K.bad('Pc'); warn.push(t('Quota e periodo non tornano: a ', 'Altitude and period do not agree: at ') + fmt(v.hc, 0) + t(' km il periodo è ', ' km the period is ') + fmt(P / 60, 2) + ' min.'); }
+    if (r <= RE) { warn.push(t('L\'orbita passa sotto la superficie della Terra.', 'The orbit goes below the Earth\'s surface.')); }
+    K.der('Bc', Bmin * 1e6);
+  }
+  const B = v.Bc != null ? v.Bc * 1e-6 : Bmin;
+  const mg = v.mg != null ? v.mg : 1; if (v.mg == null) K.der('mg', 1, '1');
+  const tb = v.tb != null ? v.tb : 1; if (v.tb == null) K.der('tb', 1, '1');
+  return { v, P, B, Bsrc: v.Bc != null ? 'user' : 'min', mg, tb, r, warn };
+}
+
+function runCtl() {
+  const c = solveCtl(), v = c.v; if (booted) K.save({ m: tabs.get() });
+  K.msg('msg-ctl', c.warn.join('<br>'));
+  const M = c.mg, mgt = M !== 1 ? ' · ' + t('margine ×', 'margin ×') + nice(M, 2) : '', Td = v.Td;
+  const need = list => t('mancano: ', 'missing: ') + list.map(lab).join(', ');
+  const rows = [['#', t('Ruota di reazione', 'Reaction wheel') + mgt]];
+  const haveTP = Td != null && c.P != null;
+  rows.push([t('Accumulo per una coppia ciclica', 'Storage for a cyclic torque'), haveTP ? S(Td * c.P / 4 * 0.707 * M) : '—', haveTP ? 'N·m·s' : '', haveTP ? 'T<sub>D</sub> · P/4 · 0,707'.replace(',', K.en ? '.' : ',') + t(': la coppia cambia verso ogni quarto d\'orbita', ': the torque changes sign every quarter orbit') : need(['Td', 'hc'].filter(id => (id === 'Td' ? Td : c.P) == null)), 'key']);
+  rows.push([t('Accumulo per una coppia costante', 'Storage for a constant torque'), haveTP ? S(Td * c.P * M) : '—', haveTP ? 'N·m·s' : '', haveTP ? t('T<sub>D</sub> · P in un\'orbita, da scaricare', 'T<sub>D</sub> · P per orbit, to be dumped') : null]);
+  const haveS = v.sa != null && v.st != null && v.Isl != null;
+  let slew = null;
+  if (haveS) {
+    const th = v.sa * D2R, Tsl = 4 * th * v.Isl / v.st ** 2, wmax = 2 * th / v.st;
+    slew = { Tsl, wmax };
+    rows.push([t('Coppia per la manovra', 'Slew torque'), S(Tsl * M), 'N·m', t('4θI/t²: metà tempo accelera, metà frena', '4θI/t²: half the time speeding up, half braking') + (Td != null ? t('; contro i disturbi ne basta ', '; against the disturbances ') + S(Td * M) + ' N·m' + (K.en ? ' is enough' : '') : '')]);
+    rows.push([t('Velocità angolare di picco', 'Peak angular rate'), S(wmax * R2D), '°/s', t('a metà manovra, 2θ/t', 'at mid-slew, 2θ/t')]);
+    rows.push([t('Momento della manovra', 'Slew momentum'), S(v.Isl * wmax * M), 'N·m·s', t('I ω di picco: la ruota lo prende e poi lo restituisce', 'peak I ω: the wheel takes it and gives it back')]);
+  } else rows.push([t('Manovra', 'Slew'), '—', '', need(['sa', 'st', 'Isl'].filter(id => v[id] == null))]);
+  if (v.acc != null && haveTP) rows.push([t('Ruota di momento', 'Momentum wheel'), S(Td * c.P / (4 * v.acc * D2R) * M), 'N·m·s', t('T<sub>D</sub> P/(4θ<sub>a</sub>): l\'asse si sposta al più di ', 'T<sub>D</sub> P/(4θ<sub>a</sub>): the axis moves by at most ') + nice(v.acc, 3) + t('° in un quarto d\'orbita', '° in a quarter orbit')]);
+  rows.push(['#', t('Magnetotorquer', 'Magnetorquer') + mgt]);
+  rows.push([t('Dipolo', 'Dipole'), Td != null && c.B ? S(Td / c.B * M) : '—', Td != null && c.B ? 'A·m²' : '', Td != null && c.B ? 'T<sub>D</sub>/B, B = ' + S(c.B * 1e6, 3) + ' µT' + (c.Bsrc === 'min' ? t(', il più debole lungo l\'orbita', ', the weakest along the orbit') : '') : need(['Td', 'Bc'].filter(id => (id === 'Td' ? Td : c.B) == null))]);
+  rows.push(['#', t('Scarico con i propulsori', 'Dumping with thrusters') + mgt]);
+  const haveD = haveTP && v.Lt != null;
+  if (haveD) {
+    const h = Td * c.P * M, F = h / (v.Lt * c.tb), N = YEAR / c.P;
+    rows.push([t('Spinta', 'Thrust'), S(F), 'N', t('h/(L t) per scaricare in ', 'h/(L t) to dump in ') + nice(c.tb, 2) + t(' s il momento di un\'orbita', ' s the momentum of one orbit')]);
+    rows.push([t('Scarichi in un anno', 'Dumps per year'), fmt(N, 0), '', t('uno per orbita', 'one per orbit')]);
+    if (v.isp != null) {
+      const my = F * c.tb * N / (v.isp * K.G0);
+      rows.push([t('Propellente in un anno', 'Propellant per year'), S(my), 'kg', 'F t N/(I<sub>sp</sub> g<sub>0</sub>)']);
+      if (v.life != null) rows.push([t('Propellente per la missione', 'Propellant for the mission'), S(my * v.life), 'kg', nice(v.life, 1) + t(' anni', ' years')]);
+    } else rows.push([t('Propellente', 'Propellant'), '—', '', need(['isp'])]);
+  } else rows.push([t('Spinta', 'Thrust'), '—', '', need(['Td', 'hc', 'Lt'].filter(id => (id === 'Td' ? Td : id === 'hc' ? c.P : v.Lt) == null))]);
+  if (Td != null && v.Isl != null) { rows.push(['#', t('Senza controllo', 'Without control')]); rows.push([t('Accelerazione angolare dai disturbi', 'Angular acceleration from the disturbances'), S(Td / v.Isl * R2D), '°/s²', t('T<sub>D</sub>/I, senza margine', 'T<sub>D</sub>/I, no margin')]); }
+  K.rows('out-ctl', rows);
+  if (slew) {
+    const n = 200, ts = [], an = [], rt = [];
+    for (let k = 0; k <= n; k++) { const tm = v.st * k / n, b = bang(v.st, v.sa, tm); ts.push(tm); an.push(b[0]); rt.push(b[1]); }
+    K.chart('ch-ang', { title: t('Angolo', 'Angle'), x: ts, series: [{ name: 'θ', y: an, color: COL.cy }], xLabel: t('tempo, s', 'time, s'), yLabel: '°', unit: '°', xName: 't', h: 200, marks: [{ x: v.st / 2, label: t('metà', 'half'), color: COL.tx3 }] });
+    K.chart('ch-rate', { title: t('Velocità angolare', 'Angular rate'), x: ts, series: [{ name: 'ω', y: rt, color: COL.vi }], xLabel: t('tempo, s', 'time, s'), yLabel: '°/s', unit: '°/s', xName: 't', h: 200, yMin: 0 });
+    CT.st = { sa: v.sa, ts: v.st };
+  } else { noChart('ch-ang'); noChart('ch-rate'); CT.st = null; }
+  ctlBuild();
+}
+
+function arcD(a1, a2, R, cx, cy) {        // arco da a1 a a2 (gradi, da «su» in senso orario)
+  const p = a => [cx + R * Math.sin(a * D2R), cy - R * Math.cos(a * D2R)], A = p(a1), B = p(a2), sw = a2 > a1 ? 1 : 0, lg = Math.abs(a2 - a1) > 180 ? 1 : 0;
+  if (Math.abs(a2 - a1) < 1e-6) return '';
+  if (Math.abs(a2 - a1) >= 359.99) { const m = p((a1 + a2) / 2); return 'M' + A[0].toFixed(1) + ' ' + A[1].toFixed(1) + 'A' + R + ' ' + R + ' 0 0 ' + sw + ' ' + m[0].toFixed(1) + ' ' + m[1].toFixed(1) + 'A' + R + ' ' + R + ' 0 0 ' + sw + ' ' + B[0].toFixed(1) + ' ' + B[1].toFixed(1); }
+  return 'M' + A[0].toFixed(1) + ' ' + A[1].toFixed(1) + 'A' + R.toFixed(1) + ' ' + R.toFixed(1) + ' 0 ' + lg + ' ' + sw + ' ' + B[0].toFixed(1) + ' ' + B[1].toFixed(1);
+}
+const CA = [0.7, 4.0, 1.8];               // secondi di animazione: attesa, manovra, attesa
+function ctlBuild() {
+  const host = $('v-ctl'), old = host.querySelector(':scope > svg'); if (old) old.remove(); CT.el = null;
+  if (!CT.st) return;
+  const W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  const s = Math.min(W / 640, H / 440), cx = W / 2, cy = H * 0.57, R = 140 * s, bw = 118 * s, bh = 68 * s, wr = 19 * s, rq = Math.hypot(bw, bh) / 2 + 12 * s, f = x => x.toFixed(1);
+  const sa = CT.st.sa, mk = (id, c) => '<marker id="' + id + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="' + c + '"/></marker>';
+  const body = (stroke, dash, fill) => '<rect x="' + f(cx - bw / 2) + '" y="' + f(cy - bh / 2) + '" width="' + f(bw) + '" height="' + f(bh) + '" rx="4" fill="' + fill + '" stroke="' + stroke + '"' + (dash ? ' stroke-dasharray="4 4"' : '') + '/>';
+  let o = '<defs>' + mk('cm-cy', COL.cy) + mk('cm-vi', COL.vi) + '</defs>';
+  o += '<g opacity=".75">' + body(COL.tx3, true, 'none') + '<line x1="' + f(cx) + '" y1="' + f(cy - bh / 2) + '" x2="' + f(cx) + '" y2="' + f(cy - R) + '" stroke="' + COL.tx3 + '" stroke-dasharray="4 4"/></g>';
+  o += '<g transform="rotate(' + sa + ' ' + f(cx) + ' ' + f(cy) + ')">' + body(COL.gr, true, 'none') + '<line x1="' + f(cx) + '" y1="' + f(cy - bh / 2) + '" x2="' + f(cx) + '" y2="' + f(cy - R) + '" stroke="' + COL.gr + '" stroke-dasharray="4 4"/></g>';
+  o += '<path d="' + arcD(0, sa, R, cx, cy) + '" fill="none" stroke="' + COL.ln2 + '" stroke-width="2"/><path id="c-arc" fill="none" stroke="' + COL.cy + '" stroke-width="2.5"/>';
+  const m1 = [cx + (R - 8) * Math.sin(sa / 2 * D2R), cy - (R - 8) * Math.cos(sa / 2 * D2R)], m2 = [cx + (R + 8) * Math.sin(sa / 2 * D2R), cy - (R + 8) * Math.cos(sa / 2 * D2R)], m3 = [cx + (R + 20) * Math.sin(sa / 2 * D2R), cy - (R + 20) * Math.cos(sa / 2 * D2R)];
+  o += '<line x1="' + f(m1[0]) + '" y1="' + f(m1[1]) + '" x2="' + f(m2[0]) + '" y2="' + f(m2[1]) + '" stroke="' + COL.tx3 + '"/><text x="' + f(m3[0]) + '" y="' + f(m3[1]) + '" font-size="11.5" fill="' + COL.tx3 + '" text-anchor="middle">' + t('metà', 'half') + '</text>';
+  o += '<g id="c-bd">' + body(COL.tx2, false, '#161b22') + '<line x1="' + f(cx) + '" y1="' + f(cy - bh / 2) + '" x2="' + f(cx) + '" y2="' + f(cy - R + 9) + '" stroke="' + COL.cy + '" stroke-width="2" marker-end="url(#cm-cy)"/>' +
+    '<g id="c-wh"><circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(wr) + '" fill="none" stroke="' + COL.ic + '" stroke-width="1.4"/><line x1="' + f(cx) + '" y1="' + f(cy) + '" x2="' + f(cx) + '" y2="' + f(cy - wr) + '" stroke="' + COL.ic + '" stroke-width="1.4"/><circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="2" fill="' + COL.ic + '"/></g></g>';
+  o += '<path id="c-tq" fill="none" stroke="' + COL.vi + '" stroke-width="2" marker-end="url(#cm-vi)"/>';
+  o += '<text id="c-ph" x="14" y="26" font-size="14.5" fill="' + COL.tx + '"></text><text id="c-in" x="14" y="47" font-size="12.5" fill="' + COL.tx2 + '"></text><text id="c-sc" x="14" y="66" font-size="12.5" fill="' + COL.tx3 + '"></text>';
+  host.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + o + '</svg>');
+  const q = id => host.querySelector('#' + id);
+  CT.el = { bd: q('c-bd'), wh: q('c-wh'), arc: q('c-arc'), tq: q('c-tq'), ph: q('c-ph'), inn: q('c-in'), sc: q('c-sc'), cx, cy, R, rq };
+  CT.el.sc.textContent = t('tempo ×', 'time ×') + nice(CT.st.ts / CA[1], CT.st.ts / CA[1] < 10 ? 1 : 0);
+  ctlDraw();
+}
+function ctlDraw() {
+  const e = CT.el, st = CT.st; if (!e || !st) return;
+  const cyc = CA[0] + CA[1] + CA[2], tau = RM && !CT.play ? cyc - 0.01 : CT.tm % cyc;
+  let tm, ph;
+  if (tau < CA[0]) { tm = 0; ph = 0; } else if (tau < CA[0] + CA[1]) { tm = (tau - CA[0]) / CA[1] * st.ts; ph = tm < st.ts / 2 ? 1 : 2; } else { tm = st.ts; ph = 3; }
+  const [ang, rate] = bang(st.ts, st.sa, tm);
+  e.bd.setAttribute('transform', 'rotate(' + ang.toFixed(3) + ' ' + e.cx.toFixed(1) + ' ' + e.cy.toFixed(1) + ')');
+  e.wh.setAttribute('transform', 'rotate(' + (-6 * ang).toFixed(3) + ' ' + e.cx.toFixed(1) + ' ' + e.cy.toFixed(1) + ')');
+  e.arc.setAttribute('d', arcD(0, ang, e.R, e.cx, e.cy));
+  e.tq.setAttribute('d', ph === 1 ? arcD(150, 210, e.rq, e.cx, e.cy) : ph === 2 ? arcD(210, 150, e.rq, e.cx, e.cy) : '');
+  e.ph.textContent = [t('pronto a partire', 'ready to start'), t('la ruota accelera il corpo', 'the wheel speeds the body up'), t('la ruota frena il corpo', 'the wheel brakes the body'), t('arrivato, fermo', 'arrived, at rest')][ph];
+  e.inn.textContent = 't = ' + fmt(tm, 1) + ' s   θ = ' + fmt(ang, 1) + '°   ω = ' + S(rate, 3) + ' °/s';
+}
+function ctlLoop(now) {
+  CT.raf = 0;
+  if (tabs.get() !== 'ctl' || document.hidden || !CT.play) return;
+  CT.tm += Math.min(0.1, (now - (CT.prev || now)) / 1000); CT.prev = now;
+  ctlDraw(); CT.raf = requestAnimationFrame(ctlLoop);
+}
+function ctlStart() { if (!CT.raf && CT.play) { CT.prev = 0; CT.raf = requestAnimationFrame(ctlLoop); } }
+function cplayIcon() { const b = $('cplay'); b.innerHTML = CT.play ? ICON.pause : ICON.play; b.setAttribute('aria-label', CT.play ? t('Metti in pausa', 'Pause') : t('Avvia', 'Play')); }
+
+/* ===================== quaternioni e angoli ===================== */
+const RG = { q: ['q1', 'q2', 'q3', 'q4'], e: ['psi', 'the', 'phi'], a: ['a11', 'a12', 'a13', 'a21', 'a22', 'a23', 'a31', 'a32', 'a33'], x: ['ex', 'ey', 'ez', 'ang'] };
+const RGN = { q: () => t('il quaternione', 'the quaternion'), e: () => t('gli angoli di Eulero', 'the Euler angles'), a: () => t('la matrice', 'the matrix'), x: () => t('asse e angolo', 'axis and angle') };
+let repSrc = null, REP = null, R3 = null;
+const groupOf = id => Object.keys(RG).find(g => RG[g].includes(id));
+const hasVals = g => RG[g].some(id => K.given(id));
+const wrap180 = x => { x = ((x + 180) % 360 + 360) % 360 - 180; return x === -180 ? 180 : x; };
+
+function qFromGroup(g, v) {
+  if (g === 'q') {
+    const Q = RG.q.map(id => v[id]), n = Math.hypot(...Q);
+    if (n < 1e-12) return { err: t('Il quaternione non può essere nullo.', 'The quaternion cannot be zero.') };
+    return { q: qpos(Q.map(x => x / n)), norm: n, warn: Math.abs(n - 1) > 1e-5 ? t('Il quaternione ha norma ', 'The quaternion has norm ') + nice(n, 6) + t(': lo divido per la norma.', ': the page divides it by its norm.') : '' };
+  }
+  if (g === 'e') return { q: qpos(eulToQ(v.psi * D2R, v.the * D2R, v.phi * D2R)) };
+  if (g === 'a') {
+    const M = [[v.a11, v.a12, v.a13], [v.a21, v.a22, v.a23], [v.a31, v.a32, v.a33]], dt = det3(M);
+    if (!(dt > 1e-9)) return { err: dt < -1e-9 ? t('Il determinante è negativo (', 'The determinant is negative (') + S(dt, 3) + t('): è una riflessione, non una rotazione.', '): it is a reflection, not a rotation.') : t('La matrice è singolare: il determinante è zero.', 'The matrix is singular: the determinant is zero.') };
+    const e = orthErr(M);
+    return { q: aToQ(e > 1e-5 ? polar(M) : M), oerr: e, warn: e > 1e-5 ? t('La matrice non è ortogonale (‖AᵀA − I‖ = ', 'The matrix is not orthogonal (‖AᵀA − I‖ = ') + S(e, 3) + t('): uso la rotazione più vicina.', '): the page uses the nearest rotation.') : '' };
+  }
+  const e = [v.ex, v.ey, v.ez], n = Math.hypot(...e);
+  if (n < 1e-12) return Math.abs(v.ang) < 1e-12 ? { q: [0, 0, 0, 1] } : { err: t('L\'asse non può essere nullo.', 'The axis cannot be zero.') };
+  return { q: axToQ(e, v.ang * D2R), warn: Math.abs(n - 1) > 1e-5 ? t('L\'asse non era un versore (norma ', 'The axis was not a unit vector (norm ') + nice(n, 4) + t('): l\'ho normalizzato.', '): the page normalised it.') : '' };
+}
+function solveRep() {
+  K.clear('f-rep');
+  const ids = [].concat(...Object.values(RG)), { v, err } = readF(ids);
+  if (err) return { err };
+  if (!repSrc || !hasVals(repSrc)) repSrc = ['q', 'e', 'a', 'x'].find(hasVals) || null;
+  if (!repSrc) return { err: t('Scrivi una rotazione in uno dei quattro gruppi.', 'Type a rotation in one of the four groups.') };
+  const miss = RG[repSrc].filter(id => v[id] == null);
+  if (miss.length) return { err: t('Completa ', 'Complete ') + RGN[repSrc]() + ': ' + t('manca ', 'missing ') + miss.map(lab).join(', ') + '.' };
+  const r = qFromGroup(repSrc, v);
+  if (r.err) { RG[repSrc].forEach(id => K.bad(id)); return { err: r.err }; }
+  const q = r.q, A = qToA(q), eu = aToEul(A), ax = qToAx(q), txt = {};
+  q.forEach((x, k) => { txt[RG.q[k]] = nice(x, 6); });
+  eu.forEach((x, k) => { txt[RG.e[k]] = nice(x * R2D, 4); });
+  A.forEach((row, i) => row.forEach((x, j) => { txt[RG.a[i * 3 + j]] = nice(x, 6); }));
+  if (ax.e) ax.e.forEach((x, k) => { txt[RG.x[k]] = nice(x, 6); });
+  txt.ang = nice(ax.ang * R2D, 4);
+  const warn = r.warn ? [r.warn] : [];
+  Object.keys(RG).forEach(g => {
+    if (g === repSrc) return;
+    if (hasVals(g)) {                       // dati in più: devono dare la stessa rotazione
+      const full = RG[g].every(id => v[id] != null), r2 = full ? qFromGroup(g, v) : null;
+      if (!r2 || r2.err || qdist(r2.q, q) > 1e-5) { RG[g].forEach(id => K.bad(id)); warn.push(RGN[g]().replace(/^./, c => c.toUpperCase()) + t(' non tornano con ', ' do not agree with ') + RGN[repSrc]() + t(': dovrebbero valere ', ': they should be ') + RG[g].filter(id => txt[id] != null).map(id => lab(id) + ' = ' + txt[id]).join(SEPV) + '.'); }
+    } else RG[g].forEach(id => K.der(id, txt[id] != null && txt[id] !== '' ? 1 : null, txt[id] || ''));
+  });
+  return { q, A, eu, ax, txt, warn, norm: r.norm, oerr: r.oerr };
+}
+function runRep() {
+  const r = solveRep(); if (booted) K.save({ m: tabs.get() });
+  REP = r.err ? null : r;
+  if (r.err) { K.msg('msg-rep', r.err); K.msg('inf-rep', ''); K.rows('out-rep', []); repPose(null); return; }
+  K.msg('msg-rep', r.warn.join('<br>'));
+  const lock = Math.abs(Math.abs(r.eu[1]) - Math.PI / 2) < 1e-6;
+  K.msg('inf-rep', lock ? t('Beccheggio a ±90°: imbardata e rollio si confondono (blocco cardanico). La pagina pone φ = 0.', 'Pitch at ±90°: yaw and roll blur into one angle (gimbal lock). The page sets φ = 0.') : !r.ax.e ? t('Rotazione nulla: l\'asse può essere qualsiasi.', 'No rotation: any axis will do.') : '', 'info');
+  const e2 = [wrap180(r.eu[0] * R2D + 180), 180 - r.eu[1] * R2D, wrap180(r.eu[2] * R2D + 180)].map(x => wrap180(x));
+  const rows = [['#', t('Rotazione', 'Rotation')],
+    [t('Angolo di rotazione ϑ', 'Rotation angle ϑ'), fmt(r.ax.ang * R2D, 4), '°', r.ax.e ? t('attorno all\'asse e = (', 'about the axis e = (') + r.ax.e.map(x => nice(x, 4)).join(SEPV) + ')' : t('nessuna rotazione', 'no rotation'), 'key'],
+    [t('Partito da', 'Started from'), RGN[repSrc](), ''],
+    [t('Seconda terna 3-2-1', 'Second 3-2-1 set'), 'ψ ' + nice(e2[0], 2) + '°  θ ' + nice(e2[1], 2) + '°  φ ' + nice(e2[2], 2) + '°', '', t('stessa rotazione, con θ fuori da ±90°', 'same rotation, with θ beyond ±90°')],
+    [t('Quaternione opposto', 'Opposite quaternion'), '−q', '', t('descrive la stessa rotazione', 'describes the same rotation')]];
+  if (r.norm != null) rows.push([t('Norma del quaternione dato', 'Norm of the given quaternion'), nice(r.norm, 8), '']);
+  if (r.oerr != null) rows.push([t('Scarto di ortogonalità ‖AᵀA − I‖', 'Orthogonality error ‖AᵀA − I‖'), S(r.oerr, 3), '']);
+  rows.push([t('Traccia di A', 'Trace of A'), nice(r.A[0][0] + r.A[1][1] + r.A[2][2], 6), '', t('vale 1 + 2 cos ϑ', 'equals 1 + 2 cos ϑ')]);
+  K.rows('out-rep', rows);
+  repPose(r.q);
+}
+const RA = { mode: null, s: 0, q: null };
+function repPose(q) {
+  if (!R3) return;
+  R3.body.visible = !!q; R3.axis.visible = !!(q && REP && REP.ax.e);
+  if (!q) return;
+  const qq = RA.mode ? RA.q : q; R3.body.quaternion.set(qq[0], qq[1], qq[2], qq[3]);
+  if (REP && REP.ax.e) { const e = REP.ax.e; R3.axis.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(e[0], e[1], e[2])); }
+}
+function repFrame(dt) {
+  if (!RA.mode || !REP) return;
+  RA.s += dt; const ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
+  let done = false;
+  if (RA.mode === 'ax') {
+    const u = ease(RA.s / 2.2), e = REP.ax.e || [1, 0, 0], a = REP.ax.ang * u;
+    RA.q = [e[0] * Math.sin(a / 2), e[1] * Math.sin(a / 2), e[2] * Math.sin(a / 2), Math.cos(a / 2)];
+    $('rep-ph').textContent = t('rotazione di ', 'rotation of ') + fmt(a * R2D, 1) + t('° attorno a e', '° about e');
+    done = RA.s > 2.6;
+  } else {
+    const [psi, th, phi] = REP.eu, k = RA.s / 1.5, u1 = ease(k), u2 = ease(k - 1), u3 = ease(k - 2);
+    const qz = a => [0, 0, Math.sin(a / 2), Math.cos(a / 2)], qy = a => [0, Math.sin(a / 2), 0, Math.cos(a / 2)], qx = a => [Math.sin(a / 2), 0, 0, Math.cos(a / 2)];
+    RA.q = qmul(qmul(qz(psi * u1), qy(th * u2)), qx(phi * u3));
+    $('rep-ph').textContent = k < 1 ? t('1. imbardata ψ attorno a z: ', '1. yaw ψ about z: ') + fmt(psi * u1 * R2D, 1) + '°' : k < 2 ? t('2. beccheggio θ attorno al nuovo y: ', '2. pitch θ about the new y: ') + fmt(th * u2 * R2D, 1) + '°' : t('3. rollio φ attorno al nuovo x: ', '3. roll φ about the new x: ') + fmt(phi * u3 * R2D, 1) + '°';
+    done = RA.s > 4.9;
+  }
+  if (done) { RA.mode = null; setTimeout(() => { if (!RA.mode) $('rep-ph').textContent = ''; }, 1400); }
+  repPose(REP.q);
+}
+function rep3D() {
+  if (R3) return R3;
+  if (!has3()) { no3D('v-rep'); return null; }
+  const V = K.scene3(THREE, 'v-rep', { fov: 30 });
+  V.camera.position.set(5.6, 3.6, 6.4); V.camera.lookAt(0, 0, 0);
+  if (V.controls) { V.controls.minDistance = 3; V.controls.maxDistance = 16; }
+  const ref = new THREE.Group(); ref.rotation.x = -Math.PI / 2; V.scene.add(ref);
+  ['X', 'Y', 'Z'].forEach((nm, k) => {
+    const e = new THREE.Vector3(); e.setComponent(k, 1.9);
+    ref.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), e]), new THREE.LineBasicMaterial({ color: 0x6b7682 })));
+    const s = tag3(nm, COL.tx3); s.position.copy(e).multiplyScalar(1.1); ref.add(s);
+  });
+  const body = new THREE.Group(); ref.add(body);
+  const L = [1.5, 1.0, 0.6], shape = box3(); shape.scale.set(...L); body.add(shape);
+  AXC.forEach((c, k) => { const a = arrow3(c), e = new THREE.Vector3(); e.setComponent(k, 1); const len = L[k] / 2 + 0.45; a.userData.set(e, len); body.add(a); const s = tag3(AX[k], c); s.position.copy(e).multiplyScalar(len + 0.17); body.add(s); });
+  const ag = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -2.1, 0), new THREE.Vector3(0, 2.1, 0)]);
+  const axis = new THREE.Line(ag, new THREE.LineDashedMaterial({ color: COL.ic, dashSize: 0.09, gapSize: 0.07 })); axis.computeLineDistances();
+  const axg = new THREE.Group(); axg.add(axis); ref.add(axg);
+  R3 = { V, ref, body, axis: axg };
+  V.onFrame(repFrame);
+  return R3;
+}
+
+/* ===================== schede, esempi, avvio ===================== */
+function onTab(m) {
+  if (booted) K.save({ m });
+  if (m === 'free') { free3D(); freeShape(); }
+  if (m === 'dist') distView();
+  if (m === 'ctl') { ctlBuild(); ctlStart(); }
+  if (m === 'rep') { rep3D(); repPose(REP && REP.q); }
+}
+const EX = {
+  free: { mass: '12', lx: dc('0.1'), ly: dc('0.2263'), lz: dc('0.366'), wx: dc('0.5'), wy: '30', wz: dc('0.5') },
+  dist: { h: '700', inc: '98', Imax: '90', Imin: '60', th: '1', As: '2', cps: dc('0.3'), refl: dc('0.6'), sinc: '0', cpa: dc('0.2'), D: '1' },
+  ctl: { Td: dc('5.2e-5'), hc: '700', sa: '30', st: '60', Isl: '90', acc: dc('0.1'), Lt: dc('0.5'), isp: '220', tb: '1', life: '5' },
+  rep: { psi: '45', the: '20', phi: '30' }
+};
+function example(m) { K.wipe('f-' + m); K.fill(EX[m]); if (m === 'rep') repSrc = 'e'; if (m === 'free') autoSpeed(); }
+const RUN = { free: runFree, dist: runDist, ctl: runCtl, rep: runRep };
+['free', 'dist', 'ctl', 'rep'].forEach(m => {
+  $('f-' + m).addEventListener('submit', e => e.preventDefault());
+  K.live('f-' + m, RUN[m]);
+  $('ex-' + m).onclick = () => { example(m); RUN[m](); };
+  $('clr-' + m).onclick = () => { K.wipe('f-' + m); if (m === 'rep') repSrc = null; if (m === 'dist') distSat = null; RUN[m](); };
+});
+// rotazione libera: comandi
+$('play').onclick = () => { FREE.play = !FREE.play; playIcon(); };
+$('restart').onclick = () => freeReset();
+$('spd').addEventListener('input', speedLabel);
+$('axb').addEventListener('click', e => {
+  const b = e.target.closest('[data-ax]'); if (!b || !FREE.I) return;
+  const I = FREE.I, o = [0, 1, 2].sort((a, c) => I[a] - I[c]), k = { min: o[0], mid: o[1], max: o[2] }[b.dataset.ax];
+  const mag = FREE.w0n > 0 ? FREE.w0n * R2D : 30, w = [0, 0, 0].map((x, j) => j === k ? mag : mag * 0.02);
+  K.fill({ wx: nice(w[0], 3), wy: nice(w[1], 3), wz: nice(w[2], 3) }); autoSpeed(); runFree();
+});
+// controllo
+$('cplay').onclick = () => { CT.play = !CT.play; cplayIcon(); if (CT.play) ctlStart(); };
+$('useDist').onclick = () => {
+  if (!DIST) { K.msg('msg-ctl', t('Nella scheda Disturbi non c\'è ancora un totale: dai la quota e almeno una coppia.', 'There is no total yet in Disturbances: give the altitude and at least one torque.')); return; }
+  K.fill({ Td: raw(DIST.total), hc: nice(DIST.h, 1), Pc: '' }); runCtl();
+};
+document.addEventListener('visibilitychange', () => { if (!document.hidden && tabs.get() === 'ctl') ctlStart(); });
+// quaternioni: il gruppo che scrivi diventa la sorgente; toccando un gruppo verde lo prendi così com'è
+$('f-rep').addEventListener('input', e => {
+  const g = groupOf(e.target.id); if (!g || g === repSrc) return;
+  if (repSrc) RG[repSrc].forEach(id => { $(id).value = ''; });
+  repSrc = g;
+});
+$('f-rep').addEventListener('focusin', e => {
+  const g = groupOf(e.target.id); if (!g || g === repSrc || !REP || hasVals(g)) return;
+  if (g === 'x' && !REP.ax.e) return;
+  RG[g].forEach(id => { $(id).value = REP.txt[id] || ''; });
+  if (repSrc) RG[repSrc].forEach(id => { $(id).value = ''; });
+  repSrc = g; runRep();
+});
+$('an-ax').onclick = () => { if (!REP || !R3) return; RA.mode = 'ax'; RA.s = 0; };
+$('an-eu').onclick = () => { if (!REP || !R3) return; RA.mode = 'eu'; RA.s = 0; };
+// satellite reale → quota del perigeo e inclinazione
+const fromSat = /[?&]sat=\d+/.test(location.search);
+K.sat('sat', el => {
+  distSat = { name: el.name, hp: +el.hp.toFixed(1), ha: el.ha };
+  K.fill({ h: nice(distSat.hp, 1), r: '', inc: nice(el.i, 2) }); runDist();
+  if (fromSat && tabs.get() !== 'dist' && !distSat.shown) { distSat.shown = true; tabs.set('dist'); }
+});
+// ridisegno degli schemi 2D quando cambia la misura
+if (window.ResizeObserver) {
+  let wd = 0, wc = 0;
+  new ResizeObserver(() => { const w = $('v-dist').clientWidth; if (w && Math.abs(w - wd) > 2) { wd = w; distView(); } }).observe($('v-dist'));
+  new ResizeObserver(() => { const w = $('v-ctl').clientWidth; if (w && Math.abs(w - wc) > 2) { wc = w; ctlBuild(); } }).observe($('v-ctl'));
+}
+// tabella della densità nella scheda «Come funziona»
+$('rhoTbl').innerHTML = '<thead><tr><th>' + t('quota, km', 'altitude, km') + '</th><th class="num">' + t('densità usata, kg/m³', 'density used, kg/m³') + '</th><th class="num">JB-2006, ' + t('moderata', 'moderate') + '</th></tr></thead><tbody>' +
+  RHO.map(r => '<tr><td>' + fmt(r[0], 0) + '</td><td class="num">' + S(r[1], 2) + '</td><td class="num" style="color:var(--tx2)">' + (JB[r[0]] ? S(JB[r[0]], 3) : '—') + '</td></tr>').join('') + '</tbody>';
+
+const IDS = [].concat(['Ix', 'Iy', 'Iz', 'mass', 'lx', 'ly', 'lz', 'wx', 'wy', 'wz'],
+  ['h', 'r', 'inc', 'Imax', 'Imin', 'dI', 'th', 'As', 'cps', 'refl', 'sinc', 'Aa', 'cpa', 'Cd', 'rho', 'D', 'lam'],
+  ['Td', 'hc', 'Pc', 'Bc', 'mg', 'sa', 'st', 'Isl', 'acc', 'Lt', 'isp', 'tb', 'life'], [].concat(...Object.values(RG)));
+const ST = K.keep(IDS);
+if (!ST) ['free', 'dist', 'ctl', 'rep'].forEach(example);
+else autoSpeed();
+playIcon(); cplayIcon(); speedLabel();
+runDist(); runCtl(); runRep(); runFree();
+booted = true;
+const m0 = fromSat ? 'dist' : ST && ST.get('m');
+if (m0 && m0 !== 'free' && $('m-' + m0)) tabs.set(m0); else onTab('free');
+K.save({ m: tabs.get() });
+
+/* ===================== prova interna (?test) ===================== */
+function selfTest() {
+  const L = (name, txt, ok) => console.info('selfTest', name + ': ' + txt + ' → ' + (ok ? 'ok' : 'NON VA'));
+  // 1. conservazione di |H|, T e della direzione di H nello spazio in 60 s
+  {
+    const I = [0.18517, 0.14396, 0.06121], w0 = [0.5, 30, 0.5].map(x => x * D2R), h = hStep(Math.hypot(...w0)), n = Math.round(60 / h);
+    const Hof = w => Math.hypot(I[0] * w[0], I[1] * w[1], I[2] * w[2]), Tof = w => 0.5 * (I[0] * w[0] ** 2 + I[1] * w[1] ** 2 + I[2] * w[2] ** 2);
+    let w = w0.slice(), q = [0, 0, 0, 1], dH = 0, dT = 0; const H0 = Hof(w0), T0 = Tof(w0), Hi0 = I.map((x, k) => x * w0[k]);
+    for (let k = 0; k < n; k++) { [w, q] = rk4(I, w, q, h); dH = Math.max(dH, Math.abs(Hof(w) / H0 - 1)); dT = Math.max(dT, Math.abs(Tof(w) / T0 - 1)); }
+    const Hi = qrot(q, I.map((x, k) => x * w[k])), dHi = Math.hypot(Hi[0] - Hi0[0], Hi[1] - Hi0[1], Hi[2] - Hi0[2]) / H0;
+    L('RK4 60 s', 'passo ' + h + ' s, ' + n + ' passi; deriva |H| ' + dH.toExponential(2) + ', T ' + dT.toExponential(2) + ', H inerziale ' + dHi.toExponential(2) + ' (limite 1e-6)', dH < 1e-6 && dT < 1e-6 && dHi < 1e-6);
+  }
+  // 2. asse intermedio: la perturbazione cresce come e^(σt); asse maggiore: resta piccola
+  {
+    const I = [10, 15, 20], sg = 0.5 * Math.sqrt((15 - 10) * (20 - 15) / (10 * 20)), h = 0.005;
+    let w = [1e-6, 0.5, 1e-6], p20 = 0, p40 = 0;
+    for (let k = 1; k <= 8000; k++) { w = rk4w(I, w, h); if (k === 4000) p20 = Math.hypot(w[0], w[2]); if (k === 8000) p40 = Math.hypot(w[0], w[2]); }
+    const sm = Math.log(p40 / p20) / 20, g40 = p40 / Math.hypot(1e-6, 1e-6);
+    let u = [1e-6, 1e-6, 0.5], pmax = 0;
+    for (let k = 1; k <= 8000; k++) { u = rk4w(I, u, h); pmax = Math.max(pmax, Math.hypot(u[0], u[1])); }
+    L('asse intermedio', 'in 40 s la perturbazione cresce ×' + g40.toFixed(0) + ', σ misurata ' + sm.toFixed(5) + ' /s contro ' + sg.toFixed(5) + ' /s; asse maggiore: ×' + (pmax / Math.hypot(1e-6, 1e-6)).toFixed(2), g40 > 100 && Math.abs(sm / sg - 1) < 0.01 && pmax / Math.hypot(1e-6, 1e-6) < 2);
+  }
+  // 3. periodo della polodia: integrali ellittici contro RK4 (zeri di ω sull'asse intermedio)
+  {
+    const I = [10, 15, 20], w0 = [0.2, 0.3, 0.4], pol = polhode(I, w0), h = 1e-3, z = [];
+    let w = w0.slice(), tm = 0;
+    while (z.length < 6 && tm < 400) { const w1 = rk4w(I, w, h); if (w[1] < 0 && w1[1] >= 0) z.push(tm + h * (-w[1]) / (w1[1] - w[1])); w = w1; tm += h; }
+    const Tn = (z[z.length - 1] - z[0]) / (z.length - 1);
+    L('polodia', 'Jacobi ' + pol.T.toFixed(6) + ' s, RK4 ' + Tn.toFixed(6) + ' s, scarto ' + Math.abs(Tn / pol.T - 1).toExponential(2), Math.abs(Tn / pol.T - 1) < 1e-6);
+  }
+  // 4. gradiente di gravità: ΔI = 500 kg·m², h = 700 km, θ = 1°
+  {
+    const r = RE + 700e3, g = 3 * MU / (2 * r ** 3), Tg = ggTorque(r, 500, 1), hand = 2.9421262852550e-5;
+    L('gradiente di gravità', 'r = ' + r + ' m, 3μ/(2r³) = ' + g.toExponential(6) + ' 1/s², × 500 × sin 2° = ' + Tg.toExponential(6) + ' N·m; a mano 2.942126e-5', Math.abs(Tg / hand - 1) < 1e-9);
+    const Tm = 1 * 2 * MAG / r ** 3;
+    L('coppia magnetica', 'D = 1 A·m², λ = 2, 700 km: ' + Tm.toExponential(4) + ' N·m (SMAD, FireSat: 4,5e-5)', Math.abs(Tm - 4.49e-5) < 0.01e-5);
+  }
+  // 5. quaternioni, angoli, matrici: andata e ritorno su 2000 rotazioni a caso
+  {
+    let s = 12345; const rnd = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+    let e1 = 0, e2 = 0, e3 = 0, e4 = 0, e5 = 0;
+    const qd = (a, b) => Math.min(Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]), Math.hypot(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]));
+    for (let k = 0; k < 2000; k++) {
+      const u = [rnd(), rnd(), rnd()], q = qpos([Math.sqrt(1 - u[0]) * Math.sin(2 * Math.PI * u[1]), Math.sqrt(1 - u[0]) * Math.cos(2 * Math.PI * u[1]), Math.sqrt(u[0]) * Math.sin(2 * Math.PI * u[2]), Math.sqrt(u[0]) * Math.cos(2 * Math.PI * u[2])]);
+      const A = qToA(q), eu = aToEul(A);
+      e1 = Math.max(e1, qd(q, eulToQ(eu[0], eu[1], eu[2])));
+      e2 = Math.max(e2, qd(q, aToQ(A)));
+      const ax = qToAx(q); e3 = Math.max(e3, qd(q, axToQ(ax.e, ax.ang)));
+      const R1 = f => [[1, 0, 0], [0, Math.cos(f), Math.sin(f)], [0, -Math.sin(f), Math.cos(f)]], R2 = f => [[Math.cos(f), 0, -Math.sin(f)], [0, 1, 0], [Math.sin(f), 0, Math.cos(f)]], R3m = f => [[Math.cos(f), Math.sin(f), 0], [-Math.sin(f), Math.cos(f), 0], [0, 0, 1]];
+      const mm = (X, Y) => X.map((r, i) => [0, 1, 2].map(j => r[0] * Y[0][j] + r[1] * Y[1][j] + r[2] * Y[2][j]));
+      const A2 = mm(mm(R1(eu[2]), R2(eu[1])), R3m(eu[0]));
+      A2.forEach((r, i) => r.forEach((x, j) => { e4 = Math.max(e4, Math.abs(x - A[i][j])); }));
+      const qz = a => [0, 0, Math.sin(a / 2), Math.cos(a / 2)], qy = a => [0, Math.sin(a / 2), 0, Math.cos(a / 2)], qx = a => [Math.sin(a / 2), 0, 0, Math.cos(a / 2)];
+      e5 = Math.max(e5, qd(q, qmul(qmul(qz(eu[0]), qy(eu[1])), qx(eu[2]))));
+    }
+    L('q → angoli 3-2-1 → q', 'errore massimo ' + e1.toExponential(2) + ' (limite 1e-12)', e1 < 1e-12);
+    L('q → A → q (Shepperd)', 'errore massimo ' + e2.toExponential(2), e2 < 1e-12);
+    L('q → asse e angolo → q', 'errore massimo ' + e3.toExponential(2), e3 < 1e-12);
+    L('A = R1(φ) R2(θ) R3(ψ)', 'errore massimo ' + e4.toExponential(2) + '; q = qz ⊗ qy ⊗ qx: ' + e5.toExponential(2), e4 < 1e-12 && e5 < 1e-12);
+    const Mp = [[0.9, 0.1, 0.05], [-0.12, 1.05, 0.02], [0.03, -0.01, 0.97]], Rp = polar(Mp);
+    L('rotazione più vicina', '‖RᵀR − I‖ = ' + orthErr(Rp).toExponential(2) + ', det = ' + det3(Rp).toFixed(12), orthErr(Rp) < 1e-12 && Math.abs(det3(Rp) - 1) < 1e-12);
+  }
+}
+if (TEST) selfTest();
 </script>
 </body>
 </html>

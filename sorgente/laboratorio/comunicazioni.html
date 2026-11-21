@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-en="Communications and navigation · Keplario">Comunicazioni e navigazione · Keplario</title>
+<meta name="description" content="Bilancio del collegamento radio, impronta a terra di un satellite e come il GPS trova la tua posizione: dai i tuoi numeri, la pagina fa i conti." data-en-content="Radio link budget, a satellite's footprint on the ground and how GPS finds your position: give your numbers, the page does the sums.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/comunicazioni.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Comunicazioni e navigazione · Keplario","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/comunicazioni.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<!--KIT:CSS-->
+<style>
+/* solo per questa pagina */
+.sw{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sw .btn[aria-pressed=true]{border-color:var(--cy);color:var(--cy)}
+.pre{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px}
+.pnl > h3.sub{font-size:13px;color:var(--tx2);font-weight:400;margin:12px 0 2px}
+.wf{position:relative;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:10px 12px 6px}
+.wf .ttl{font-size:13px;color:var(--tx2);margin:0 0 6px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.wf .ttl b{color:var(--tx);margin-right:6px}
+.wf .ttl i{display:inline-block;width:12px;height:8px;margin-right:6px;vertical-align:middle;background:currentColor;border-radius:1px}
+.wf svg{display:block;width:100%;height:auto;overflow:visible}
+.wf text{font-family:var(--num);font-size:12.5px;fill:var(--tx2)}
+.wf .lv{fill:var(--tx)}
+.wf .ax text{fill:var(--tx3);font-size:11px}
+.wf .empty{color:var(--tx3);font-size:13.5px;padding:24px 4px}
+#tv{aspect-ratio:16/12}
+#tv svg text{font-family:var(--num);font-size:12px;fill:var(--tx2)}
+#tv .h{cursor:grab;touch-action:none;outline:none}
+#tv .h:focus-visible .ring{stroke:var(--cy);stroke-width:2}
+#tv .h.on{cursor:grabbing}
+@media (max-width:600px){#tv{aspect-ratio:1/1}}
+.gap{margin-top:30px}
+.lab + .lab{margin-top:26px}
+h2.part{font-size:18px;margin:34px 0 14px;font-weight:700}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,470px),1fr));gap:14px;align-items:start}
+.info .pnl p,.info .pnl li{font-size:14px;color:var(--tx2);margin:6px 0}
+.info .pnl ul{padding-left:18px;margin:6px 0}
+.info .pnl h2{font-size:15px}
+.fm{font-family:var(--num);font-size:13.5px;color:var(--tx)!important;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:8px 10px;overflow-x:auto;line-height:1.7}
+.fig{display:block;width:100%;height:auto;margin:8px 0 4px}
+.fig text{font-family:var(--num);font-size:12px;fill:var(--tx2)}
+.bar .btn{flex:none}
+.cov2d{position:absolute;inset:0;width:100%;height:100%}
+</style>
+</head>
+<body>
+<main>
+  <div class="ph">
+    <div>
+      <h1 data-en="Communications and navigation">Comunicazioni e navigazione</h1>
+      <p class="lead" data-en="How much signal gets through from a satellite, how much of the Earth it covers and how GPS tells you where you are. Give the numbers you have: the page works out the rest.">Quanto segnale arriva da un satellite, quanta Terra copre e come il GPS ti dice dove sei. Dai i numeri che hai: la pagina ricava il resto.</p>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" data-m="link" aria-controls="m-link" aria-selected="true" data-en="Radio link">Collegamento radio</button>
+    <button role="tab" data-m="cov" aria-controls="m-cov" aria-selected="false" data-en="Coverage">Copertura</button>
+    <button role="tab" data-m="nav" aria-controls="m-nav" aria-selected="false" data-en="Navigation">Navigazione</button>
+    <button role="tab" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
+  </div>
+
+  <!-- ================= collegamento radio ================= -->
+  <section id="m-link" class="lab">
+    <form class="stack" id="fl" novalidate autocomplete="off">
+      <div class="pnl" id="satP" style="order:0">
+        <h2 data-en="Start from a real satellite">Parti da un satellite reale</h2>
+        <div id="sat"></div>
+      </div>
+      <div class="pnl" style="order:1">
+        <h2 data-en="Direction and frequency">Direzione e frequenza</h2>
+        <div class="sw" role="group" aria-label="Direzione del collegamento" data-en-aria-label="Link direction">
+          <button class="btn sm" type="button" id="dirD" aria-pressed="true" data-en="Downlink">Discesa (downlink)</button>
+          <button class="btn sm" type="button" id="dirU" aria-pressed="false" data-en="Uplink">Salita (uplink)</button>
+        </div>
+        <div class="pre" id="bands" style="margin-top:12px">
+          <button class="btn sm" type="button" data-f="437">UHF 437 MHz</button>
+          <button class="btn sm" type="button" data-f="2200" data-en="S 2.2 GHz">S 2,2 GHz</button>
+          <button class="btn sm" type="button" data-f="8400" data-en="X 8.4 GHz">X 8,4 GHz</button>
+          <button class="btn sm" type="button" data-f="26000">Ka 26 GHz</button>
+        </div>
+        <div class="f" data-dir="down"><label for="fD" data-en="Downlink frequency">Frequenza in discesa</label><input id="fD" inputmode="decimal"><span class="u">MHz</span></div>
+        <div class="f" data-dir="up" hidden><label for="fU" data-en="Uplink frequency">Frequenza in salita</label><input id="fU" inputmode="decimal"><span class="u">MHz</span></div>
+      </div>
+      <div class="pnl" style="order:2">
+        <h2 data-en="Distance">Distanza</h2>
+        <p class="why" data-en="Give the satellite's altitude and how high it is above your horizon: the page works out the distance. Or type the distance.">Dai la quota del satellite e quanto è alto sul tuo orizzonte: la distanza la ricava la pagina. Oppure scrivi la distanza.</p>
+        <div class="f"><label for="h" data-en="Altitude">Quota</label><input id="h" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="el" data-en="Elevation above the horizon">Elevazione sull'orizzonte</label><input id="el" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="d" data-en="Distance">Distanza</label><input id="d" inputmode="decimal"><span class="u">km</span></div>
+      </div>
+      <div class="pnl" id="pS" style="order:3">
+        <h2 id="pSt">Satellite · trasmettitore</h2>
+        <div class="f" data-tx><label for="sP" data-en="Transmit power">Potenza trasmessa</label><input id="sP" inputmode="decimal"><span class="u">W</span></div>
+        <div class="f" data-tx><label for="sPd" data-en="or in dBW">oppure in dBW</label><input id="sPd" inputmode="decimal"><span class="u">dBW</span></div>
+        <div class="f" data-tx><label for="sLl" data-en="Line losses (cables, switches)">Perdite di linea (cavi, commutatori)</label><input id="sLl" inputmode="decimal"><span class="u">dB</span></div>
+        <h3 class="sub" data-en="Antenna: give the gain or the dish">Antenna: dai il guadagno o la parabola</h3>
+        <div class="f"><label for="sG" data-en="Gain">Guadagno</label><input id="sG" inputmode="decimal"><span class="u">dBi</span></div>
+        <div class="f"><label for="sD" data-en="Dish diameter">Diametro della parabola</label><input id="sD" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="sE" data-en="Dish efficiency">Efficienza della parabola</label><input id="sE" inputmode="decimal"><span class="u">%</span></div>
+        <div class="f" data-rx hidden><label for="sT" data-en="System noise temperature">Temperatura di rumore del sistema</label><input id="sT" inputmode="decimal"><span class="u">K</span></div>
+        <div class="f" data-rx hidden><label for="sGT" data-en="or G/T">oppure G/T</label><input id="sGT" inputmode="decimal"><span class="u">dB/K</span></div>
+      </div>
+      <div class="pnl" style="order:4">
+        <h2 data-en="Losses along the way">Perdite lungo la strada</h2>
+        <div class="f"><label for="Lp" data-en="Antenna pointing">Puntamento delle antenne</label><input id="Lp" inputmode="decimal"><span class="u">dB</span></div>
+        <div class="f"><label for="Lpol" data-en="Polarisation">Polarizzazione</label><input id="Lpol" inputmode="decimal"><span class="u">dB</span></div>
+        <div class="f"><label for="La" data-en="Atmosphere and rain">Atmosfera e pioggia</label><input id="La" inputmode="decimal"><span class="u">dB</span></div>
+        <p class="hint" data-en="Clear sky at 10° elevation takes about 0.2 dB in S band, 0.3 dB in X band and 1–2 dB in Ka band. Rain in Ka band can take many more.">Con cielo sereno a 10° di elevazione l'atmosfera toglie circa 0,2 dB in banda S, 0,3 dB in banda X e 1–2 dB in banda Ka. La pioggia in banda Ka può toglierne molti di più.</p>
+      </div>
+      <div class="pnl" id="pG" style="order:5">
+        <h2 id="pGt">Stazione a terra · ricevitore</h2>
+        <div class="f" data-tx hidden><label for="gP" data-en="Transmit power">Potenza trasmessa</label><input id="gP" inputmode="decimal"><span class="u">W</span></div>
+        <div class="f" data-tx hidden><label for="gPd" data-en="or in dBW">oppure in dBW</label><input id="gPd" inputmode="decimal"><span class="u">dBW</span></div>
+        <div class="f" data-tx hidden><label for="gLl" data-en="Line losses (cables, switches)">Perdite di linea (cavi, commutatori)</label><input id="gLl" inputmode="decimal"><span class="u">dB</span></div>
+        <h3 class="sub" data-en="Antenna: give the gain or the dish">Antenna: dai il guadagno o la parabola</h3>
+        <div class="f"><label for="gG" data-en="Gain">Guadagno</label><input id="gG" inputmode="decimal"><span class="u">dBi</span></div>
+        <div class="f"><label for="gD" data-en="Dish diameter">Diametro della parabola</label><input id="gD" inputmode="decimal"><span class="u">m</span></div>
+        <div class="f"><label for="gE" data-en="Dish efficiency">Efficienza della parabola</label><input id="gE" inputmode="decimal"><span class="u">%</span></div>
+        <div class="f" data-rx><label for="gT" data-en="System noise temperature">Temperatura di rumore del sistema</label><input id="gT" inputmode="decimal"><span class="u">K</span></div>
+        <div class="f" data-rx><label for="gGT" data-en="or G/T">oppure G/T</label><input id="gGT" inputmode="decimal"><span class="u">dB/K</span></div>
+      </div>
+      <div class="pnl" style="order:6">
+        <h2 data-en="Data">Dati</h2>
+        <div class="f" data-dir="down"><label for="RbD" data-en="Data rate">Velocità dei dati</label><input id="RbD" inputmode="decimal"><span class="u">kbit/s</span></div>
+        <div class="f" data-dir="up" hidden><label for="RbU" data-en="Data rate">Velocità dei dati</label><input id="RbU" inputmode="decimal"><span class="u">kbit/s</span></div>
+        <div class="f wide" data-dir="down"><label for="modD" data-en="Modulation and coding">Modulazione e codifica</label>
+          <select id="modD">
+            <option value="bpsk" data-en="BPSK or QPSK, no coding">BPSK o QPSK, senza codifica</option>
+            <option value="conv" data-en="Convolutional r = 1/2, K = 7">Convoluzionale r = 1/2, K = 7</option>
+            <option value="rs" data-en="Reed-Solomon + convolutional">Reed-Solomon + convoluzionale</option>
+            <option value="ldpc" data-en="LDPC or turbo, r = 1/2">LDPC o turbo, r = 1/2</option>
+            <option value="alt" data-en="Other: type the required Eb/N0">Altro: scrivi l'Eb/N0 richiesto</option>
+          </select></div>
+        <div class="f wide" data-dir="up" hidden><label for="modU" data-en="Modulation and coding">Modulazione e codifica</label>
+          <select id="modU">
+            <option value="bpsk" data-en="BPSK or QPSK, no coding">BPSK o QPSK, senza codifica</option>
+            <option value="conv" data-en="Convolutional r = 1/2, K = 7">Convoluzionale r = 1/2, K = 7</option>
+            <option value="rs" data-en="Reed-Solomon + convolutional">Reed-Solomon + convoluzionale</option>
+            <option value="ldpc" data-en="LDPC or turbo, r = 1/2">LDPC o turbo, r = 1/2</option>
+            <option value="alt" data-en="Other: type the required Eb/N0">Altro: scrivi l'Eb/N0 richiesto</option>
+          </select></div>
+        <div class="f" data-dir="down"><label for="EbD" data-en="Required E<sub>b</sub>/N<sub>0</sub>">E<sub>b</sub>/N<sub>0</sub> richiesto</label><input id="EbD" inputmode="decimal"><span class="u">dB</span></div>
+        <div class="f" data-dir="up" hidden><label for="EbU" data-en="Required E<sub>b</sub>/N<sub>0</sub>">E<sub>b</sub>/N<sub>0</sub> richiesto</label><input id="EbU" inputmode="decimal"><span class="u">dB</span></div>
+        <div class="f"><label for="Li" data-en="Implementation loss">Perdita di implementazione</label><input id="Li" inputmode="decimal"><span class="u">dB</span></div>
+        <div class="f"><label for="Mt" data-en="Target margin">Margine voluto</label><input id="Mt" inputmode="decimal"><span class="u">dB</span></div>
+        <p class="hint" data-en="Required E<sub>b</sub>/N<sub>0</sub>: typical values for one wrong bit in 100 000 (10⁻⁵).">E<sub>b</sub>/N<sub>0</sub> richiesto: valori tipici per un bit sbagliato su 100 000 (10⁻⁵).</p>
+        <p class="hint" data-en="<b>Leave one field empty</b> among data rate, transmit power, receiving dish diameter and distance: the page works it out to get the target margin."><b>Lascia vuoto un campo</b> fra velocità dei dati, potenza trasmessa, diametro della parabola che riceve e distanza: la pagina lo ricava per avere il margine voluto.</p>
+      </div>
+      <div class="acts" style="order:7">
+        <button class="btn" type="button" id="exL" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clrL" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" id="exLn" style="order:8;margin:0"></p>
+    </form>
+    <div>
+      <div id="msgL"></div>
+      <div class="wf" id="wf"></div>
+      <div class="out" id="outL"></div>
+      <div id="chL"></div>
+    </div>
+  </section>
+
+  <!-- ================= copertura ================= -->
+  <section id="m-cov" class="lab" hidden>
+    <form class="stack" id="fc" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Orbit">Orbita</h2>
+        <p class="why" data-en="Circular orbit. Give the altitude and the lowest elevation at which a ground station can use the satellite.">Orbita circolare. Dai la quota e l'elevazione più bassa a cui una stazione a terra riesce a usare il satellite.</p>
+        <div class="f"><label for="ch" data-en="Altitude">Quota</label><input id="ch" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="ce" data-en="Minimum elevation">Elevazione minima</label><input id="ce" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f"><label for="ci" data-en="Inclination">Inclinazione</label><input id="ci" inputmode="decimal"><span class="u">°</span></div>
+        <p class="hint" data-en="The inclination changes the drawing, the latitudes covered and the passes (the Earth turns under the orbit).">L'inclinazione cambia il disegno, le latitudini coperte e i passaggi (la Terra gira sotto l'orbita).</p>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="exC" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="clrC" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" id="exCn" style="margin:0"></p>
+    </form>
+    <div>
+      <div id="msgC"></div>
+      <div class="view" id="cv3">
+        <div class="tl">
+          <button class="btn sm" type="button" id="play" aria-pressed="true" data-en="Pause">Pausa</button>
+          <button class="btn sm" type="button" id="follow" aria-pressed="true" data-en="Follow">Segui</button>
+        </div>
+        <div class="cap">
+          <span style="color:var(--cy)"><i></i><span data-en="orbit">orbita</span></span>
+          <span style="color:var(--cy)"><i class="dot" style="opacity:.5"></i><span data-en="footprint and visibility cone">impronta e cono di visibilità</span></span>
+          <span style="color:var(--ic)"><i></i><span data-en="ground track">traccia a terra</span></span>
+          <span style="color:var(--gr)"><i class="dot"></i><span data-en="satellite">satellite</span></span>
+          <span id="speed"></span>
+        </div>
+      </div>
+      <div class="out" id="outC"></div>
+      <p class="note" id="revC"></p>
+      <div id="chC"></div>
+    </div>
+  </section>
+
+  <!-- ================= navigazione ================= -->
+  <section id="m-nav" hidden>
+    <div class="lab">
+      <form class="stack" id="fn" novalidate autocomplete="off">
+        <div class="pnl">
+          <h2 data-en="Trilateration">Trilaterazione</h2>
+          <p class="why" data-en="Each transmitter sends the time. The delay gives a distance, so a circle around the transmitter. Drag the receiver or the transmitters.">Ogni trasmettitore manda l'ora. Il ritardo dà una distanza, quindi un cerchio attorno al trasmettitore. Trascina il ricevitore o i trasmettitori.</p>
+          <label class="lb" for="dt" style="font-size:14px;color:var(--tx2)" data-en="Receiver clock error">Errore dell'orologio del ricevitore</label>
+          <div class="bar" style="margin-top:4px"><input type="range" id="dt" min="-1500" max="1500" step="10" value="0"><span class="t" id="dtv"></span></div>
+          <label class="ck" style="margin-top:12px"><input type="checkbox" id="q4"><span data-en="Add the fourth satellite">Aggiungi il quarto satellite</span></label>
+          <div class="acts" style="margin-top:10px"><button class="btn sm" type="button" id="rsT" data-en="Put everything back">Rimetti tutto a posto</button></div>
+          <p class="hint" data-en="In space the unknowns are x, y, z and the clock error: that is why GPS needs at least four satellites. On a flat plane x, y and the clock would close with three, but with no spare measurement to check the answer, and sometimes with two possible positions. Here three transmitters solve x and y, four also solve the clock: both times one measurement is left over as a check.">Nello spazio le incognite sono x, y, z e l'errore dell'orologio: per questo il GPS chiede almeno quattro satelliti. Sul piano x, y e orologio si chiuderebbero con tre, ma senza nessuna misura per controllare il risultato, e a volte con due posizioni possibili. Qui tre trasmettitori risolvono x e y, quattro anche l'orologio: in tutti e due i casi avanza una misura di controllo.</p>
+        </div>
+      </form>
+      <div>
+        <div id="msgT"></div>
+        <div class="view" id="tv"></div>
+        <div class="out" id="outT"></div>
+      </div>
+    </div>
+
+    <h2 class="part" data-en="Clocks in orbit and Doppler">Orologi in orbita e Doppler</h2>
+    <div class="lab">
+      <form class="stack" id="fn2" novalidate autocomplete="off">
+        <div class="pnl">
+          <h2 data-en="Orbit of the clock">Orbita dell'orologio</h2>
+          <p class="why" data-en="Circular orbit. Give the radius or the altitude, or pick a constellation.">Orbita circolare. Dai il raggio o la quota, oppure scegli una costellazione.</p>
+          <div class="f wide"><label for="rpre" class="vh" data-en="Constellation">Costellazione</label>
+            <select id="rpre">
+              <option value="26561.75">GPS · 26 561,75 km</option>
+              <option value="29600.318">Galileo · 29 600,318 km</option>
+              <option value="25508">GLONASS · 25 508 km</option>
+              <option value="27906">BeiDou MEO · 27 906 km</option>
+              <option value="6798">ISS · 6 798 km</option>
+              <option value="42164" data-en="Geostationary (EGNOS) · 42 164 km">Geostazionaria (EGNOS) · 42 164 km</option>
+              <option value="" data-en="Your numbers">I tuoi numeri</option>
+            </select></div>
+          <div class="f"><label for="rr" data-en="Orbit radius">Raggio dell'orbita</label><input id="rr" inputmode="decimal"><span class="u">km</span></div>
+          <div class="f"><label for="rh" data-en="Altitude">Quota</label><input id="rh" inputmode="decimal"><span class="u">km</span></div>
+        </div>
+        <div class="pnl">
+          <h2 data-en="Signal">Segnale</h2>
+          <div class="pre" id="nbands">
+            <button class="btn sm" type="button" data-f="1575.42">L1 1575,42</button>
+            <button class="btn sm" type="button" data-f="1227.6">L2 1227,60</button>
+            <button class="btn sm" type="button" data-f="1176.45">L5 1176,45</button>
+          </div>
+          <div class="f"><label for="nf" data-en="Frequency">Frequenza</label><input id="nf" inputmode="decimal"><span class="u">MHz</span></div>
+          <div class="f"><label for="nte" data-en="Timing error">Errore di tempo</label><input id="nte" inputmode="decimal"><span class="u">ns</span></div>
+        </div>
+        <div class="acts">
+          <button class="btn" type="button" id="exN" data-en="Fill in an example">Compila un esempio</button>
+          <button class="btn" type="button" id="clrN" data-en="Clear">Svuota</button>
+        </div>
+      </form>
+      <div>
+        <div id="msgN"></div>
+        <div class="out" id="outN" style="margin-top:0"></div>
+        <div id="chN"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= come funziona ================= -->
+  <section id="m-info" hidden>
+    <div class="info">
+      <div class="pnl">
+        <h2 data-en="The link budget, in decibels">Il bilancio del collegamento, in decibel</h2>
+        <p data-en="Powers multiply, so in decibels they add up. You start from the transmitter's power and add gains and losses until you get the power received (Friis equation):">Le potenze si moltiplicano, quindi in decibel si sommano. Parti dalla potenza del trasmettitore e aggiungi guadagni e perdite fino alla potenza ricevuta (equazione di Friis):</p>
+        <p class="fm">EIRP = P − L<sub>linea</sub> + G<sub>t</sub><br>L<sub>s</sub> = 20 log₁₀(4π d f / c)<br>C = EIRP − L<sub>s</sub> − L<sub>atm</sub> − L<sub>punt</sub> − L<sub>pol</sub> + G<sub>r</sub></p>
+        <p data-en="The free-space loss L<sub>s</sub> is not absorption: it is the power spreading over a sphere of radius d, seen through an antenna whose size scales with the wavelength. It is the biggest step on the scale: 150–170 dB for a satellite in low orbit, more than 300 dB for a probe at the edge of the Solar System.">La perdita nello spazio libero L<sub>s</sub> non è un assorbimento: è la potenza che si allarga su una sfera di raggio d, vista da un'antenna che cresce con la lunghezza d'onda. È il gradino più grande della scala: 150–170 dB per un satellite in orbita bassa, oltre 300 dB per una sonda ai confini del Sistema solare.</p>
+        <p data-en="A dish of diameter D with efficiency η (0.55 is a typical value) has">Una parabola di diametro D con efficienza η (0,55 è un valore tipico) ha</p>
+        <p class="fm">G = η (π D f / c)²  ·  θ<sub>3dB</sub> ≈ 70° λ / D</p>
+        <p data-en="θ<sub>3dB</sub> is the beam width at half power. A pointing error e costs about 12 (e / θ<sub>3dB</sub>)² dB: a big dish has more gain but must be pointed better.">θ<sub>3dB</sub> è la larghezza del fascio a metà potenza. Un errore di puntamento e costa circa 12 (e / θ<sub>3dB</sub>)² dB: una parabola grande guadagna di più ma va puntata meglio.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Noise and margin">Rumore e margine</h2>
+        <p data-en="The receiver adds thermal noise with density N<sub>0</sub> = k T<sub>s</sub>, where k = 1.380649·10⁻²³ J/K is Boltzmann's constant, −228.6 dBW/(K·Hz). T<sub>s</sub> gathers the noise of the sky seen by the antenna, of the cables and of the first amplifier. G/T sums up the receiving station in one number.">Il ricevitore aggiunge rumore termico con densità N<sub>0</sub> = k T<sub>s</sub>, dove k = 1,380649·10⁻²³ J/K è la costante di Boltzmann, −228,6 dBW/(K·Hz). T<sub>s</sub> raccoglie il rumore del cielo visto dall'antenna, dei cavi e del primo amplificatore. G/T riassume la stazione che riceve in un numero solo.</p>
+        <p class="fm">C/N<sub>0</sub> = EIRP − L<sub>s</sub> − L<sub>altre</sub> + G/T + 228,6  [dB·Hz]<br>E<sub>b</sub>/N<sub>0</sub> = C/N<sub>0</sub> − 10 log₁₀ R<sub>b</sub><br>margine = E<sub>b</sub>/N<sub>0</sub> − (E<sub>b</sub>/N<sub>0</sub>)<sub>richiesto</sub> − L<sub>impl</sub></p>
+        <p data-en="E<sub>b</sub>/N<sub>0</sub> is the energy of one bit over the noise density. Each modulation and code needs a minimum to keep errors below a given rate; for one wrong bit in 100 000 the typical values are 9.6 dB without coding, 4.4 dB with the convolutional code r = 1/2 K = 7, about 2.5 dB with Reed-Solomon plus convolutional, about 1 dB with LDPC or turbo codes at r = 1/2. The implementation loss covers real filters, synchronisation and quantisation. A margin of 3 dB is the usual minimum; doubling the data rate takes 3 dB away.">E<sub>b</sub>/N<sub>0</sub> è l'energia di un bit divisa per la densità di rumore. Ogni modulazione e codice chiede un minimo per tenere gli errori sotto una certa frequenza; per un bit sbagliato su 100 000 i valori tipici sono 9,6 dB senza codifica, 4,4 dB con il codice convoluzionale r = 1/2 K = 7, circa 2,5 dB con Reed-Solomon più convoluzionale, circa 1 dB con codici LDPC o turbo a r = 1/2. La perdita di implementazione copre filtri reali, sincronizzazione e quantizzazione. Un margine di 3 dB è il minimo abituale; raddoppiare la velocità dei dati toglie 3 dB.</p>
+        <p data-en="The page solves for the empty field by turning the budget around: each quantity enters linearly in decibels.">La pagina ricava il campo vuoto rigirando il bilancio: in decibel ogni grandezza entra in modo lineare.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="What a satellite sees">Che cosa vede un satellite</h2>
+        <svg class="fig" id="figG" viewBox="0 0 460 300" role="img" aria-label="Geometria: Terra, satellite, angoli ρ, η, λ ed ε" data-en-aria-label="Geometry: Earth, satellite, angles ρ, η, λ and ε"></svg>
+        <p data-en="From altitude h the Earth looks like a disc of angular radius ρ. A station sees the satellite only above the minimum elevation ε (SMAD, ch. 5):">Dalla quota h la Terra appare come un disco di raggio angolare ρ. Una stazione vede il satellite solo sopra l'elevazione minima ε (SMAD, cap. 5):</p>
+        <p class="fm">sin ρ = R⊕ / (R⊕ + h)<br>sin η = cos ε · sin ρ<br>λ = 90° − ε − η<br>D = R⊕ sin λ / sin η = √(r² − R⊕² cos² ε) − R⊕ sin ε</p>
+        <p data-en="η is the half-opening of the visibility cone, λ the angle at the Earth's centre between the point under the satellite and the edge of the footprint, D the distance at the edge. The footprint has radius R⊕ λ on the ground, area 2π R⊕² (1 − cos λ) and covers the fraction (1 − cos λ) / 2 of the surface.">η è la mezza apertura del cono di visibilità, λ l'angolo al centro della Terra fra il punto sotto il satellite e il bordo dell'impronta, D la distanza al bordo. L'impronta ha raggio R⊕ λ sul terreno, area 2π R⊕² (1 − cos λ) e copre la frazione (1 − cos λ) / 2 della superficie.</p>
+        <p class="fm">T<sub>pass</sub> = (2 / ω) arccos(cos λ / cos λ<sub>min</sub>),  ω = n − ω⊕ cos i</p>
+        <p data-en="λ<sub>min</sub> is the closest approach of the ground track to the station: zero for a pass straight overhead, the longest one. The average pass is taken over stations spread evenly between 0 and λ from the track. ω is the angular speed of the satellite relative to the ground along its track: the Earth's rotation lengthens passes of prograde orbits, a lot for medium and high orbits.">λ<sub>min</sub> è la distanza minima della traccia dalla stazione: zero per un passaggio proprio sopra la testa, il più lungo. Il passaggio medio è la media su stazioni sparse in modo uniforme fra 0 e λ dalla traccia. ω è la velocità angolare del satellite rispetto al suolo lungo la traccia: la rotazione della Terra allunga i passaggi delle orbite dirette, molto per le orbite medie e alte.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="How GPS finds you">Come il GPS ti trova</h2>
+        <p data-en="Each satellite sends the time of its very precise clock and where it is. The receiver measures the delay and multiplies it by c: one nanosecond is 29.98 cm. The receiver's clock, though, is a cheap quartz: its error Δt adds the same c·Δt to every distance. That is why the measures are called pseudoranges:">Ogni satellite manda l'ora del suo orologio, molto preciso, e dove si trova. Il ricevitore misura il ritardo e lo moltiplica per c: un nanosecondo vale 29,98 cm. L'orologio del ricevitore però è un quarzo economico: il suo errore Δt aggiunge lo stesso c·Δt a tutte le distanze. Per questo le misure si chiamano pseudodistanze:</p>
+        <p class="fm">ρ<sub>i</sub> = |x − s<sub>i</sub>| + c Δt</p>
+        <p data-en="The unknowns are the position and c·Δt. The receiver starts from a guess and corrects it with Gauss–Newton: it linearises the distances around the guess and solves the least squares problem">Le incognite sono la posizione e c·Δt. Il ricevitore parte da un tentativo e lo corregge con Gauss–Newton: linearizza le distanze attorno al tentativo e risolve i minimi quadrati</p>
+        <p class="fm">H<sub>i</sub> = [ (x − s<sub>i</sub>)ᵀ / |x − s<sub>i</sub>| , 1 ]<br>δ = (HᵀH)⁻¹ Hᵀ (ρ − ρ̂),  x ← x + δ</p>
+        <p data-en="It converges in a few steps. The diagonal of (HᵀH)⁻¹ gives the DOP (dilution of precision): how much the geometry amplifies the errors on the distances. Transmitters spread all around you give a low DOP; bunched together, a high one.">Converge in pochi passi. La diagonale di (HᵀH)⁻¹ dà il DOP (diluizione della precisione): quanto la geometria amplifica gli errori sulle distanze. Trasmettitori sparsi tutto attorno danno un DOP basso; raggruppati, alto.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Relativity in the satellite's clock">La relatività nell'orologio del satellite</h2>
+        <p data-en="Higher up gravity is weaker and a clock runs faster; moving fast, it runs slower. Compared with a clock on the ground, for a circular orbit of radius r and speed v = √(GM / r) (Ashby 2003):">Più in alto la gravità è più debole e un orologio va più veloce; muovendosi in fretta va più piano. Rispetto a un orologio a terra, per un'orbita circolare di raggio r e velocità v = √(GM / r) (Ashby 2003):</p>
+        <p class="fm">Δf / f = (GM / c²)(1 / R⊕ − 1 / r) − v² / (2c²) + (W₀ − GM / R⊕) / c²</p>
+        <p data-en="The last term accounts for the ground clock, which sits on the geoid and turns with the Earth: W₀ = 62 636 856.0 m²/s² is the geoid potential, gravity plus rotation (IERS). For GPS: +45.7 µs per day from gravity, −7.2 from speed, +0.14 from the ground clock, +38.6 µs per day in all. Left alone, the error in distance would grow by about 11.6 km a day. So the satellite oscillators are tuned to 10.229 999 995 43 MHz instead of 10.23 MHz.">L'ultimo termine tiene conto dell'orologio a terra, che sta sul geoide e gira con la Terra: W₀ = 62 636 856,0 m²/s² è il potenziale del geoide, gravità più rotazione (IERS). Per il GPS: +45,7 µs al giorno dalla gravità, −7,2 dalla velocità, +0,14 dall'orologio a terra, in tutto +38,6 µs al giorno. Lasciato lì, l'errore sulla distanza crescerebbe di circa 11,6 km al giorno. Per questo gli oscillatori dei satelliti sono regolati a 10,229 999 995 43 MHz invece di 10,23 MHz.</p>
+        <p data-en="Below about 3 200 km of altitude speed wins and the clock on board falls behind: on the ISS by about 24 µs a day.">Sotto circa 3 200 km di quota vince la velocità e l'orologio di bordo resta indietro: sulla ISS di circa 24 µs al giorno.</p>
+        <h2 data-en="Doppler">Doppler</h2>
+        <p data-en="The received frequency shifts by f<sub>D</sub> = f v<sub>r</sub> / c, with v<sub>r</sub> the speed along the line of sight. Seen from the ground (Earth at rest, pass overhead) the largest v<sub>r</sub> is v R⊕ / r, at the horizon; the fastest change, f v² R⊕ / (c r (r − R⊕)), comes overhead.">La frequenza ricevuta si sposta di f<sub>D</sub> = f v<sub>r</sub> / c, con v<sub>r</sub> la velocità lungo la linea di vista. Vista da terra (Terra ferma, passaggio sopra la testa) la v<sub>r</sub> più grande è v R⊕ / r, all'orizzonte; la variazione più rapida, f v² R⊕ / (c r (r − R⊕)), arriva sopra la testa.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Assumptions and limits">Ipotesi e limiti</h2>
+        <ul>
+          <li data-en="Spherical Earth of radius 6 378.137 km, nothing blocking the horizon.">Terra sferica di raggio 6 378,137 km, niente che copra l'orizzonte.</li>
+          <li data-en="Atmosphere, rain, pointing and polarisation are fixed losses that you give. In the chart of margin against elevation only the distance changes.">Atmosfera, pioggia, puntamento e polarizzazione sono perdite fisse che dai tu. Nel grafico del margine con l'elevazione cambia solo la distanza.</li>
+          <li data-en="Ideal antennas: gain from the aperture formula with an efficiency; the beam width is an approximation.">Antenne ideali: guadagno dalla formula dell'apertura con un'efficienza; la larghezza del fascio è un'approssimazione.</li>
+          <li data-en="T<sub>s</sub> is yours: the page does not work it out from the sky, cables and amplifier.">T<sub>s</sub> la dai tu: la pagina non la ricava da cielo, cavi e amplificatore.</li>
+          <li data-en="Required E<sub>b</sub>/N<sub>0</sub>: typical values. They change with the receiver, the block length and the error rate you accept.">E<sub>b</sub>/N<sub>0</sub> richiesti: valori tipici. Cambiano con il ricevitore, la lunghezza dei blocchi e la frequenza di errori che accetti.</li>
+          <li data-en="Coverage: circular orbit; the Earth's rotation enters only as relative speed along the track. In the 3D view the orbit plane drifts with J2.">Copertura: orbita circolare; la rotazione della Terra entra solo come velocità relativa lungo la traccia. Nella vista 3D il piano dell'orbita deriva con J2.</li>
+          <li data-en="Trilateration on a plane, without measurement noise, ionosphere or troposphere, with perfect transmitter clocks.">Trilaterazione sul piano, senza rumore di misura, ionosfera e troposfera, con orologi dei trasmettitori perfetti.</li>
+          <li data-en="Relativity for a circular orbit: the periodic term from eccentricity (tens of ns for GPS) is corrected by the receiver and left out here, like the Sagnac effect.">Relatività per un'orbita circolare: il termine periodico dovuto all'eccentricità (decine di ns per il GPS) lo corregge il ricevitore e qui manca, come l'effetto Sagnac.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Sources">Fonti</h2>
+        <ul>
+          <li>J. R. Wertz, W. J. Larson (eds.), <i>Space Mission Analysis and Design</i>, 3rd ed., Microcosm/Kluwer, 1999: ch. 5 (space mission geometry) and ch. 13 (communications architecture).</li>
+          <li>J. R. Wertz, D. F. Everett, J. J. Puschell (eds.), <i>Space Mission Engineering: The New SMAD</i>, Microcosm, 2011.</li>
+          <li>B. Sklar, <i>Digital Communications: Fundamentals and Applications</i>, 2nd ed., Prentice Hall, 2001.</li>
+          <li>CCSDS 130.1-G, <i>TM Synchronization and Channel Coding — Summary of Concept and Rationale</i> (Green Book).</li>
+          <li>N. Ashby, «Relativity in the Global Positioning System», <i>Living Reviews in Relativity</i> 6, 1 (2003).</li>
+          <li>P. Misra, P. Enge, <i>Global Positioning System: Signals, Measurements, and Performance</i>, 2nd ed., Ganga-Jamuna, 2006.</li>
+          <li>IS-GPS-200, <i>Navstar GPS Space Segment / Navigation User Interfaces</i>; IERS Conventions (2010) for W₀.</li>
+          <li>ITU-R P.676 (attenuation by atmospheric gases) and P.618 (rain) for the atmospheric losses.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<!--KIT:JS-->
+<script>
+'use strict';
+K.init('comunicazioni');
+const { $, t, num, sig, fmt } = K;
+const D2R = K.D2R, RE = K.RE, MU = K.MU, C0 = 299792458, KDB = 10 * Math.log10(1.380649e-23);
+const GM = 3.986004418e14, W0 = 62636856.0, REm = RE * 1e3;
+const dB = x => 10 * Math.log10(x);
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const sg = (x, d) => (x > 0 && Number(Math.abs(x).toFixed(d == null ? 1 : d)) !== 0 ? '+' : '') + fmt(x, d == null ? 1 : d);
+const isNum = x => x != null && Number.isFinite(x);
+const MODS = { bpsk: 9.6, conv: 4.4, rs: 2.5, ldpc: 1.0 };
+const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function say(el, list) { $(el).innerHTML = list.filter(Boolean).map(m => '<p class="msg' + (m.k ? ' ' + m.k : '') + '">' + (m.s || m) + '</p>').join(''); }
+function rate(bps) {
+  if (bps >= 1e9) return [sig(bps / 1e9, 4), 'Gbit/s'];
+  if (bps >= 1e6) return [sig(bps / 1e6, 4), 'Mbit/s'];
+  if (bps >= 1e3) return [sig(bps / 1e3, 4), 'kbit/s'];
+  return [sig(bps, 4), 'bit/s'];
+}
+function watts(w) {
+  if (w >= 1e3) return [sig(w / 1e3, 4), 'kW'];
+  if (w >= 1) return [sig(w, 4), 'W'];
+  if (w >= 1e-3) return [sig(w * 1e3, 4), 'mW'];
+  return [sig(w, 4), 'W'];
+}
+function dist(km) { return km >= 1e7 ? [sig(km / 1.495978707e8, 4), t('UA', 'AU')] : [fmt(km, km < 100 ? 2 : km < 1e5 ? 1 : 0), 'km']; }
+function ltime(km) {
+  const s = km * 1e3 / C0;
+  if (s < 1) return fmt(s * 1e3, s < 0.01 ? 2 : 1) + ' ms';
+  if (s < 120) return fmt(s, 1) + ' s';
+  if (s < 7200) return fmt(s / 60, 1) + ' min';
+  return fmt(s / 3600, 1) + ' h';
+}
+
+/* ---------- geometria comune (SMAD cap. 5) ---------- */
+function slant(h, epsDeg) { const r = RE + h, e = epsDeg * D2R; return Math.sqrt(r * r - Math.pow(RE * Math.cos(e), 2)) - RE * Math.sin(e); }
+function elevOf(h, d) { const r = RE + h; return Math.asin(clamp((r * r - RE * RE - d * d) / (2 * RE * d), -1, 1)) / D2R; }
+function altOf(d, epsDeg) { const e = epsDeg * D2R; return Math.sqrt(RE * RE + d * d + 2 * RE * d * Math.sin(e)) - RE; }
+function footprint(h, epsDeg) {
+  const r = RE + h, e = epsDeg * D2R, rho = Math.asin(RE / r), eta = Math.asin(Math.cos(e) * RE / r);
+  const lam = Math.PI / 2 - e - eta;
+  return { r, rho, eta, lam, D: slant(h, epsDeg) };
+}
+
+/* ---------- antenne e bilancio ---------- */
+const dishG = (D, fHz, eta) => dB(eta * Math.pow(Math.PI * D * fHz / C0, 2));
+const dishD = (G, fHz, eta) => C0 / (Math.PI * fHz) * Math.sqrt(Math.pow(10, G / 10) / eta);
+const beam = (D, fHz) => 70 * C0 / fHz / D;
+const fspl = (dkm, fHz) => 20 * Math.log10(4 * Math.PI * dkm * 1e3 * fHz / C0);
+
+let dir = 'down';
+const SIDE = { s: ['Satellite', 'Spacecraft'], g: ['Stazione a terra', 'Ground station'] };
+function setDir(d, quiet) {
+  dir = d;
+  $('dirD').setAttribute('aria-pressed', String(d === 'down')); $('dirU').setAttribute('aria-pressed', String(d === 'up'));
+  const tx = d === 'down' ? 's' : 'g', rx = d === 'down' ? 'g' : 's';
+  $('p' + tx.toUpperCase()).querySelectorAll('[data-tx]').forEach(e => { e.hidden = false; });
+  $('p' + tx.toUpperCase()).querySelectorAll('[data-rx]').forEach(e => { e.hidden = true; });
+  $('p' + rx.toUpperCase()).querySelectorAll('[data-tx]').forEach(e => { e.hidden = true; });
+  $('p' + rx.toUpperCase()).querySelectorAll('[data-rx]').forEach(e => { e.hidden = false; });
+  $('p' + tx.toUpperCase()).style.order = 3; $('p' + rx.toUpperCase()).style.order = 5;
+  $('p' + tx.toUpperCase() + 't').textContent = (K.en ? SIDE[tx][1] : SIDE[tx][0]) + ' · ' + t('trasmette', 'transmits');
+  $('p' + rx.toUpperCase() + 't').textContent = (K.en ? SIDE[rx][1] : SIDE[rx][0]) + ' · ' + t('riceve', 'receives');
+  $('fl').querySelectorAll('[data-dir]').forEach(e => { e.hidden = e.dataset.dir !== d; });
+  if (!quiet) runLink();
+}
+
+// antenna di un lato: guadagno dato, oppure parabola (diametro + efficienza)
+function antenna(p, fHz, M) {
+  const G = num(p + 'G'), D = num(p + 'D'), E = num(p + 'E');
+  const eta = E == null ? 0.55 : E / 100;
+  const out = { G: null, D: null, eta, from: null, bw: null };
+  const useEta = () => { if (E == null) K.der(p + 'E', 55, 0); };   // l'efficienza conta solo se c'è una parabola
+  if (E != null && !(E > 0 && E <= 100)) { K.bad(p + 'E'); M.push(t('L\'efficienza della parabola va da 0 a 100 %.', 'Dish efficiency goes from 0 to 100 %.')); return out; }
+  if (D != null && !(D > 0)) { K.bad(p + 'D'); M.push(t('Il diametro della parabola deve essere maggiore di zero.', 'The dish diameter must be greater than zero.')); return out; }
+  if (D != null && isNum(fHz)) {
+    out.D = D; out.G = dishG(D, fHz, eta); out.from = 'D'; out.bw = beam(D, fHz); useEta();
+    if (G != null && Math.abs(G - out.G) > 0.2) {
+      K.bad(p + 'G');
+      M.push(t('Guadagno e parabola non tornano: una parabola di ', 'Gain and dish do not agree: a dish of ') + fmt(D, 2) + ' m ' + t('con efficienza ', 'with efficiency ') + fmt(eta * 100, 0) + ' % ' + t('guadagna ', 'gives ') + fmt(out.G, 1) + ' dBi, ' + t('non ', 'not ') + fmt(G, 1) + '. ' + t('Correggi o svuota uno dei due campi.', 'Fix or clear one of the two fields.'));
+    } else K.der(p + 'G', out.G, 1);
+  } else if (G != null && isNum(fHz)) {
+    out.G = G; out.from = 'G';
+    if (G >= 12) { out.D = dishD(G, fHz, eta); out.bw = beam(out.D, fHz); K.der(p + 'D', out.D, out.D < 10 ? 2 : 1); useEta(); }
+  }
+  return out;
+}
+
+function power(p, M) {
+  const W = num(p + 'P'), Pd = num(p + 'Pd');
+  if (W != null) {
+    if (!(W > 0)) { K.bad(p + 'P'); M.push(t('La potenza trasmessa deve essere maggiore di zero.', 'Transmit power must be greater than zero.')); return { bad: true }; }
+    const v = dB(W); K.der(p + 'Pd', v, 2);
+    if (Pd != null && Math.abs(Pd - v) > 0.05) { K.bad(p + 'Pd'); M.push(fmt(W, 3).replace(/[,.]?0+$/, '') + ' W ' + t('sono ', 'are ') + fmt(v, 2) + ' dBW, ' + t('non ', 'not ') + fmt(Pd, 2) + '. ' + t('Correggi o svuota uno dei due campi.', 'Fix or clear one of the two fields.')); }
+    return { P: v };
+  }
+  if (Pd != null) { K.der(p + 'P', Math.pow(10, Pd / 10)); return { P: Pd }; }
+  return { P: null };
+}
+
+let LINK = null;
+function runLink() {
+  K.clear('fl');
+  const M = [], I = [];
+  const tx = dir === 'down' ? 's' : 'g', rx = dir === 'down' ? 'g' : 's', X = dir === 'down' ? 'D' : 'U';
+  const ids = ['f' + X, 'h', 'el', 'd', tx + 'P', tx + 'Pd', tx + 'Ll', 'sG', 'sD', 'sE', 'gG', 'gD', 'gE', rx + 'T', rx + 'GT', 'Lp', 'Lpol', 'La', 'Rb' + X, 'Eb' + X, 'Li', 'Mt'];
+  const bad = ids.filter(id => Number.isNaN(num(id)));
+  bad.forEach(id => K.bad(id));
+  if (bad.length) { say('msgL', [t('Un valore non è un numero: controlla i campi in ambra.', 'A value is not a number: check the fields in amber.')]); return finishLink(null); }
+
+  // frequenza
+  const fM = num('f' + X); let fHz = null;
+  if (fM == null) M.push(t('Manca la frequenza.', 'The frequency is missing.'));
+  else if (!(fM > 0)) { K.bad('f' + X); M.push(t('La frequenza deve essere maggiore di zero.', 'The frequency must be greater than zero.')); }
+  else fHz = fM * 1e6;
+
+  // distanza: da quota ed elevazione, oppure data
+  const h = num('h'), el = num('el'), dd = num('d');
+  let D = null, dFrom = null;
+  if (h != null && !(h > 0)) { K.bad('h'); M.push(t('La quota deve essere maggiore di zero.', 'The altitude must be greater than zero.')); }
+  if (el != null && !(el >= 0 && el <= 90)) { K.bad('el'); M.push(t('L\'elevazione va da 0° (orizzonte) a 90° (sopra la testa).', 'Elevation goes from 0° (horizon) to 90° (overhead).')); }
+  const hOk = h != null && h > 0, eOk = el != null && el >= 0 && el <= 90;
+  if (dd != null && !(dd > 0)) { K.bad('d'); M.push(t('La distanza deve essere maggiore di zero.', 'The distance must be greater than zero.')); }
+  if (hOk && eOk) {
+    D = slant(h, el); dFrom = 'geo';
+    if (dd != null && dd > 0 && Math.abs(dd - D) / D > 0.005) { K.bad('d'); M.push(t('La distanza non torna con quota ed elevazione: a ', 'The distance does not agree with altitude and elevation: at ') + fmt(h, 0) + ' km ' + t('e ', 'and ') + fmt(el, 1) + '° ' + t('è ', 'it is ') + fmt(D, 0) + ' km. ' + t('Svuota uno dei tre campi.', 'Clear one of the three fields.')); }
+    else K.der('d', D, 1);
+  } else if (dd != null && dd > 0) {
+    D = dd; dFrom = 'd';
+    if (hOk && dd < h) { K.bad('d'); M.push(t('La distanza non può essere minore della quota (', 'The distance cannot be shorter than the altitude (') + fmt(h, 0) + ' km).'); }
+    else if (hOk) { const e2 = elevOf(h, dd); if (dd <= Math.sqrt(Math.pow(RE + h, 2) - RE * RE)) K.der('el', e2, 1); else M.push(t('A quella distanza il satellite è sotto l\'orizzonte.', 'At that distance the satellite is below the horizon.')); }
+    else if (eOk) K.der('h', altOf(dd, el), 0);
+  }
+
+  // trasmettitore, antenne, ricevitore
+  const pw = power(tx, M);
+  const At = antenna(tx, fHz, M), Ar = antenna(rx, fHz, M);
+  const Ll = num(tx + 'Ll'), Lp = num('Lp'), Lpol = num('Lpol'), La = num('La'), Li = num('Li');
+  [[tx + 'Ll', Ll], ['Lp', Lp], ['Lpol', Lpol], ['La', La], ['Li', Li]].forEach(([id, v]) => { if (v == null) K.der(id, 0, 1); else if (v < 0) { K.bad(id); M.push(t('Le perdite si scrivono come numeri positivi.', 'Write losses as positive numbers.')); } });
+  const Lline = Ll || 0, Loth = (Lp || 0) + (Lpol || 0) + (La || 0), Limp = Li || 0;
+  let Mt = num('Mt'); if (Mt == null) { Mt = 3; K.der('Mt', 3, 1); }
+  // temperatura di sistema / G/T
+  const Ts = num(rx + 'T'), GTg = num(rx + 'GT');
+  let TsdB = null, GT = null;
+  if (Ts != null) {
+    if (!(Ts > 0)) { K.bad(rx + 'T'); M.push(t('La temperatura di sistema deve essere maggiore di zero kelvin.', 'The system temperature must be above zero kelvin.')); }
+    else TsdB = dB(Ts);
+  }
+  if (TsdB != null) {
+    if (isNum(Ar.G)) { GT = Ar.G - TsdB; if (GTg != null && Math.abs(GTg - GT) > 0.1) { K.bad(rx + 'GT'); M.push(t('G/T non torna: con ', 'G/T does not agree: with ') + fmt(Ar.G, 1) + ' dBi ' + t('e ', 'and ') + fmt(Ts, 0) + ' K ' + t('vale ', 'it is ') + fmt(GT, 1) + ' dB/K. ' + t('Svuota uno dei campi.', 'Clear one of the fields.')); } else K.der(rx + 'GT', GT, 1); }
+    else if (GTg != null) { GT = GTg; Ar.G = GTg + TsdB; Ar.from = 'GT'; K.der(rx + 'G', Ar.G, 1); if (isNum(fHz) && Ar.G >= 12) { Ar.D = dishD(Ar.G, fHz, Ar.eta); Ar.bw = beam(Ar.D, fHz); K.der(rx + 'D', Ar.D, 2); if (num(rx + 'E') == null) K.der(rx + 'E', 55, 0); } }
+  } else if (GTg != null) {
+    GT = GTg; if (isNum(Ar.G)) { TsdB = Ar.G - GT; K.der(rx + 'T', Math.pow(10, TsdB / 10), 0); }
+  }
+  if (Ts == null && GTg == null) M.push(t('Manca la temperatura di rumore del ricevitore (o il suo G/T).', 'The receiver noise temperature (or its G/T) is missing.'));
+
+  // dati
+  const Rb = num('Rb' + X);
+  if (Rb != null && !(Rb > 0)) { K.bad('Rb' + X); M.push(t('La velocità dei dati deve essere maggiore di zero.', 'The data rate must be greater than zero.')); }
+  const mod = $('mod' + X).value, EbIn = num('Eb' + X);
+  let EbR = EbIn;
+  if (EbR == null) { EbR = MODS[mod]; if (EbR == null) M.push(t('Scrivi l\'E<sub>b</sub>/N<sub>0</sub> richiesto o scegli una codifica.', 'Type the required E<sub>b</sub>/N<sub>0</sub> or pick a coding.')); else K.der('Eb' + X, EbR, 1); }
+
+  if (M.length) { say('msgL', M); return finishLink(null); }
+
+  // incognita: al massimo una fra velocità dati, potenza, parabola che riceve, distanza
+  const unk = [];
+  if (Rb == null) unk.push(['Rb', t('velocità dei dati', 'data rate')]);
+  if (pw.P == null) unk.push(['P', t('potenza trasmessa', 'transmit power')]);
+  if (Ar.G == null && GT == null) unk.push(['Dr', t('parabola che riceve', 'receiving dish')]);
+  if (D == null) unk.push(['d', t('distanza', 'distance')]);
+  if (At.G == null) { say('msgL', [t('Manca l\'antenna che trasmette: dai il guadagno o il diametro della parabola.', 'The transmitting antenna is missing: give its gain or the dish diameter.')]); return finishLink(null); }
+  if (unk.length > 1) { say('msgL', [{ s: t('Mancano ', 'Missing: ') + unk.map(u => u[1]).join(', ') + '. ' + t('La pagina ne ricava solo uno alla volta: compila gli altri.', 'The page works out only one at a time: fill in the others.'), k: 'info' }]); return finishLink(null); }
+
+  // parte nota del margine (in dB)
+  const kdb = -KDB;                                    // +228,6
+  let P = pw.P, Gr = Ar.G, Rbps = Rb != null ? Rb * 1e3 : null, d = D;
+  const req = EbR + Limp;
+  const solved = unk.length ? unk[0][0] : null;
+  const marginOf = (P_, Gr_, Rbps_, d_) => {
+    const eirp = P_ - Lline + At.G, ls = fspl(d_, fHz);
+    const cn0 = GT != null && Gr_ === Ar.G ? eirp - ls - Loth + GT + kdb : eirp - ls - Loth + Gr_ - TsdB + kdb;
+    return cn0 - dB(Rbps_) - req;
+  };
+  const gtOf = Gr_ => GT != null && (Gr_ === Ar.G) ? GT : Gr_ - TsdB;
+  if (solved === 'Rb') { const cn0 = P - Lline + At.G - fspl(d, fHz) - Loth + gtOf(Gr) + kdb; Rbps = Math.pow(10, (cn0 - req - Mt) / 10); K.der('Rb' + X, Rbps / 1e3, Rbps / 1e3 < 10 ? 3 : Rbps / 1e3 < 1000 ? 1 : 0); }
+  if (solved === 'P') { P = Mt - (marginOf(0, Gr, Rbps, d)); K.der(tx + 'Pd', P, 2); K.der(tx + 'P', Math.pow(10, P / 10)); }
+  if (solved === 'Dr') {
+    if (TsdB == null) { say('msgL', [t('Per ricavare la parabola serve la temperatura di sistema.', 'To work out the dish the system temperature is needed.')]); return finishLink(null); }
+    const m0 = P - Lline + At.G - fspl(d, fHz) - Loth - TsdB + kdb - dB(Rbps) - req;
+    Gr = Mt - m0; Ar.G = Gr; GT = Gr - TsdB; K.der(rx + 'G', Gr, 1); K.der(rx + 'GT', GT, 1);
+    if (Gr >= 12) { Ar.D = dishD(Gr, fHz, Ar.eta); Ar.bw = beam(Ar.D, fHz); Ar.from = 'solved'; K.der(rx + 'D', Ar.D, Ar.D < 10 ? 2 : 1); if (num(rx + 'E') == null) K.der(rx + 'E', 55, 0); }
+    else { Ar.D = null; Ar.bw = null; Ar.from = 'solvedG'; I.push({ s: t('Basta un\'antenna da ', 'An antenna of ') + fmt(Gr, 1) + ' dBi' + t(': un\'antenna a basso guadagno, non serve una parabola.', ' is enough: a low-gain antenna, no dish needed.'), k: 'info' }); }
+  }
+  if (solved === 'd') {
+    const m0 = P - Lline + At.G - Loth + gtOf(Gr) + kdb - dB(Rbps) - req;   // margine senza la perdita nello spazio libero
+    d = C0 / (4 * Math.PI * fHz) * Math.pow(10, (m0 - Mt) / 20) / 1e3;
+    K.der('d', d, d < 1e5 ? 0 : null);
+    if (hOk) {
+      const dHor = Math.sqrt(Math.pow(RE + h, 2) - RE * RE);
+      if (d < h) I.push({ s: t('Il collegamento non si chiude nemmeno con il satellite sopra la testa: servirebbe una distanza di ', 'The link does not close even with the satellite overhead: it would need a distance of ') + fmt(d, 0) + ' km, ' + t('meno della quota.', 'less than the altitude.') });
+      else if (d >= dHor) { K.der('el', 0, 1); I.push({ s: t('Il collegamento si chiude a qualunque elevazione, fino all\'orizzonte.', 'The link closes at any elevation, down to the horizon.'), k: 'info' }); }
+      else K.der('el', elevOf(h, d), 1);
+    } else if (eOk) K.der('h', altOf(d, el), 0);
+  }
+  if (solved === 'P' && P > 40) I.push({ s: t('Servono ', 'It takes ') + watts(Math.pow(10, P / 10)).join(' ') + t(': più di quanto possa dare un satellite.', ': more than a spacecraft can supply.') });
+
+  // bilancio completo
+  const eirp = P - Lline + At.G, ls = fspl(d, fHz), gt = gtOf(Gr);
+  const C = isNum(Gr) ? eirp - ls - Loth + Gr : null;
+  const cn0 = eirp - ls - Loth + gt + kdb, ebn0 = cn0 - dB(Rbps), margin = ebn0 - req;
+  if (isNum(Rb) && solved !== 'Rb') { /* niente */ }
+  LINK = { tx, rx, X, fHz, P, Lline, At, Ar, d, dFrom, ls, Loth, Lp, Lpol, La, eirp, C, TsdB, gt, cn0, Rbps, ebn0, EbR, Limp, req, margin, Mt, solved, h: hOk ? h : (solved === 'd' || dFrom === 'd') && eOk ? altOf(d, el) : null, el: eOk ? el : null };
+  say('msgL', I);
+  return finishLink(LINK);
+}
+
+function finishLink(L) {
+  saveAll();
+  drawWF(L);
+  if (!L) { K.rows('outL', []); $('chL').innerHTML = ''; $('chL').className = ''; return; }
+  const sideName = s => t(s === 's' ? 'satellite' : 'a terra', s === 's' ? 'spacecraft' : 'ground');
+  const lam = C0 / L.fHz, ok = L.margin >= L.Mt - 1e-9;
+  const antNote = A => A.from === 'D' ? t('parabola da ', 'dish of ') + fmt(A.D, 2) + ' m, η ' + fmt(A.eta * 100, 0) + ' %' + (A.bw ? t(' · fascio a metà potenza ', ' · half-power beam ') + sig(A.bw, 3) + '°' : '')
+    : A.from === 'solved' ? t('ricavata: parabola da ', 'worked out: dish of ') + fmt(A.D, 2) + ' m · ' + t('fascio ', 'beam ') + sig(A.bw, 3) + '°'
+    : A.bw ? t('come una parabola da ', 'like a dish of ') + fmt(A.D, 2) + ' m · ' + t('fascio ', 'beam ') + sig(A.bw, 3) + '°' : t('antenna a basso guadagno, fascio largo', 'low-gain antenna, wide beam');
+  const w = watts(Math.pow(10, L.P / 10)), r = rate(L.Rbps), dd = dist(L.d);
+  const rows = [['#', t('Bilancio', 'Budget')]];
+  if (L.solved === 'Rb') rows.push([t('Velocità dei dati possibile', 'Achievable data rate'), r[0], r[1], t('per avere ', 'to keep ') + fmt(L.Mt, 1) + t(' dB di margine', ' dB of margin'), 'key']);
+  if (L.solved === 'P') rows.push([t('Potenza trasmessa necessaria', 'Transmit power needed'), w[0], w[1], fmt(L.P, 2) + ' dBW ' + t('per ', 'for ') + fmt(L.Mt, 1) + t(' dB di margine', ' dB of margin'), 'key']);
+  if (L.solved === 'Dr') rows.push(L.Ar.D ? [t('Parabola che riceve', 'Receiving dish'), fmt(L.Ar.D, 2), 'm', fmt(L.Ar.G, 1) + ' dBi ' + t('per ', 'for ') + fmt(L.Mt, 1) + t(' dB di margine', ' dB of margin'), 'key']
+    : [t('Guadagno dell\'antenna che riceve', 'Receiving antenna gain'), fmt(L.Ar.G, 1), 'dBi', t('per ', 'for ') + fmt(L.Mt, 1) + t(' dB di margine', ' dB of margin'), 'key']);
+  if (L.solved === 'd') rows.push([t('Distanza massima', 'Maximum distance'), dd[0], dd[1], (L.h != null && L.el == null && L.d >= L.h ? t('elevazione minima ', 'minimum elevation ') + (L.d >= Math.sqrt(Math.pow(RE + L.h, 2) - RE * RE) ? '0°' : fmt(elevOf(L.h, L.d), 1) + '°') + ' · ' : '') + t('per ', 'for ') + fmt(L.Mt, 1) + t(' dB di margine', ' dB of margin'), 'key']);
+  rows.push(
+    [t('Lunghezza d\'onda', 'Wavelength'), lam >= 1 ? fmt(lam, 3) : fmt(lam * 100, lam < 0.1 ? 2 : 1), lam >= 1 ? 'm' : 'cm', 'f = ' + sig(L.fHz / 1e9, 4) + ' GHz'],
+    [t('Potenza trasmessa', 'Transmit power'), fmt(L.P, 2), 'dBW', w[0] + ' ' + w[1]],
+    [t('Antenna che trasmette', 'Transmitting antenna') + ' (' + sideName(L.tx) + ')', fmt(L.At.G, 1), 'dBi', antNote(L.At)],
+    ['EIRP', fmt(L.eirp, 1), 'dBW', t('potenza − perdite di linea + guadagno', 'power − line losses + gain')],
+    [t('Distanza', 'Distance'), dd[0], dd[1], (L.dFrom === 'geo' ? t('da quota ed elevazione · ', 'from altitude and elevation · ') : '') + t('il segnale ci mette ', 'the signal takes ') + ltime(L.d)],
+    [t('Perdita nello spazio libero', 'Free-space loss'), fmt(L.ls, 1), 'dB'],
+    [t('Altre perdite', 'Other losses'), fmt(L.Loth, 1), 'dB', t('puntamento, polarizzazione, atmosfera', 'pointing, polarisation, atmosphere')],
+    isNum(L.Ar.G) ? [t('Antenna che riceve', 'Receiving antenna') + ' (' + sideName(L.rx) + ')', fmt(L.Ar.G, 1), 'dBi', antNote(L.Ar)] : null,
+    ['G/T', fmt(L.gt, 1), 'dB/K', L.TsdB != null ? 'T<sub>s</sub> = ' + fmt(Math.pow(10, L.TsdB / 10), 0) + ' K' : ''],
+    L.C != null ? [t('Potenza ricevuta C', 'Received power C'), fmt(L.C, 1), 'dBW', fmt(L.C + 30, 1) + ' dBm'] : null,
+    L.TsdB != null ? [t('Densità di rumore N<sub>0</sub>', 'Noise density N<sub>0</sub>'), fmt(KDB + L.TsdB, 1), 'dBW/Hz', 'k T<sub>s</sub>, k = ' + fmt(KDB, 1) + ' dBW/(K·Hz)'] : null,
+    ['C/N<sub>0</sub>', fmt(L.cn0, 1), 'dB·Hz'],
+    ['E<sub>b</sub>/N<sub>0</sub>', fmt(L.ebn0, 1), 'dB', t('a ', 'at ') + r[0] + ' ' + r[1]],
+    [t('Richiesto, con la perdita di implementazione', 'Required, with implementation loss'), fmt(L.req, 1), 'dB', fmt(L.EbR, 1) + ' + ' + fmt(L.Limp, 1) + ' dB'],
+    [t('Margine', 'Margin'), sg(L.margin, 1), 'dB', ok ? (L.solved ? t('uguale al margine voluto', 'equal to the target margin') : t('sopra il margine voluto di ', 'above the target margin of ') + fmt(L.Mt, 1) + ' dB') : t('sotto il margine voluto di ', 'below the target margin of ') + fmt(L.Mt, 1) + ' dB', L.solved ? '' : 'key' + (ok ? '' : ' warn')]
+  );
+  if (!L.solved) {
+    const rMax = rate(L.Rbps * Math.pow(10, (L.margin - L.Mt) / 10));
+    rows.push([t('Velocità dei dati possibile', 'Achievable data rate'), rMax[0], rMax[1], t('con il margine voluto di ', 'with the target margin of ') + fmt(L.Mt, 1) + ' dB']);
+  }
+  K.rows('outL', rows);
+  // margine con l'elevazione (cambia solo la distanza), oppure con la distanza
+  if (L.h != null) {
+    const xs = [], ys = [], yt = [];
+    for (let e = 0; e <= 90; e += 1) { xs.push(e); ys.push(L.margin - 20 * Math.log10(slant(L.h, e) / L.d)); yt.push(L.Mt); }
+    const marks = []; const eU = L.el != null ? L.el : (L.d >= L.h ? elevOf(L.h, L.d) : null);
+    if (eU != null) marks.push({ x: eU, label: L.el != null ? t('la tua', 'yours') : t('minima', 'minimum'), color: K.C.gr });
+    K.chart('chL', { title: t('Margine e elevazione', 'Margin and elevation'), x: xs, series: [{ name: t('margine', 'margin'), y: ys, color: K.C.cy }, { name: t('margine voluto', 'target margin'), y: yt, color: K.C.ic, dash: true }], xLabel: t('elevazione, °', 'elevation, °'), yLabel: 'dB', unit: 'dB', xName: 'ε', xFmt: v => fmt(v, 0) + '°', yFmt: v => fmt(v, 1), marks });
+  } else {
+    const xs = [], ys = [], yt = [];
+    for (let k = 0; k <= 80; k++) { const x = L.d * (0.25 + 1.75 * k / 80); xs.push(x); ys.push(L.margin - 20 * Math.log10(x / L.d)); yt.push(L.Mt); }
+    K.chart('chL', { title: t('Margine e distanza', 'Margin and distance'), x: xs, series: [{ name: t('margine', 'margin'), y: ys, color: K.C.cy }, { name: t('margine voluto', 'target margin'), y: yt, color: K.C.ic, dash: true }], xLabel: t('distanza, km', 'distance, km'), yLabel: 'dB', unit: 'dB', xName: 'd', xFmt: v => sig(v, 3), yFmt: v => fmt(v, 1), marks: [{ x: L.d, label: t('la tua', 'yours'), color: K.C.gr }] });
+  }
+}
+
+/* ---------- la scala dei dB ---------- */
+function drawWF(L) {
+  const host = $('wf');
+  const head = '<div class="ttl"><b>' + t('La scala dei dB', 'The dB ladder') + '</b>' +
+    '<span style="color:var(--cy)"><i></i><span style="color:var(--tx2)">' + t('guadagni', 'gains') + '</span></span>' +
+    '<span style="color:var(--ic)"><i style="opacity:.55"></i><span style="color:var(--tx2)">' + t('perdite', 'losses') + '</span></span>' +
+    '<span style="color:var(--vi)"><i></i><span style="color:var(--tx2)">' + t('rumore e velocità dei dati', 'noise and data rate') + '</span></span></div>';
+  if (!L) { host.innerHTML = head + '<div class="empty">' + t('Completa i dati a sinistra: qui scende e risale il segnale, decibel per decibel.', 'Fill in the data on the left: here the signal goes down and back up, decibel by decibel.') + '</div>'; host._L = null; return; }
+  host._L = L;
+  const W = Math.max(300, host.clientWidth - 26), narrow = W < 560;
+  const txN = L.tx === 's' ? t('Antenna del satellite', 'Spacecraft antenna') : t('Antenna a terra', 'Ground antenna');
+  const rxN = L.rx === 's' ? t('Antenna del satellite', 'Spacecraft antenna') : t('Antenna a terra', 'Ground antenna');
+  const st = [];
+  let lv = 0;
+  const add = (name, dv, kind, unit, tag, solved) => { const a = lv; lv += dv; st.push({ name, a, b: lv, dv, kind, unit, tag, solved }); };
+  add(t('Potenza trasmessa', 'Transmit power'), L.P, 'start', 'dBW', null, L.solved === 'P');
+  add(t('Perdite di linea', 'Line losses'), -L.Lline, 'loss', 'dBW');
+  add(txN, L.At.G, 'gain', 'dBW', 'EIRP');
+  add(t('Spazio libero', 'Free space'), -L.ls, 'loss', 'dBW', null, L.solved === 'd');
+  add(t('Altre perdite', 'Other losses'), -L.Loth, 'loss', 'dBW');
+  if (L.C != null) {
+    add(rxN, L.Ar.G, 'gain', 'dBW', 'C', L.solved === 'Dr');
+    add(t('Rumore, k·T<tspan baseline-shift="sub" font-size="9">s</tspan>', 'Noise, k·T<tspan baseline-shift="sub" font-size="9">s</tspan>'), -(KDB + L.TsdB), 'ref', 'dB·Hz', 'C/N₀');
+  } else add(t('Ricevitore, G/T − k', 'Receiver, G/T − k'), L.gt - KDB, 'ref', 'dB·Hz', 'C/N₀');
+  add(t('Velocità dei dati', 'Data rate'), -dB(L.Rbps), 'ref', 'dB', 'E<tspan baseline-shift="sub" font-size="9">b</tspan>/N₀', L.solved === 'Rb');
+  const lvls = st.map(s => s.b).concat(st.map(s => s.a), [L.req, 0]);
+  let lo = Math.min(...lvls), hi = Math.max(...lvls); const pad = (hi - lo) * 0.04; lo -= pad; hi += pad;
+  const LW = narrow ? 0 : Math.min(210, W * 0.27), VW = narrow ? 0 : Math.min(200, W * 0.25), PL = narrow ? 4 : LW + 8, PR = narrow ? W - 4 : W - VW - 10;
+  const X = v => PL + (v - lo) / (hi - lo) * (PR - PL);
+  const RH = narrow ? 40 : 27, top = 6, n = st.length + 2, H = top + n * RH + 26;
+  const col = k => k === 'gain' || k === 'start' ? '#35d4f2' : k === 'loss' ? '#cfe3f5' : '#a995ff';
+  const unitTag = s => (s.tag ? s.tag + ' ' : '') + fmt(s.b, 1) + ' ' + s.unit;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + K.esc(t('Scala dei dB: margine ', 'dB ladder: margin ') + fmt(L.margin, 1) + ' dB') + '">';
+  const tk = K.ticks(lo, hi, narrow ? 4 : 6);
+  s += '<g class="ax">';
+  tk.out.forEach(v => { if (v < lo || v > hi) return; s += '<line x1="' + X(v) + '" x2="' + X(v) + '" y1="' + top + '" y2="' + (H - 22) + '" stroke="' + (v === 0 ? '#414b57' : '#252b33') + '" stroke-width="1"/><text x="' + X(v) + '" y="' + (H - 6) + '" text-anchor="middle">' + fmt(v, 0) + '</text>'; });
+  s += '<text x="' + PR + '" y="' + (H - 6) + '" text-anchor="end" dy="0" style="display:none">dB</text></g>';
+  const bar = (y, a, b, c, op) => { const x0 = X(Math.min(a, b)), x1 = X(Math.max(a, b)); return '<rect x="' + x0.toFixed(1) + '" y="' + y + '" width="' + Math.max(2, x1 - x0).toFixed(1) + '" height="' + (narrow ? 9 : 13) + '" rx="1.5" fill="' + c + '" fill-opacity="' + (op || 1) + '"/>'; };
+  st.forEach((r, k) => {
+    const y = top + k * RH, by = narrow ? y + 22 : y + 7, c = col(r.kind), op = r.kind === 'loss' ? 0.55 : 0.9;
+    const nameC = r.solved ? '#58e07f' : '#9aa5b1';
+    if (k > 0) s += '<line x1="' + X(r.a) + '" x2="' + X(r.a) + '" y1="' + (by - RH + (narrow ? 9 : 13)) + '" y2="' + by + '" stroke="#414b57" stroke-dasharray="2 2"/>';
+    s += bar(by, r.a, r.b, c, op);
+    const dvT = (r.kind === 'start' ? fmt(r.dv, 1) : sg(r.dv, 1)) + (r.kind === 'start' ? ' dBW' : ' dB');
+    if (narrow) {
+      s += '<text x="4" y="' + (y + 14) + '" style="fill:' + nameC + '">' + r.name + '</text>';
+      s += '<text x="' + (W - 4) + '" y="' + (y + 14) + '" text-anchor="end"><tspan style="fill:' + c + '">' + dvT + '</tspan>' + (r.tag ? '<tspan class="lv" dx="8">' + unitTag(r) + '</tspan>' : '') + '</text>';
+    } else {
+      s += '<text x="0" y="' + (y + 18) + '" style="fill:' + nameC + '">' + r.name + '</text>';
+      s += '<text x="' + (W - VW) + '" y="' + (y + 18) + '" style="fill:' + c + '">' + dvT + '</text>';
+      if (r.tag) s += '<text x="' + W + '" y="' + (y + 18) + '" text-anchor="end" class="lv">' + unitTag(r) + '</text>';
+    }
+  });
+  // richiesto e margine
+  const k1 = st.length, y1 = top + k1 * RH, y2 = top + (k1 + 1) * RH, ok = L.margin >= L.Mt - 1e-9, mc = ok ? '#58e07f' : '#ffb224';
+  const by1 = narrow ? y1 + 22 : y1 + 7, by2 = narrow ? y2 + 22 : y2 + 7;
+  s += '<line x1="' + X(L.req) + '" x2="' + X(L.req) + '" y1="' + (by1 - 4) + '" y2="' + (by2 + (narrow ? 13 : 17)) + '" stroke="#cfe3f5" stroke-dasharray="3 3"/>';
+  s += '<line x1="' + X(L.ebn0) + '" x2="' + X(L.ebn0) + '" y1="' + (by1 - RH + (narrow ? 9 : 13)) + '" y2="' + by2 + '" stroke="#414b57" stroke-dasharray="2 2"/>';
+  s += bar(by2, L.req, L.ebn0, mc, 1);
+  const reqT = t('Richiesto', 'Required'), marT = t('Margine', 'Margin');
+  if (narrow) {
+    s += '<text x="4" y="' + (y1 + 14) + '">' + reqT + '</text><text x="' + (W - 4) + '" y="' + (y1 + 14) + '" text-anchor="end" class="lv">E<tspan baseline-shift="sub" font-size="9">b</tspan>/N₀ ' + fmt(L.req, 1) + ' dB</text>';
+    s += '<text x="4" y="' + (y2 + 14) + '" style="fill:' + mc + ';font-weight:700">' + marT + '</text><text x="' + (W - 4) + '" y="' + (y2 + 14) + '" text-anchor="end" style="fill:' + mc + ';font-weight:700">' + sg(L.margin, 1) + ' dB</text>';
+  } else {
+    s += '<text x="0" y="' + (y1 + 18) + '">' + reqT + '</text><text x="' + W + '" y="' + (y1 + 18) + '" text-anchor="end" class="lv">E<tspan baseline-shift="sub" font-size="9">b</tspan>/N₀ ' + fmt(L.req, 1) + ' dB</text>';
+    s += '<text x="0" y="' + (y2 + 18) + '" style="fill:' + mc + ';font-weight:700">' + marT + '</text><text x="' + (W - VW) + '" y="' + (y2 + 18) + '" style="fill:' + mc + ';font-weight:700">' + sg(L.margin, 1) + ' dB</text>';
+  }
+  s += '</svg>';
+  host.innerHTML = head + s;
+}
+(function () { const h = $('wf'); if (window.ResizeObserver) { let w = 0; new ResizeObserver(() => { if (Math.abs(h.clientWidth - w) > 4) { w = h.clientWidth; if (h._L !== undefined) drawWF(h._L); } }).observe(h); } })();
+
+/* ---------- copertura ---------- */
+let COV = null, SAT = null;
+function runCov() {
+  K.clear('fc');
+  const M = [];
+  const h = num('ch'), e = num('ce'), i = num('ci');
+  if ([h, e, i].some(Number.isNaN)) { ['ch', 'ce', 'ci'].forEach(id => { if (Number.isNaN(num(id))) K.bad(id); }); say('msgC', [t('Un valore non è un numero.', 'A value is not a number.')]); return finishCov(null); }
+  let eps = e; if (eps == null) { eps = 0; K.der('ce', 0, 0); }
+  let inc = i; if (inc == null) { inc = 0; K.der('ci', 0, 0); }
+  if (h == null) { say('msgC', [{ s: t('Dai la quota del satellite.', 'Give the satellite\'s altitude.'), k: 'info' }]); return finishCov(null); }
+  if (!(h > 0)) { K.bad('ch'); M.push(t('La quota deve essere maggiore di zero.', 'The altitude must be greater than zero.')); }
+  if (!(eps >= 0 && eps < 90)) { K.bad('ce'); M.push(t('L\'elevazione minima va da 0° a meno di 90°.', 'The minimum elevation goes from 0° to less than 90°.')); }
+  if (!(inc >= 0 && inc <= 180)) { K.bad('ci'); M.push(t('L\'inclinazione va da 0° a 180°.', 'Inclination goes from 0° to 180°.')); }
+  if (M.length) { say('msgC', M); return finishCov(null); }
+  const g = footprint(h, eps);
+  const T = 2 * Math.PI * Math.sqrt(g.r * g.r * g.r / MU), n = 2 * Math.PI / T;
+  const wrel = n - K.OMEGA_E * Math.cos(inc * D2R);
+  const passT = (lmin, w) => 2 / w * Math.acos(clamp(Math.cos(g.lam) / Math.cos(lmin), -1, 1));
+  let avg0 = 0; const N = 400; for (let k = 0; k < N; k++) avg0 += passT((k + 0.5) / N * g.lam, n); avg0 /= N;
+  const max0 = 2 * g.lam / n;
+  const syn = Math.abs(wrel) < 0.02 * n;
+  COV = { h, eps, inc, ...g, T, n, wrel, max0, avg0, maxR: syn ? Infinity : 2 * g.lam / Math.abs(wrel), avgR: syn ? Infinity : avg0 * n / Math.abs(wrel), syn };
+  const info = [];
+  if (SAT && SAT.e > 0.01) info.push({ s: t('Orbita ellittica (e = ', 'Elliptical orbit (e = ') + fmt(SAT.e, 3) + t('): uso la quota media. Al perigeo ', '): using the mean altitude. At perigee ') + fmt(SAT.hp, 0) + ' km, ' + t('all\'apogeo ', 'at apogee ') + fmt(SAT.ha, 0) + ' km.', k: 'info' });
+  say('msgC', info);
+  return finishCov(COV);
+}
+function minutes(s) { if (!Number.isFinite(s)) return ['∞', '']; if (s >= 10800) return [fmt(s / 3600, 2), 'h']; return [fmt(s / 60, 1), 'min']; }
+function finishCov(c) {
+  saveAll();
+  if (!c) { K.rows('outC', []); $('revC').textContent = ''; $('chC').innerHTML = ''; $('chC').className = ''; cov3(null); return; }
+  const area = 2 * Math.PI * RE * RE * (1 - Math.cos(c.lam)), frac = (1 - Math.cos(c.lam)) / 2;
+  const iEff = c.inc <= 90 ? c.inc : 180 - c.inc, latMax = Math.min(90, iEff + c.lam / D2R);
+  const mx = minutes(c.maxR), av = minutes(c.avgR), m0 = minutes(c.max0), Tm = minutes(c.T);
+  K.rows('outC', [
+    ['#', t('Geometria', 'Geometry')],
+    [t('Raggio angolare della Terra ρ', 'Angular radius of the Earth ρ'), fmt(c.rho / D2R, 2), '°', t('la Terra vista dal satellite', 'the Earth seen from the satellite')],
+    [t('Angolo al nadir η', 'Nadir angle η'), fmt(c.eta / D2R, 2), '°', t('mezza apertura del cono di visibilità', 'half-opening of the visibility cone')],
+    [t('Angolo al centro della Terra λ', 'Earth central angle λ'), fmt(c.lam / D2R, 2), '°'],
+    [t('Distanza massima', 'Maximum distance'), fmt(c.D, 0), 'km', t('al bordo dell\'impronta', 'at the edge of the footprint')],
+    [t('Raggio dell\'impronta', 'Footprint radius'), fmt(RE * c.lam, 0), 'km', t('misurato sul terreno', 'measured on the ground'), 'key'],
+    [t('Area dell\'impronta', 'Footprint area'), sig(area, 4), 'km²', fmt(frac * 100, frac < 0.01 ? 2 : 1) + t(' % della superficie terrestre', ' % of the Earth\'s surface')],
+    ['#', t('Passaggi', 'Passes')],
+    [t('Periodo dell\'orbita', 'Orbital period'), Tm[0], Tm[1]],
+    c.syn ? [t('Passaggio', 'Pass'), t('continuo', 'continuous'), '', t('il satellite gira con la Terra: chi è nell\'impronta lo vede sempre', 'the satellite turns with the Earth: anyone in the footprint always sees it'), 'key']
+      : [t('Passaggio più lungo', 'Longest pass'), mx[0], mx[1], t('sopra la testa, con la rotazione della Terra · senza: ', 'overhead, with the Earth\'s rotation · without it: ') + m0.join(' ')],
+    c.syn ? null : [t('Passaggio medio', 'Average pass'), av[0], av[1], t('per una stazione a caso entro l\'impronta della traccia', 'for a random station within reach of the track')],
+    [t('Latitudini coperte', 'Latitudes covered'), '± ' + fmt(latMax, 1), '°', latMax >= 90 ? t('tutta la Terra', 'the whole Earth') : t('oltre, il satellite non arriva mai', 'beyond that the satellite never comes')],
+  ]);
+  // indicazione sulla rivisita
+  const dL = K.OMEGA_E * c.T / D2R, si = Math.sin(c.inc * D2R), wEq = si > 0.05 ? Math.min(360, 2 * c.lam / D2R / si) : 360;
+  let rev;
+  if (c.syn) rev = t('Orbita sincrona con la Terra: il satellite resta sopra la stessa zona e non serve aspettare il passaggio successivo.', 'Orbit synchronous with the Earth: the satellite stays over the same area and there is no next pass to wait for.');
+  else if (si <= 0.05) rev = t('Orbita quasi equatoriale: vede solo la fascia fra ±', 'Nearly equatorial orbit: it only sees the band between ±') + fmt(c.lam / D2R, 1) + t('° di latitudine, a ogni giro.', '° of latitude, on every turn.');
+  else rev = t('A ogni giro la traccia si sposta di ', 'On each turn the track shifts by ') + fmt(dL, 1) + t('° verso ovest (', '° westwards (') + fmt(dL * D2R * RE, 0) + t(' km all\'equatore). All\'equatore l\'impronta copre ', ' km at the equator). At the equator the footprint spans ') + fmt(wEq, 1) + t('° di longitudine', '° of longitude') +
+    (wEq >= dL ? t(': i giri vicini si sovrappongono e ogni punto dell\'equatore vede il satellite almeno due volte al giorno, in salita e in discesa.', ': neighbouring turns overlap and every point on the equator sees the satellite at least twice a day, going north and going south.')
+      : t(': fra un giro e il successivo resta un buco, che le tracce dei giorni seguenti chiudono in circa ', ': between one turn and the next a gap is left, which the tracks of the following days close in about ') + fmt(Math.ceil(dL / wEq), 0) + t(' giorni. Più su in latitudine le tracce si avvicinano e i passaggi sono più frequenti.', ' days. Further north or south the tracks get closer and passes are more frequent.'));
+  $('revC').innerHTML = '<b style="color:var(--tx2);font-weight:400">' + t('Quante volte passa · ', 'How often it comes back · ') + '</b>' + rev;
+  // raggio dell'impronta e quota
+  const hMax = Math.max(2000, Math.ceil(c.h * 1.6 / 1000) * 1000), xs = [], y1 = [], y0 = [];
+  for (let k = 0; k <= 200; k++) { const hh = 100 + (hMax - 100) * k / 200; xs.push(hh); y1.push(RE * footprint(hh, c.eps).lam); y0.push(RE * footprint(hh, 0).lam); }
+  K.chart('chC', { title: t('Raggio dell\'impronta e quota', 'Footprint radius and altitude'), x: xs, series: [{ name: t('elevazione minima ', 'minimum elevation ') + fmt(c.eps, 0) + '°', y: y1, color: K.C.cy }, { name: t('orizzonte, 0°', 'horizon, 0°'), y: y0, color: K.C.ic, dash: true }], xLabel: t('quota, km', 'altitude, km'), yLabel: 'km', unit: 'km', xName: 'h', xFmt: v => fmt(v, 0), yFmt: v => fmt(v, 0), marks: [{ x: c.h, label: t('la tua', 'yours'), color: K.C.gr }] });
+  cov3(c);
+}
+
+/* ---------- vista 3D della copertura ---------- */
+let C3 = null, playing = !reduced, follow = true;
+function sunECI(date) {
+  const d = date.getTime() / 86400000 + 2440587.5 - 2451545.0, L = (280.46 + 0.9856474 * d) * D2R, g = (357.528 + 0.9856003 * d) * D2R;
+  const lam = L + (1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * D2R, ep = 23.439 * D2R;
+  return [Math.cos(lam), Math.cos(ep) * Math.sin(lam), Math.sin(ep) * Math.sin(lam)];
+}
+function init3D() {
+  if (C3 || !COV) return;
+  if (!K.has3D()) { cov2D(); return; }
+  const S = K.scene3(THREE, 'cv3', { fov: 38 });
+  S.scene.add(K.stars(THREE));
+  const E = K.earth(THREE, 1); S.scene.add(E.group);
+  const mk = (geo, mat) => new (mat.isLineBasicMaterial ? THREE.Line : THREE.Mesh)(geo, mat);
+  const orbit = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.75 }));
+  const sat = new THREE.Mesh(new THREE.SphereGeometry(0.02, 16, 12), new THREE.MeshBasicMaterial({ color: 0x58e07f }));
+  const fp = new THREE.Group();
+  const cap = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.24, depthWrite: false }));
+  const ring = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x35d4f2 }));
+  const cone = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false }));
+  const edges = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x35d4f2, transparent: true, opacity: 0.5 }));
+  const nadir = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xcfe3f5, transparent: true, opacity: 0.45 }));
+  fp.add(cap, ring, cone, edges, nadir);
+  const track = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xcfe3f5, transparent: true, opacity: 0.6 }));
+  E.ball.add(track);
+  S.scene.add(orbit, sat, fp);
+  S.controls.minDistance = 1.4; S.controls.maxDistance = 60;
+  S.controls.addEventListener('start', () => { setFollow(false); });
+  C3 = { S, E, orbit, sat, fp, cap, ring, cone, edges, nadir, track, tau: 0, t0: Date.now(), Y: new THREE.Vector3(0, 1, 0), tmp: new THREE.Vector3(), camGoal: new THREE.Vector3() };
+  void mk;
+  S.onFrame(dt => { if (!C3.c) return; if (playing) C3.tau += dt * C3.k; place(dt); });
+  cov3(COV, true);
+}
+function orbitState(c) {
+  // piano e fase iniziali: dal satellite scelto, altrimenti un passaggio sopra l'Italia adesso
+  const now = new Date(C3.t0), i = c.inc * D2R, r = c.r / RE;
+  let raan, u0, rdot = 0, udot = 0;
+  const p = c.r, J = 1.5 * c.n * K.J2 * Math.pow(RE / p, 2);
+  rdot = -J * Math.cos(i); udot = J * (2 - 2.5 * Math.sin(i) * Math.sin(i)) * 1;   // deriva secolare del nodo e dell'argomento di latitudine (J2)
+  if (SAT && Math.abs(SAT.i - c.inc) < 1e-6) {
+    const dtE = (now - SAT.epoch) / 1000;
+    raan = SAT.raan * D2R + rdot * dtE;
+    u0 = (SAT.argp + SAT.M) * D2R + (SAT.n + udot) * dtE;
+  } else {
+    const lat = Math.min(42, Math.max(0, (c.inc <= 90 ? c.inc : 180 - c.inc) * 0.9)) * D2R, lon = 12.5 * D2R;
+    const si = Math.sin(i);
+    u0 = si > 1e-6 ? Math.asin(clamp(Math.sin(lat) / si, -1, 1)) : 0;
+    raan = lon + K.gmst(now) - Math.atan2(Math.cos(i) * Math.sin(u0), Math.cos(u0));
+  }
+  return { i, r, raan, u0, rdot, udot };
+}
+function satDir(o, c, tau) {   // direzione del satellite in coordinate three.js (unità: raggio terrestre)
+  const u = o.u0 + (c.n + o.udot) * tau, W = o.raan + o.rdot * tau;
+  const e = K.pqw2eci(Math.cos(u), Math.sin(u), o.i, W, 0);
+  return [e[0], e[2], -e[1]];
+}
+function cov3(c, force) {
+  if (!c) return;
+  if (!C3) { if (!K.has3D()) cov2D(); return; }
+  const key = [c.h, c.eps, c.inc, SAT ? SAT.norad : 0].join('|');
+  if (!force && key === C3.key) return;
+  const fresh = C3.key && key.split('|').slice(2).join() !== C3.key.split('|').slice(2).join();
+  C3.key = key; C3.c = c;
+  if (!C3.o || fresh || force) { C3.t0 = Date.now(); C3.tau = 0; }
+  C3.o = orbitState(c);
+  const r = c.r / RE, lam = c.lam, THREE_ = THREE;
+  // una orbita in circa 36 s (un giorno per le geostazionarie)
+  C3.k = c.T / 36;
+  $('speed').textContent = t('tempo ×', 'time ×') + fmt(C3.k, 0);
+  const pts = [];
+  for (let k = 0; k < 256; k++) { const u = k / 256 * 2 * Math.PI, e = K.pqw2eci(r * Math.cos(u), r * Math.sin(u), C3.o.i, C3.o.raan, 0); pts.push(new THREE_.Vector3(e[0], e[2], -e[1])); }
+  C3.orbit.geometry.dispose(); C3.orbit.geometry = new THREE_.BufferGeometry().setFromPoints(pts);
+  const Rc = 1.012;
+  C3.cap.geometry.dispose(); C3.cap.geometry = new THREE_.SphereGeometry(Rc, 96, 24, 0, 2 * Math.PI, 0, Math.max(1e-3, lam));
+  const rp = [], cp = [], ep = [];
+  for (let k = 0; k < 128; k++) { const a = k / 128 * 2 * Math.PI; rp.push(new THREE_.Vector3(Math.sin(lam) * Math.cos(a) * (Rc + 0.002), Math.cos(lam) * (Rc + 0.002), Math.sin(lam) * Math.sin(a) * (Rc + 0.002))); }
+  C3.ring.geometry.dispose(); C3.ring.geometry = new THREE_.BufferGeometry().setFromPoints(rp);
+  for (let k = 0; k < 96; k++) {
+    const a = k / 96 * 2 * Math.PI, b = (k + 1) / 96 * 2 * Math.PI;
+    cp.push(0, r, 0, Math.sin(lam) * Math.cos(a), Math.cos(lam), Math.sin(lam) * Math.sin(a), Math.sin(lam) * Math.cos(b), Math.cos(lam), Math.sin(lam) * Math.sin(b));
+  }
+  const cg = new THREE_.BufferGeometry(); cg.setAttribute('position', new THREE_.Float32BufferAttribute(cp, 3));
+  C3.cone.geometry.dispose(); C3.cone.geometry = cg;
+  for (let k = 0; k < 4; k++) { const a = k / 4 * 2 * Math.PI + Math.PI / 4; ep.push(0, r, 0, Math.sin(lam) * Math.cos(a) * Rc, Math.cos(lam) * Rc, Math.sin(lam) * Math.sin(a) * Rc); }
+  const eg = new THREE_.BufferGeometry(); eg.setAttribute('position', new THREE_.Float32BufferAttribute(ep, 3));
+  C3.edges.geometry.dispose(); C3.edges.geometry = eg;
+  C3.nadir.geometry.dispose(); C3.nadir.geometry = new THREE_.BufferGeometry().setFromPoints([new THREE_.Vector3(0, r, 0), new THREE_.Vector3(0, Rc, 0)]);
+  C3.track.geometry.dispose(); C3.track.geometry = new THREE_.BufferGeometry(); C3.track.geometry.setAttribute('position', new THREE_.BufferAttribute(new Float32Array(181 * 3), 3));
+  C3.snap = true;
+  place(0);
+}
+function camGoal(dv, c) {
+  const r = c.r / RE, o = C3.o, u = o.u0 + c.n * C3.tau;
+  // asse fuori dal piano dell'orbita e direzione del moto
+  const hn = K.pqw2eci(0, 0, o.i, o.raan, 0);   // placeholder
+  void hn; void u;
+  const n3 = new THREE.Vector3(Math.sin(o.i) * Math.sin(o.raan), Math.cos(o.i), Math.sin(o.i) * Math.cos(o.raan));
+  const d = new THREE.Vector3(dv[0], dv[1], dv[2]);
+  const far = r < 1.6 ? 3.0 : 1.25 * r + 1.8, side = r < 1.6 ? 0.42 : 0.9;
+  return d.clone().multiplyScalar(1).add(n3.multiplyScalar(side)).normalize().multiplyScalar(far);
+}
+function place(dt) {
+  const c = C3.c, o = C3.o; if (!c) return;
+  const date = new Date(C3.t0 + C3.tau * 1000), th = K.gmst(date);
+  C3.E.ball.rotation.y = th; C3.E.clouds.rotation.y = th + C3.tau * 2e-6;
+  const sn = sunECI(date); const sv = new THREE.Vector3(sn[0], sn[2], -sn[1]); C3.E.setSun(sv); C3.S.light.position.copy(sv).multiplyScalar(5);
+  const dv = satDir(o, c, C3.tau), r = c.r / RE;
+  C3.sat.position.set(dv[0] * r, dv[1] * r, dv[2] * r);
+  C3.tmp.set(dv[0], dv[1], dv[2]);
+  C3.fp.quaternion.setFromUnitVectors(C3.Y, C3.tmp);
+  // traccia a terra dell'ultimo giro (o dell'ultimo giorno), in coordinate della Terra
+  const span = Math.min(c.T, 86400), pos = C3.track.geometry.attributes.position;
+  for (let k = 0; k <= 180; k++) {
+    const tk = C3.tau - span * k / 180, d = satDir(o, c, tk), a = -(th - K.OMEGA_E * span * k / 180);
+    // ruota la direzione inerziale nel riferimento che gira con la Terra (rotazione attorno all'asse y)
+    const x = d[0] * Math.cos(a) + d[2] * Math.sin(a), z = -d[0] * Math.sin(a) + d[2] * Math.cos(a);
+    pos.setXYZ(k, x * 1.004, d[1] * 1.004, z * 1.004);
+  }
+  pos.needsUpdate = true;
+  if (follow) {
+    const g = camGoal(dv, c);
+    if (C3.snap) { C3.S.camera.position.copy(g); C3.snap = false; }
+    else C3.S.camera.position.lerp(g, 1 - Math.exp(-(dt || 0) * 2.5));
+    C3.S.camera.lookAt(0, 0, 0);
+  }
+}
+function setFollow(on) { follow = on; $('follow').setAttribute('aria-pressed', String(on)); if (on && C3) C3.snap = false; }
+function cov2D() {   // senza WebGL: sezione piana della geometria
+  const host = $('cv3'); if (!COV) return;
+  let svg = host.querySelector('svg.cov2d');
+  if (!svg) { svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'cov2d'); host.prepend(svg); host.querySelectorAll('.tl,#speed').forEach(e => { e.hidden = true; }); }
+  svg.setAttribute('viewBox', '0 0 460 300'); svg.innerHTML = geomSVG(COV.h, COV.eps, false);
+}
+function geomSVG(h, eps, labels) {
+  // sezione piana: satellite in alto, Terra sotto; la scala tiene l'impronta dentro il riquadro 460 × 300
+  const g = footprint(h, eps), q = g.r / RE, sl = Math.sin(g.lam), cl = Math.cos(g.lam);
+  const R = Math.min(174 / (q - cl), 196 / sl), ex = 230, sy = 26, ey = sy + q * R, sx = ex;
+  const lx = ex + R * sl, ly = ey - R * cl, lx2 = ex - R * sl, f = v => v.toFixed(1);
+  const lim = Math.acos(1 / q), bx = ex - R * Math.sin(lim), by = ey - R * Math.cos(lim);   // bordo visibile della Terra
+  const unit = (x, y) => { const n = Math.hypot(x, y) || 1; return [x / n, y / n]; };
+  let o = '<circle cx="' + f(ex) + '" cy="' + f(ey) + '" r="' + f(R) + '" fill="#10141a" stroke="#414b57"/>';
+  o += '<path d="M' + f(lx2) + ' ' + f(ly) + ' A' + f(R) + ' ' + f(R) + ' 0 0 1 ' + f(lx) + ' ' + f(ly) + '" fill="none" stroke="#35d4f2" stroke-width="3"/>';
+  o += '<path d="M' + f(lx2) + ' ' + f(ly) + ' L' + f(sx) + ' ' + sy + ' L' + f(lx) + ' ' + f(ly) + '" fill="rgba(53,212,242,.08)" stroke="#35d4f2" stroke-width="1.2"/>';
+  o += '<line x1="' + f(sx) + '" y1="' + sy + '" x2="' + f(bx) + '" y2="' + f(by) + '" stroke="#a995ff" stroke-dasharray="4 3"/>';
+  o += '<line x1="' + f(ex) + '" y1="' + f(ey) + '" x2="' + f(sx) + '" y2="' + sy + '" stroke="#cfe3f5" stroke-dasharray="3 3" stroke-opacity=".55"/>';
+  o += '<line x1="' + f(ex) + '" y1="' + f(ey) + '" x2="' + f(lx) + '" y2="' + f(ly) + '" stroke="#cfe3f5" stroke-dasharray="3 3" stroke-opacity=".55"/>';
+  o += '<line x1="' + f(lx - 40 * cl) + '" y1="' + f(ly - 40 * sl) + '" x2="' + f(lx + 26 * cl) + '" y2="' + f(ly + 26 * sl) + '" stroke="#85919d"/>';
+  o += '<circle cx="' + f(sx) + '" cy="' + sy + '" r="5" fill="#58e07f"/>';
+  if (!labels) return o;
+  const los = unit(lx - sx, ly - sy), lim2 = unit(bx - sx, by - sy), bis = unit(los[0], los[1] + 1);
+  const hz = [-cl, -sl], up = unit(-los[0], -los[1]), be = unit(hz[0] + up[0], hz[1] + up[1]);
+  const T = (x, y, s, c, a) => '<text x="' + f(x) + '" y="' + f(y) + '"' + (a ? ' text-anchor="' + a + '"' : '') + (c ? ' style="fill:' + c + '"' : '') + '>' + s + '</text>';
+  const yl = 288, tl = (ey - yl) / (R * cl);
+  o += T(sx + 11, sy + 5, t('satellite', 'satellite'));
+  o += T(sx + 46 * bis[0] + 2, sy + 46 * bis[1] + 4, 'η', '#35d4f2');
+  o += T(sx + 78 * lim2[0] - 6, sy + 78 * lim2[1], 'ρ', '#a995ff', 'end');
+  o += T(lx + 30 * be[0] - 2, ly + 30 * be[1] + 4, 'ε', '#35d4f2', 'end');
+  o += T((sx + lx) / 2 + 9, (sy + ly) / 2, 'D');
+  o += T(sx - 9, (sy + ey - R) / 2 + 4, 'h', null, 'end');
+  if (tl > 0 && tl < 1) o += T(ex + tl * R * sl / 2, yl, 'λ', '#cfe3f5', 'middle');
+  o += T(ex, ey - R + 22, t('impronta', 'footprint'), '#35d4f2', 'middle');
+  o += T(456, ly + 42, t('orizzonte locale', 'local horizon'), '#85919d', 'end');
+  return o;
+}
+$('play').onclick = () => { playing = !playing; $('play').setAttribute('aria-pressed', String(playing)); $('play').textContent = playing ? t('Pausa', 'Pause') : t('Riprendi', 'Play'); };
+$('follow').onclick = () => setFollow(!follow);
+if (!playing) { $('play').setAttribute('aria-pressed', 'false'); $('play').textContent = t('Riprendi', 'Play'); }
+$('figG').innerHTML = geomSVG(2500, 25, true);
+
+/* ---------- navigazione: trilaterazione sul piano ---------- */
+const NS = C0 * 1e-9;                     // metri per nanosecondo
+const TX0 = [[-640, 360], [660, 300], [60, -580], [-560, -420]];
+const RX0 = [70, 30];
+let TXs = TX0.map(p => p.slice()), RXp = RX0.slice(), lastEst = null;
+function lsq(S, rho, withB, x0) {
+  // Gauss–Newton su x, y (e c·Δt se withB) con riduzione del passo se il residuo cresce
+  const n = withB ? 3 : 2;
+  let u = x0.slice(0, n); if (withB && u.length < 3) u.push(0);
+  const cost = v => S.reduce((a, s, k) => { const r = rho[k] - Math.hypot(v[0] - s[0], v[1] - s[1]) - (withB ? v[2] : 0); return a + r * r; }, 0);
+  let J = cost(u), it = 0;
+  for (; it < 60; it++) {
+    const A = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], b = [0, 0, 0];
+    S.forEach((s, k) => {
+      const dx = u[0] - s[0], dy = u[1] - s[1], dd = Math.hypot(dx, dy) || 1e-9;
+      const hrow = [dx / dd, dy / dd, 1], res = rho[k] - dd - (withB ? u[2] : 0);
+      for (let a = 0; a < n; a++) { b[a] += hrow[a] * res; for (let c = 0; c < n; c++) A[a][c] += hrow[a] * hrow[c]; }
+    });
+    const dlt = solveN(A, b, n); if (!dlt) break;
+    let step = 1, un, Jn;
+    for (let q = 0; q < 30; q++) { un = u.map((v, a) => v + step * dlt[a]); Jn = cost(un); if (Jn <= J) break; step /= 2; }
+    const moved = Math.hypot(...dlt.map(x => x * step));
+    u = un; J = Jn;
+    if (moved < 1e-10) { it++; break; }
+  }
+  // DOP dalla matrice (HᵀH)⁻¹ nella soluzione
+  const A = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  S.forEach(s => { const dx = u[0] - s[0], dy = u[1] - s[1], dd = Math.hypot(dx, dy) || 1e-9, hrow = [dx / dd, dy / dd, 1]; for (let a = 0; a < n; a++) for (let c = 0; c < n; c++) A[a][c] += hrow[a] * hrow[c]; });
+  const Q = invN(A, n);
+  return { u, it, rms: Math.sqrt(J / S.length), hdop: Q ? Math.sqrt(Q[0][0] + Q[1][1]) : NaN, tdop: Q && withB ? Math.sqrt(Q[2][2]) : null };
+}
+function solveN(A, b, n) {
+  const M = A.slice(0, n).map((r, i) => r.slice(0, n).concat([b[i]]));
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    if (Math.abs(M[p][c]) < 1e-14) return null;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c] / M[c][c]; for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+function invN(A, n) { const out = []; for (let k = 0; k < n; k++) { const e = [0, 0, 0]; e[k] = 1; const col = solveN(A, e, n); if (!col) return null; out.push(col); } return out[0].map((_, i) => out.map(c => c[i])); }
+function solveFix(S, rho, withB, prev) {
+  const cx = S.reduce((a, s) => a + s[0], 0) / S.length, cy = S.reduce((a, s) => a + s[1], 0) / S.length;
+  const starts = [[cx, cy, 0]];
+  if (prev) starts.push(prev.slice());
+  for (let k = 0; k < 8; k++) { const a = k / 8 * 2 * Math.PI; starts.push([cx + 600 * Math.cos(a), cy + 600 * Math.sin(a), 0]); }
+  let best = null;
+  starts.forEach(s0 => { const r = lsq(S, rho, withB, s0); if (!best || r.rms < best.rms - 1e-9) best = r; });
+  return best;
+}
+const TV = { built: false };
+function buildTV() {
+  const host = $('tv');
+  host.innerHTML = '<svg role="img" aria-label="' + K.esc(t('Trilaterazione: trasmettitori, cerchi delle distanze e ricevitore', 'Trilateration: transmitters, range circles and receiver')) + '"><g id="tvG"></g><g id="tvC"></g><g id="tvK"></g><g id="tvE"></g><g id="tvH"></g></svg>' +
+    '<div class="cap"><span style="color:var(--cy)"><i></i><span>' + t('distanze misurate', 'measured ranges') + '</span></span><span style="color:var(--gr)" id="tvLk"><i></i><span>' + t('distanze corrette', 'corrected ranges') + '</span></span><span style="color:var(--gr)"><i class="dot"></i><span>' + t('posizione stimata', 'estimated position') + '</span></span><span style="color:var(--ic)"><i class="dot"></i><span>' + t('ricevitore', 'receiver') + '</span></span></div>';
+  const svgNS = 'http://www.w3.org/2000/svg', mk = (tag, at, par) => { const e = document.createElementNS(svgNS, tag); Object.entries(at || {}).forEach(([k, v]) => e.setAttribute(k, v)); if (par) par.append(e); return e; };
+  TV.svg = host.querySelector('svg'); TV.mk = mk;
+  TV.circ = TXs.map(() => mk('circle', { fill: 'none', stroke: '#35d4f2', 'stroke-width': 1.6, 'stroke-opacity': 0.85 }, $('tvC')));
+  TV.corr = TXs.map(() => mk('circle', { fill: 'none', stroke: '#58e07f', 'stroke-width': 1.2, 'stroke-dasharray': '5 4' }, $('tvK')));
+  TV.errL = mk('line', { stroke: '#cfe3f5', 'stroke-dasharray': '3 3', 'stroke-opacity': 0.7 }, $('tvE'));
+  TV.est = mk('path', { stroke: '#58e07f', 'stroke-width': 2.2, fill: 'none' }, $('tvE'));
+  TV.estT = mk('text', { style: 'fill:#58e07f' }, $('tvE'));
+  TV.hs = [];
+  const handle = (k, isRx) => {
+    const g = mk('g', { class: 'h', tabindex: 0, role: 'button', 'aria-label': isRx ? t('Ricevitore: trascina o usa le frecce', 'Receiver: drag or use the arrow keys') : t('Trasmettitore ', 'Transmitter ') + (k + 1) + t(': trascina o usa le frecce', ': drag or use the arrow keys') }, $('tvH'));
+    mk('circle', { r: 20, fill: 'transparent' }, g);
+    if (isRx) { mk('circle', { class: 'ring', r: 9, fill: 'none', stroke: '#cfe3f5', 'stroke-width': 1.5 }, g); mk('circle', { r: 3.5, fill: '#cfe3f5' }, g); }
+    else { mk('rect', { class: 'ring', x: -7, y: -7, width: 14, height: 14, rx: 2, fill: '#10141a', stroke: '#cfe3f5', 'stroke-width': 1.5, transform: 'rotate(45)' }, g); }
+    const tx = mk('text', { x: 14, y: -10 }, g); tx.textContent = isRx ? t('ricevitore', 'receiver') : 'S' + (k + 1);
+    g._k = isRx ? -1 : k;
+    const move = (wx, wy) => { const p = isRx ? RXp : TXs[k]; p[0] = clamp(wx, TV.x0 + 20 / TV.s, TV.x1 - 20 / TV.s); p[1] = clamp(wy, TV.y0 + 20 / TV.s, TV.y1 - 20 / TV.s); queueTri(); };
+    g.addEventListener('pointerdown', ev => { ev.preventDefault(); g.setPointerCapture(ev.pointerId); g.classList.add('on'); g._drag = true; g.focus({ preventScroll: true }); });
+    g.addEventListener('pointermove', ev => { if (!g._drag) return; const w = toWorld(ev.clientX, ev.clientY); move(w[0], w[1]); });
+    const end = () => { if (g._drag) { g._drag = false; g.classList.remove('on'); saveAll(); } };
+    g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end);
+    g.addEventListener('keydown', ev => { const st = ev.shiftKey ? 50 : 10, p = isRx ? RXp : TXs[k]; const m = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, st], ArrowDown: [0, -st] }[ev.key]; if (!m) return; ev.preventDefault(); move(p[0] + m[0], p[1] + m[1]); saveAll(); });
+    TV.hs.push(g); return g;
+  };
+  TV.txH = TXs.map((_, k) => handle(k, false));
+  TV.rxH = handle(0, true);
+  TV.built = true;
+  if (window.ResizeObserver) new ResizeObserver(() => { layoutTV(); drawTri(); }).observe(host);
+  layoutTV();
+}
+function layoutTV() {
+  const host = $('tv'), W = host.clientWidth, H = host.clientHeight; if (!W || !H) return;
+  TV.W = W; TV.H = H;
+  const half = 960, s = Math.min(W, H) / (2 * half);
+  TV.s = s; TV.x0 = -W / 2 / s; TV.x1 = W / 2 / s; TV.y0 = -H / 2 / s; TV.y1 = H / 2 / s;
+  TV.svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  // reticolo ogni 100 m e scala
+  let g = '';
+  for (let x = Math.ceil(TV.x0 / 100) * 100; x <= TV.x1; x += 100) g += '<line x1="' + sx(x) + '" x2="' + sx(x) + '" y1="0" y2="' + H + '" stroke="' + (x === 0 ? '#252b33' : '#13171d') + '"/>';
+  for (let y = Math.ceil(TV.y0 / 100) * 100; y <= TV.y1; y += 100) g += '<line y1="' + sy(y) + '" y2="' + sy(y) + '" x1="0" x2="' + W + '" stroke="' + (y === 0 ? '#252b33' : '#13171d') + '"/>';
+  const L = 200 * s, bx = W - 16 - L, by = 22;
+  g += '<line x1="' + bx + '" x2="' + (bx + L) + '" y1="' + by + '" y2="' + by + '" stroke="#85919d"/><line x1="' + bx + '" x2="' + bx + '" y1="' + (by - 4) + '" y2="' + (by + 4) + '" stroke="#85919d"/><line x1="' + (bx + L) + '" x2="' + (bx + L) + '" y1="' + (by - 4) + '" y2="' + (by + 4) + '" stroke="#85919d"/><text x="' + (bx + L / 2) + '" y="' + (by - 8) + '" text-anchor="middle" style="fill:#85919d">200 m</text>';
+  $('tvG').innerHTML = g;
+}
+const sx = x => TV.W / 2 + x * TV.s, sy = y => TV.H / 2 - y * TV.s;
+function toWorld(cx, cy) { const r = TV.svg.getBoundingClientRect(); return [(cx - r.left - TV.W / 2) / TV.s, (TV.H / 2 - (cy - r.top)) / TV.s]; }
+let triQ = 0;
+function queueTri() { if (triQ) return; triQ = requestAnimationFrame(() => { triQ = 0; runTri(); }); }
+let TRI = null;
+function runTri() {
+  const n = $('q4').checked ? 4 : 3, withB = n === 4, dt = +$('dt').value, b = dt * NS;
+  $('dtv').textContent = 'Δt = ' + sg(dt, 0).replace('+0', '0') + ' ns · ' + sg(b, 1) + ' m';
+  const S = TXs.slice(0, n), rho = S.map(s => Math.hypot(RXp[0] - s[0], RXp[1] - s[1]) + b);
+  const sol = solveFix(S, rho, withB, lastEst && lastEst.length === (withB ? 3 : 2) ? lastEst : null);
+  lastEst = sol.u.slice();
+  TRI = { n, withB, dt, b, S, rho, sol, err: Math.hypot(sol.u[0] - RXp[0], sol.u[1] - RXp[1]) };
+  drawTri(); triOut();
+}
+function drawTri() {
+  if (!TV.built || !TRI || !TV.W) return;
+  const { n, withB, rho, sol } = TRI;
+  TXs.forEach((p, k) => {
+    const on = k < n, c = TV.circ[k], q = TV.corr[k];
+    c.style.display = on && rho[k] > 0 ? '' : 'none'; q.style.display = on && withB ? '' : 'none';
+    TV.txH[k].style.display = on ? '' : 'none';
+    TV.txH[k].setAttribute('transform', 'translate(' + sx(p[0]).toFixed(1) + ' ' + sy(p[1]).toFixed(1) + ')');
+    if (on) { c.setAttribute('cx', sx(p[0])); c.setAttribute('cy', sy(p[1])); c.setAttribute('r', Math.max(0, rho[k] * TV.s)); }
+    if (on && withB) { q.setAttribute('cx', sx(p[0])); q.setAttribute('cy', sy(p[1])); q.setAttribute('r', Math.max(0, (rho[k] - sol.u[2]) * TV.s)); }
+  });
+  TV.rxH.setAttribute('transform', 'translate(' + sx(RXp[0]).toFixed(1) + ' ' + sy(RXp[1]).toFixed(1) + ')');
+  const ex = sx(sol.u[0]), ey = sy(sol.u[1]), z = 7;
+  TV.est.setAttribute('d', 'M' + (ex - z) + ' ' + (ey - z) + 'L' + (ex + z) + ' ' + (ey + z) + 'M' + (ex - z) + ' ' + (ey + z) + 'L' + (ex + z) + ' ' + (ey - z));
+  const far = TRI.err * TV.s > 14;
+  TV.errL.setAttribute('x1', sx(RXp[0])); TV.errL.setAttribute('y1', sy(RXp[1])); TV.errL.setAttribute('x2', ex); TV.errL.setAttribute('y2', ey); TV.errL.style.display = far ? '' : 'none';
+  TV.estT.setAttribute('x', ex + 10); TV.estT.setAttribute('y', ey + 18); TV.estT.textContent = far ? t('stima', 'estimate') + ' · ' + fmt(TRI.err, 0) + ' m' : '';
+  $('tvLk').style.display = withB ? '' : 'none';
+}
+function triOut() {
+  const { n, withB, dt, b, sol, err } = TRI;
+  const rows = [
+    ['#', t('Trilaterazione', 'Trilateration')],
+    [t('Errore dell\'orologio', 'Clock error'), sg(dt, 0).replace('+0', '0'), 'ns', t('allunga ogni distanza di ', 'lengthens every distance by ') + sg(b, 1) + ' m'],
+    [t('Misure e incognite', 'Measurements and unknowns'), n + ' · ' + (withB ? 'x, y, c·Δt' : 'x, y'), '', t('una misura in più serve da controllo', 'one extra measurement acts as a check')],
+    [t('Errore della posizione stimata', 'Error of the estimated position'), err < 0.01 ? '< 0,01'.replace(',', K.en ? '.' : ',') : fmt(err, err < 10 ? 2 : 0), 'm', null, 'key' + (err > 1 ? ' warn' : '')],
+    withB ? [t('Orologio stimato', 'Estimated clock'), fmt(sol.u[2] / NS, 1), 'ns', t('vero: ', 'true: ') + fmt(dt, 0) + ' ns'] : null,
+    [t('Scarto delle misure (rms)', 'Measurement residual (rms)'), sol.rms < 0.005 ? '0' : fmt(sol.rms, 1), 'm', t('quanto i cerchi mancano il punto stimato', 'how far the circles miss the estimated point')],
+    [t('Geometria (HDOP)', 'Geometry (HDOP)'), Number.isFinite(sol.hdop) ? fmt(sol.hdop, 2) : '—', '', t('più i trasmettitori ti circondano, più è basso', 'the more the transmitters surround you, the lower it is')],
+    [t('Passi di Gauss–Newton', 'Gauss–Newton steps'), String(sol.it), ''],
+  ];
+  K.rows('outT', rows);
+  let m;
+  if (!withB && Math.abs(dt) < 0.5) m = { s: t('Con l\'orologio giusto i tre cerchi si incontrano nel ricevitore. Sposta l\'errore dell\'orologio.', 'With the right clock the three circles meet at the receiver. Move the clock error.'), k: 'info' };
+  else if (!withB) m = { s: t('L\'orologio sbaglia di ', 'The clock is off by ') + fmt(Math.abs(dt), 0) + ' ns: ' + t('tutte le distanze ', 'all the distances ') + (dt > 0 ? t('crescono', 'grow') : t('calano', 'shrink')) + t(' di ', ' by ') + fmt(Math.abs(b), 0) + ' m ' + t('e i cerchi non si incontrano più. Il punto più vicino a tutti è a ', 'and the circles no longer meet. The point closest to all of them is ') + fmt(err, 0) + t(' m da quello vero. Aggiungi il quarto satellite.', ' m from the true one. Add the fourth satellite.'), k: 'info' };
+  else m = { s: t('Con quattro misure il ricevitore stima anche l\'orologio: accorcia tutti i cerchi della stessa quantità finché si incontrano in un punto (tratteggio verde). Ritrova Δt = ', 'With four measurements the receiver also estimates the clock: it shortens all the circles by the same amount until they meet at one point (green dashes). It finds Δt = ') + fmt(sol.u[2] / NS, 1) + ' ns ' + t('e la posizione a meno di ', 'and the position to within ') + (err < 0.001 ? '1 mm' : fmt(err, 3) + ' m') + '.', k: 'info' };
+  say('msgT', [m]);
+}
+
+/* ---------- orologi in orbita e Doppler ---------- */
+function runNav2() {
+  K.clear('fn2');
+  const M = [];
+  const rr = num('rr'), rh = num('rh'), f = num('nf'), te = num('nte');
+  ['rr', 'rh', 'nf', 'nte'].forEach(id => { if (Number.isNaN(num(id))) K.bad(id); });
+  if ([rr, rh, f, te].some(Number.isNaN)) { say('msgN', [t('Un valore non è un numero.', 'A value is not a number.')]); return finishNav2(null); }
+  let r = null;
+  if (rr != null) { r = rr; K.der('rh', rr - RE, 3); if (rh != null && Math.abs(rh - (rr - RE)) > 0.5) { K.bad('rh'); M.push(t('Raggio e quota non tornano: con r = ', 'Radius and altitude do not agree: with r = ') + fmt(rr, 1) + ' km ' + t('la quota è ', 'the altitude is ') + fmt(rr - RE, 1) + ' km.'); } }
+  else if (rh != null) { r = RE + rh; K.der('rr', r, 3); }
+  const sel = $('rpre'); const match = [...sel.options].find(o => o.value && Math.abs(+o.value - (rr != null ? rr : NaN)) < 1e-6);
+  sel.value = match ? match.value : '';
+  if (r == null) { say('msgN', [{ s: t('Dai il raggio o la quota dell\'orbita.', 'Give the orbit radius or altitude.'), k: 'info' }]); return finishNav2(null); }
+  if (!(r > RE)) { K.bad(rr != null ? 'rr' : 'rh'); M.push(t('L\'orbita deve stare sopra la superficie: raggio maggiore di ', 'The orbit must be above the surface: radius greater than ') + fmt(RE, 1) + ' km.'); }
+  if (f != null && !(f > 0)) { K.bad('nf'); M.push(t('La frequenza deve essere maggiore di zero.', 'The frequency must be greater than zero.')); }
+  let fr = f; if (fr == null) { fr = 1575.42; K.der('nf', fr, 2); }
+  let tE = te; if (tE == null) { tE = 1; K.der('nte', 1, 0); }
+  if (M.length) { say('msgN', M); return finishNav2(null); }
+  say('msgN', []);
+  return finishNav2(clocks(r * 1e3, fr * 1e6, tE));
+}
+function clocks(rm, fHz, te) {
+  const v2 = GM / rm, v = Math.sqrt(v2);
+  const grav = GM / (C0 * C0) * (1 / REm - 1 / rm) * 86400 * 1e6, vel = -v2 / (2 * C0 * C0) * 86400 * 1e6, gnd = (W0 - GM / REm) / (C0 * C0) * 86400 * 1e6;
+  const net = grav + vel + gnd, frac = net / 86400e6;
+  const rk = rm / 1e3;
+  return { rm, v, grav, vel, gnd, net, frac, err: C0 * net * 1e-6, fHz, te, T: 2 * Math.PI * Math.sqrt(rm * rm * rm / GM),
+    dopMax: fHz * v / C0, dopGnd: fHz * v * REm / (C0 * rm), dopRate: fHz * v2 * REm / (C0 * rm * (rm - REm)), rk };
+}
+function finishNav2(o) {
+  saveAll();
+  if (!o) { K.rows('outN', []); $('chN').innerHTML = ''; $('chN').className = ''; return; }
+  const osc = 10.23e6 * (1 - o.frac);
+  const oscS = (() => { const s = (osc / 1e6).toFixed(11); const [a, b] = s.split('.'); return a + (K.en ? '.' : ',') + b.replace(/(\d{3})(?=\d)/g, '$1 '); })();
+  const T = minutes(o.T);
+  const hz = x => Math.abs(x) >= 1e3 ? [fmt(x / 1e3, 2), 'kHz'] : [fmt(x, Math.abs(x) < 10 ? 2 : 0), 'Hz'];
+  const d1 = hz(o.dopMax), d2 = hz(o.dopGnd);
+  K.rows('outN', [
+    ['#', t('Orologio di bordo rispetto a uno a terra', 'Clock on board compared with one on the ground')],
+    [t('Velocità orbitale', 'Orbital speed'), fmt(o.v / 1e3, 3), 'km/s', t('periodo ', 'period ') + T.join(' ')],
+    [t('Gravità più debole', 'Weaker gravity'), sg(o.grav, 2), 'µs/' + t('giorno', 'day'), t('l\'orologio in alto va più veloce', 'the clock higher up runs faster')],
+    [t('Velocità del satellite', 'Satellite speed'), sg(o.vel, 2), 'µs/' + t('giorno', 'day'), t('l\'orologio che corre va più piano', 'the moving clock runs slower')],
+    [t('Orologio a terra (rotazione e schiacciamento)', 'Ground clock (rotation and flattening)'), sg(o.gnd, 2), 'µs/' + t('giorno', 'day'), 'W₀ − GM/R⊕'],
+    [t('In tutto', 'In all'), sg(o.net, 2), 'µs/' + t('giorno', 'day'), o.net >= 0 ? t('l\'orologio di bordo va avanti', 'the clock on board runs ahead') : t('l\'orologio di bordo resta indietro', 'the clock on board falls behind'), 'key'],
+    [t('Differenza di frequenza Δf/f', 'Frequency offset Δf/f'), sig(o.frac, 4), '', t('un oscillatore da 10,23 MHz va regolato a ', 'a 10.23 MHz oscillator is tuned to ') + oscS + ' MHz'],
+    [t('Errore di posizione in un giorno, senza correzione', 'Position error in one day, uncorrected'), fmt(Math.abs(o.err) / 1e3, 2), 'km', 'c · ' + fmt(Math.abs(o.net), 2) + ' µs'],
+    ['#', t('Tempo, distanza e Doppler', 'Time, distance and Doppler')],
+    [t('Distanza per un errore di tempo di ', 'Distance for a timing error of ') + fmt(o.te, o.te % 1 ? 1 : 0) + ' ns', fmt(C0 * o.te * 1e-9, C0 * o.te * 1e-9 < 10 ? 3 : 1), 'm', t('1 ns = 29,98 cm', '1 ns = 29.98 cm')],
+    [t('Doppler con tutta la velocità orbitale', 'Doppler with the full orbital speed'), '± ' + d1[0], d1[1], t('limite superiore, f v / c, a ', 'upper bound, f v / c, at ') + sig(o.fHz / 1e6, 6) + ' MHz'],
+    [t('Doppler massimo visto da terra', 'Largest Doppler seen from the ground'), '± ' + d2[0], d2[1], t('all\'orizzonte: f v R⊕ / (c r)', 'at the horizon: f v R⊕ / (c r)')],
+    [t('Variazione più rapida', 'Fastest change'), fmt(o.dopRate, o.dopRate < 10 ? 2 : 0), 'Hz/s', t('quando passa sopra la testa', 'when it passes overhead')],
+  ]);
+  const xs = [], yn = [], yg = [], yv = [];
+  const hMax = Math.max(40000, Math.ceil((o.rk - RE) * 1.2 / 5000) * 5000);
+  for (let k = 0; k <= 240; k++) { const h = 200 + (hMax - 200) * k / 240, c = clocks((RE + h) * 1e3, o.fHz, 1); xs.push(h); yn.push(c.net); yg.push(c.grav); yv.push(c.vel); }
+  K.chart('chN', { title: t('Anticipo dell\'orologio e quota', 'Clock gain and altitude'), x: xs, series: [{ name: t('in tutto', 'in all'), y: yn, color: K.C.cy }, { name: t('gravità', 'gravity'), y: yg, color: K.C.vi, dash: true }, { name: t('velocità', 'speed'), y: yv, color: K.C.ic, dash: true }], xLabel: t('quota, km', 'altitude, km'), yLabel: 'µs/' + t('giorno', 'day'), unit: 'µs/' + t('giorno', 'day'), xName: 'h', xFmt: v => fmt(v, 0), yFmt: v => fmt(v, 1), marks: [{ x: o.rk - RE, label: t('la tua', 'yours'), color: K.C.gr }] });
+}
+
+/* ---------- prova interna (?test) ---------- */
+function selfTest() {
+  const out = [], chk = (name, val, ref, tol, unit) => { const ok = Math.abs(val - ref) <= tol; out.push(ok); console.info('selfTest', ok ? 'ok ' : 'NO ', name + ': ' + val.toFixed(4) + ' ' + unit + ' (atteso ' + ref + ' ± ' + tol + ')'); };
+  // 1. perdita nello spazio libero, 2,2 GHz su 1000 km: 20 log10(4π d f / c)
+  chk('perdita nello spazio libero 2,2 GHz · 1000 km', fspl(1000, 2.2e9), 159.30, 0.01, 'dB');
+  // 2. parabola da 1 m a 8,4 GHz con η = 0,55; controllo con la forma di SMAD G = −159,59 + 20 log D + 20 log f + 10 log η
+  const g1 = dishG(1, 8.4e9, 0.55);
+  chk('parabola 1 m · 8,4 GHz · η 0,55', g1, -159.59 + 20 * Math.log10(8.4e9) + 10 * Math.log10(0.55), 0.01, 'dBi');
+  console.info('selfTest', 'nota', 'il guadagno è ' + g1.toFixed(2) + ' dBi; 36,8 dBi richiederebbe η = ' + (Math.pow(10, 3.68) / Math.pow(Math.PI * 8.4e9 / C0, 2)).toFixed(3));
+  // 3. orologi GPS (Ashby 2003): +45,7 gravità, −7,2 velocità, +38,6 µs/giorno in tutto
+  const g = clocks(26561.75e3, 1575.42e6, 1);
+  chk('GPS gravità', g.grav, 45.7, 0.06, 'µs/giorno'); chk('GPS velocità', g.vel, -7.2, 0.05, 'µs/giorno'); chk('GPS in tutto', g.net, 38.6, 0.05, 'µs/giorno');
+  chk('GPS Δf/f (Ashby: 4,4647e-10)', g.frac * 1e10, 4.4647, 0.002, 'e-10');
+  // 4. impronta a 700 km con ε = 10°: angoli di SMAD e controllo indipendente con il teorema del coseno
+  const fp = footprint(700, 10), Dl = slant(700, 10), lamCos = Math.asin(Dl * Math.cos(10 * D2R) / (RE + 700)) / D2R;
+  chk('λ a 700 km, ε 10° (SMAD vs teorema del coseno)', fp.lam / D2R, lamCos, 1e-9, '°');
+  console.info('selfTest', 'nota', '700 km, ε 10°: ρ = ' + (fp.rho / D2R).toFixed(2) + '°, η = ' + (fp.eta / D2R).toFixed(2) + '°, λ = ' + (fp.lam / D2R).toFixed(2) + '°, D = ' + fp.D.toFixed(1) + ' km, raggio ' + (RE * fp.lam).toFixed(0) + ' km; λ = 19,0° si ha a ' + '800 km: ' + (footprint(800, 10).lam / D2R).toFixed(2) + '°');
+  chk('ρ a 1000 km (SMAD: 59,8°)', footprint(1000, 0).rho / D2R, 59.8, 0.05, '°');
+  // 5. Gauss–Newton: posizione e orologio noti, quattro trasmettitori
+  const S = [[-640, 360], [660, 300], [60, -580], [-560, -420]], x = [123.4, -56.7], bias = 250 * NS;
+  const rho = S.map(s => Math.hypot(x[0] - s[0], x[1] - s[1]) + bias), sol = solveFix(S, rho, true, null);
+  const e = Math.hypot(sol.u[0] - x[0], sol.u[1] - x[1]), eb = Math.abs(sol.u[2] - bias);
+  chk('Gauss–Newton: errore di posizione', e * 1e3, 0, 1, 'mm'); chk('Gauss–Newton: errore su c·Δt', eb * 1e3, 0, 1, 'mm');
+  console.info('selfTest', out.every(Boolean) ? 'tutto ok' : 'ATTENZIONE: ' + out.filter(v => !v).length + ' controlli falliti', out.length + ' controlli');
+}
+
+/* ---------- esempi, memoria, avvio ---------- */
+const EXL = [
+  { n: ['Piccolo satellite a 550 km in banda S, stazione con parabola da 3,7 m.', 'Small satellite at 550 km in S band, ground station with a 3.7 m dish.'],
+    v: { fD: '2200', fU: '2050', h: '550', el: '10', d: '', sP: '2', sPd: '', sLl: '1', sG: '6', sD: '', sE: '', sT: '600', sGT: '', gP: '20', gPd: '', gLl: '1', gG: '', gD: '3.7', gE: '55', gT: '200', gGT: '', Lp: '0.5', Lpol: '0.3', La: '0.3', RbD: '10000', RbU: '64', EbD: '', EbU: '', Li: '2', Mt: '3' }, mD: 'rs', mU: 'bpsk' },
+  { n: ['Sonda a 170 UA in banda X, antenna di bordo da 3,7 m e 20 W, ricevuta da un\'antenna da 70 m: valori indicativi, simili a Voyager 1.', 'Probe at 170 AU in X band, 3.7 m antenna on board and 20 W, received by a 70 m antenna: indicative values, close to Voyager 1.'],
+    v: { fD: '8420', fU: '2115', h: '', el: '', d: '25 430 000 000', sP: '20', sPd: '', sLl: '0.5', sG: '', sD: '3.66', sE: '60', sT: '1000', sGT: '', gP: '20000', gPd: '', gLl: '0.5', gG: '', gD: '70', gE: '70', gT: '20', gGT: '', Lp: '0.3', Lpol: '0.1', La: '0.2', RbD: '0.16', RbU: '0.016', EbD: '', EbU: '', Li: '2', Mt: '3' }, mD: 'rs', mU: 'bpsk' },
+  { n: ['CubeSat a 500 km in UHF con un dipolo da 1 W; a terra una Yagi da 14 dBi.', 'CubeSat at 500 km in UHF with a 1 W dipole; on the ground a 14 dBi Yagi.'],
+    v: { fD: '437', fU: '145.9', h: '500', el: '10', d: '', sP: '1', sPd: '', sLl: '0.5', sG: '0', sD: '', sE: '', sT: '1000', sGT: '', gP: '50', gPd: '', gLl: '1.5', gG: '14', gD: '', gE: '', gT: '1000', gGT: '', Lp: '1', Lpol: '3', La: '0.5', RbD: '9.6', RbU: '1.2', EbD: '', EbU: '', Li: '2', Mt: '3' }, mD: 'bpsk', mU: 'bpsk' },
+];
+const EXC = [
+  { n: ['Satellite per l\'osservazione della Terra in orbita eliosincrona.', 'Earth-observation satellite in a Sun-synchronous orbit.'], v: { ch: '700', ce: '10', ci: '98.2' } },
+  { n: ['Satellite GPS: orbita media a 20 200 km.', 'GPS satellite: medium orbit at 20 200 km.'], v: { ch: '20183.6', ce: '5', ci: '55' } },
+  { n: ['Satellite geostazionario: resta sopra lo stesso punto.', 'Geostationary satellite: it stays over the same point.'], v: { ch: '35786', ce: '5', ci: '0' } },
+];
+let exLk = -1, exCk = -1;
+const dec = s => K.en ? s : s.replace(/(\d)\.(\d)/g, '$1,$2');
+function loadExL(k) { const E = EXL[k]; const v = {}; Object.entries(E.v).forEach(([a, b]) => { v[a] = dec(b); }); K.fill(v); $('modD').value = E.mD; $('modU').value = E.mU; $('exLn').textContent = t('Esempio: ', 'Example: ') + (K.en ? E.n[1] : E.n[0]); }
+function loadExC(k) { const E = EXC[k]; const v = {}; Object.entries(E.v).forEach(([a, b]) => { v[a] = dec(b); }); K.fill(v); SAT = null; $('exCn').textContent = t('Esempio: ', 'Example: ') + (K.en ? E.n[1] : E.n[0]); }
+function loadExN() { K.fill({ rr: dec('26561.75'), rh: '', nf: dec('1575.42'), nte: '10' }); $('rpre').value = '26561.75'; }
+
+const IDS = ['fD', 'fU', 'h', 'el', 'd', 'sP', 'sPd', 'sLl', 'sG', 'sD', 'sE', 'sT', 'sGT', 'gP', 'gPd', 'gLl', 'gG', 'gD', 'gE', 'gT', 'gGT', 'Lp', 'Lpol', 'La', 'RbD', 'RbU', 'modD', 'modU', 'EbD', 'EbU', 'Li', 'Mt', 'ch', 'ce', 'ci', 'dt', 'q4', 'rr', 'rh', 'nf', 'nte'];
+let tabs = null, booted = false;
+function saveAll() {
+  if (!booted) return;
+  const moved = TXs.some((p, k) => p[0] !== TX0[k][0] || p[1] !== TX0[k][1]) || RXp[0] !== RX0[0] || RXp[1] !== RX0[1];
+  K.save({ m: tabs.get(), dir: dir === 'up' ? 'up' : '', p: moved ? TXs.concat([RXp]).map(p => Math.round(p[0]) + '_' + Math.round(p[1])).join('~') : '', sat: '' });
+}
+tabs = K.tabs('seg', m => {
+  if (m === 'link') $('fl').prepend($('satP'));
+  if (m === 'cov') { $('fc').prepend($('satP')); init3D(); }
+  if (m === 'nav' && !TV.built) { buildTV(); runTri(); }
+  saveAll();
+});
+K.sat('sat', el => {
+  SAT = el;
+  const h = el.a - RE;
+  K.fill({ h: dec(h.toFixed(1)), d: '', ch: dec(h.toFixed(1)), ci: dec(el.i.toFixed(2)) });
+  if (!$('el').value.trim()) K.fill({ el: '10' });
+  if (!$('ce').value.trim()) K.fill({ ce: '10' });
+  $('exLn').textContent = ''; $('exCn').textContent = '';
+  runLink(); runCov(); if (C3) cov3(COV, true);
+});
+K.live('fl', runLink); K.live('fc', runCov); K.live('fn2', runNav2);
+$('fl').addEventListener('input', ev => { if (ev.isTrusted && !ev.target.closest('.sat')) $('exLn').textContent = ''; });
+$('fc').addEventListener('input', ev => { if (ev.isTrusted && !ev.target.closest('.sat')) { $('exCn').textContent = ''; if (ev.target.id === 'ci' || ev.target.id === 'ch') SAT = SAT && ev.target.id === 'ch' ? SAT : null; } });
+$('dirD').onclick = () => setDir('down'); $('dirU').onclick = () => setDir('up');
+$('bands').addEventListener('click', ev => { const b = ev.target.closest('[data-f]'); if (!b) return; K.fill({ ['f' + (dir === 'down' ? 'D' : 'U')]: b.dataset.f }); runLink(); });
+$('nbands').addEventListener('click', ev => { const b = ev.target.closest('[data-f]'); if (!b) return; K.fill({ nf: dec(b.dataset.f) }); runNav2(); });
+['D', 'U'].forEach(X => {
+  $('mod' + X).addEventListener('change', () => { if ($('mod' + X).value !== 'alt') $('Eb' + X).value = ''; });
+  $('Eb' + X).addEventListener('input', () => { const v = num('Eb' + X); if (v != null && MODS[$('mod' + X).value] !== v) $('mod' + X).value = 'alt'; });
+});
+$('rpre').addEventListener('change', () => { const v = $('rpre').value; if (v) { K.fill({ rr: dec(v), rh: '' }); } });
+$('exL').onclick = () => { exLk = (exLk + 1) % EXL.length; loadExL(exLk); setDir('down'); };
+$('clrL').onclick = () => { K.wipe('fl'); $('exLn').textContent = ''; SAT = null; runLink(); };
+$('exC').onclick = () => { exCk = (exCk + 1) % EXC.length; loadExC(exCk); runCov(); };
+$('clrC').onclick = () => { K.wipe('fc'); $('exCn').textContent = ''; SAT = null; runCov(); };
+$('exN').onclick = () => { loadExN(); $('dt').value = 300; $('q4').checked = false; runNav2(); runTri(); };
+$('clrN').onclick = () => { K.wipe('fn2'); $('rpre').value = ''; runNav2(); };
+$('dt').addEventListener('input', () => { if (TV.built) runTri(); });
+$('dt').addEventListener('change', saveAll);
+$('q4').addEventListener('change', () => { lastEst = null; if (TV.built) runTri(); saveAll(); });
+$('rsT').onclick = () => { TXs = TX0.map(p => p.slice()); RXp = RX0.slice(); $('dt').value = 0; $('q4').checked = false; lastEst = null; if (TV.built) { runTri(); } saveAll(); };
+
+const st = K.keep(IDS);
+if (st) {
+  if (st.get('dir') === 'up') dir = 'up';
+  const p = (st.get('p') || '').split('~').map(s => s.split('_').map(Number));
+  if (p.length === 5 && p.every(q => q.length === 2 && q.every(Number.isFinite))) { TXs = p.slice(0, 4); RXp = p[4]; }
+} else { loadExL(0); $('exLn').textContent = ''; loadExC(0); $('exCn').textContent = ''; loadExN(); $('nte').value = '10'; }
+setDir(dir, true);
+booted = true;
+runLink(); runCov(); runNav2();
+if (st && st.get('m')) tabs.set(st.get('m'));
+$('dtv').textContent = 'Δt = ' + fmt(+$('dt').value, 0) + ' ns';
+if (/[?&]test\b/.test(location.search)) selfTest();
+</script>
+</body>
+</html>

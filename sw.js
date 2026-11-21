@@ -1,7 +1,7 @@
 /* Keplario: service worker.
    Tiene una copia del sito sul dispositivo, così l'app si apre anche senza rete.
 
-   - Pagina (index.html): prima la rete, la copia locale se la rete manca.
+   - Pagine (index.html e quelle del laboratorio, come orbite.html): prima la rete, la copia locale se la rete manca.
    - Dati che cambiano (data/active.txt, meta.json, probes.json, lanci.json, meteo_spaziale.json): prima la rete, la copia locale se la rete manca.
    - Tutto il resto (librerie, caratteri, texture, stelle, icone): subito la copia locale,
      che viene poi rinfrescata in sottofondo per l'apertura successiva. I modelli 3D (modelli/) si copiano
@@ -90,6 +90,7 @@ self.addEventListener('fetch', ev => {
   if (richiesta.mode === 'navigate') {                               // apertura della pagina: index.html o la versione inglese in en/
     if (rel === '' || rel === 'index.html') ev.respondWith(primaLaRete(ev, INDICE, 4000));
     else if (rel === 'en/' || rel === 'en' || rel === 'en/index.html') ev.respondWith(primaLaRete(ev, INDICE_EN, 4000));
+    else if (/^[a-z]+\.html$/.test(rel)) ev.respondWith(primaLaRete(ev, richiesta.url, 4000));   // pagine del laboratorio
     return;
   }
   if (rel === 'sw.js') return;

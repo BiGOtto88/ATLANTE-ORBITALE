@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-en="Orbits and manoeuvres · Keplario">Orbite e manovre · Keplario</title>
+<meta name="description" content="Forma, periodo e velocità di un'orbita da due numeri qualsiasi, in 3D. Poi Hohmann, bi-ellittica, cambio di piano, fasatura e fuga, con il Δv." data-en-content="Shape, period and speed of an orbit from any two numbers, in 3D. Then Hohmann, bi-elliptic, plane change, phasing and escape, with the Δv.">
+<link rel="canonical" href="https://ottonspace.github.io/KEPLARIO/orbite.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icone/icona.svg" type="image/svg+xml">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Orbite e manovre · Keplario","applicationCategory":"EducationalApplication","operatingSystem":"Web","url":"https://ottonspace.github.io/KEPLARIO/orbite.html","inLanguage":["it","en"],"isPartOf":{"@type":"WebSite","name":"Keplario","url":"https://ottonspace.github.io/KEPLARIO/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<style>
+/* Keplario · laboratorio: stile comune delle pagine di calcolo.
+   Stessi colori e caratteri dell'app (cruscotto scuro, B612), senza maiuscole forzate, sfumature o bagliori.
+   Regola dei colori: ciano = cose che si toccano e la prima serie dei grafici; verde = valori calcolati;
+   ambra = avvisi. Niente rosso o magenta. */
+@font-face{font-family:'B612';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'B612 Mono';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/b612-mono-latin-700-normal.woff2) format('woff2')}
+:root{
+  --bk:#000;--pn:#080a0d;--pn2:#10141a;--pn3:#171c24;--ln:#252b33;--ln2:#414b57;
+  --tx:#e6eaee;--tx2:#9aa5b1;--tx3:#85919d;
+  --cy:#35d4f2;--cy2:#1aa9c7;--gr:#58e07f;--vi:#a995ff;--ic:#cfe3f5;--am:#ffb224;
+  --ui:"B612","DejaVu Sans",Verdana,sans-serif;--mono:"B612 Mono","DejaVu Sans Mono",Consolas,monospace;
+  --num:"B612","DejaVu Sans",Verdana,sans-serif;  /* numeri: B612 ha cifre di larghezza uguale e una virgola stretta (in B612 Mono la virgola sembra uno spazio) */
+  --r:6px;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;background:var(--bk)}
+body{color:var(--tx);font:15px/1.5 var(--ui);min-height:100vh}
+a{color:var(--cy)}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* barra in alto: Keplario, Cielo, le sei materie, lingua */
+.kb{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.92);border-bottom:1px solid var(--ln);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.kb-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:6px;padding:0 18px;height:50px}
+.kb-home{font-weight:700;color:var(--tx);text-decoration:none;font-size:15px;margin-right:10px;white-space:nowrap}
+.kb-sky{color:var(--tx2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:var(--r);white-space:nowrap}
+.kb-sky:hover{color:var(--tx);background:var(--pn2)}
+.kb-sep{width:1px;height:20px;background:var(--ln);margin:0 6px;flex:none}
+.kb-nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.kb-nav::-webkit-scrollbar{display:none}
+.kb-nav a{color:var(--tx2);text-decoration:none;font-size:14px;padding:14px 9px 12px;white-space:nowrap;border-bottom:2px solid transparent}
+.kb-nav a:hover{color:var(--tx)}
+.kb-nav a[aria-current=page]{color:var(--tx);border-bottom-color:var(--cy)}
+.kb-lang{flex:none;margin-left:6px}
+@media (max-width:760px){
+  .kb-in{flex-wrap:wrap;height:auto;padding:0 12px;row-gap:0}
+  .kb-home{padding:13px 0}
+  .kb-sep{display:none}
+  .kb-lang{margin-left:auto}
+  .kb-nav{order:5;flex-basis:100%;margin:0 -12px;padding:0 6px;border-top:1px solid var(--ln)}
+  .kb-nav a{padding:11px 9px 9px}
+}
+
+main{max-width:1240px;margin:0 auto;padding:30px 18px 80px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:18px 28px;flex-wrap:wrap;margin-bottom:20px}
+.ph h1{font-size:28px;line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.005em}
+.ph .lead{color:var(--tx2);margin:0;max-width:62ch}
+
+/* bottoni */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--ln2);background:var(--pn);color:var(--tx);font:inherit;font-size:14px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,color .15s}
+.btn:hover:not(:disabled){border-color:var(--cy);color:var(--cy)}
+.btn:active:not(:disabled){background:var(--pn2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--cy);border-color:var(--cy);color:#00141a;font-weight:700}
+.btn.pri:hover:not(:disabled){background:#62e0f7;color:#00141a}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:13px}
+.btn.icon{width:36px;padding:0}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+
+/* schede di modo (orbita, manovre, ...) */
+.seg{display:flex;gap:0;border-bottom:1px solid var(--ln);margin:0 0 18px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{background:none;border:0;border-bottom:2px solid transparent;color:var(--tx2);font:inherit;font-size:15px;padding:10px 14px 9px;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.seg button:hover{color:var(--tx)}
+.seg button[aria-selected=true]{color:var(--tx);border-bottom-color:var(--cy)}
+
+/* griglia: dati a sinistra, vista e risultati a destra */
+.lab{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:22px;align-items:start}
+.lab > *{min-width:0}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.stack{display:grid;gap:14px}
+.pnl{background:var(--pn);border:1px solid var(--ln);border-radius:var(--r);padding:14px 16px 16px}
+.pnl > h2,.pnl > h3{font-size:14px;font-weight:700;color:var(--tx);margin:0 0 4px}
+.pnl > .why{font-size:13px;color:var(--tx3);margin:0 0 10px}
+.pnl + .acts{margin-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* campi: etichetta a sinistra, numero a destra. Un campo vuoto mostra in verde il valore ricavato. */
+.f{display:grid;grid-template-columns:minmax(0,1fr) 116px 54px;gap:8px;align-items:center;margin:6px 0}
+.f > .u{font-size:13px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f > label,.f > .lb{font-size:14px;color:var(--tx2);line-height:1.3}
+.f input,.f select{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 9px;font:inherit;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.f select{font-family:var(--ui);text-align:left;padding-right:4px}
+.f input:hover,.f select:hover{border-color:var(--tx3)}
+.f input:focus{border-color:var(--cy);outline:none;box-shadow:0 0 0 1px var(--cy)}
+.f input::placeholder{color:var(--tx3);opacity:1}
+.f input.der::placeholder{color:var(--gr)}
+.f input.bad{border-color:var(--am);box-shadow:0 0 0 1px var(--am)}
+.f.wide{grid-template-columns:1fr}
+.f.nou{grid-template-columns:minmax(0,1fr) 178px}
+@media (max-width:420px){.f{grid-template-columns:minmax(0,1fr) 104px 46px}.f.nou{grid-template-columns:minmax(0,1fr) 158px}}
+.f.wide input{text-align:left}
+.ck{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2);margin:8px 0;cursor:pointer}
+.ck input{width:17px;height:17px;accent-color:var(--cy);margin:0}
+.hint{font-size:13px;color:var(--tx3);margin:8px 0 0}
+.hint b{color:var(--tx2);font-weight:400}
+
+/* partire da un satellite reale */
+.sat{position:relative}
+.sat input{width:100%;min-height:36px;background:#000;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);padding:6px 10px;font:inherit;font-size:14px}
+.sat input:focus{border-color:var(--cy);outline:none}
+.sat ul{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:var(--r);max-height:280px;overflow:auto;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.sat li{padding:7px 9px;border-radius:4px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;gap:10px}
+.sat li small{color:var(--tx3);font-family:var(--num);font-variant-numeric:tabular-nums;font-size:12px}
+.sat li[aria-selected=true],.sat li:hover{background:var(--pn3);color:var(--cy)}
+.satnote{font-size:13px;color:var(--tx3);margin:6px 0 0}
+.satnote a{color:var(--cy)}
+
+/* messaggi */
+.msg{border-left:2px solid var(--am);background:rgba(255,178,36,.06);color:#ffd27a;padding:8px 12px;font-size:14px;margin:0 0 12px;border-radius:0 var(--r) var(--r) 0}
+.msg.info{border-left-color:var(--cy);background:rgba(53,212,242,.06);color:var(--tx)}
+.msg:empty{display:none}
+
+/* vista 2D/3D */
+.view{position:relative;width:100%;background:#000;border:1px solid var(--ln);border-radius:var(--r);overflow:hidden;aspect-ratio:16/11}
+@media (max-width:600px){.view{aspect-ratio:1/1}}
+.view.sq{aspect-ratio:1/1}
+.view > canvas,.view > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.view .cap{position:absolute;left:12px;bottom:10px;right:12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--tx2);pointer-events:none;text-shadow:0 1px 3px #000}
+.view .cap i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.view .cap i.dot{width:8px;height:8px;border-radius:50%}
+.view .tl{position:absolute;right:10px;top:10px;display:flex;gap:6px}
+.view .tl .btn{background:rgba(8,10,13,.8)}
+.view .ld{position:absolute;inset:0;display:grid;place-items:center;color:var(--tx3);font-size:13px}
+.bar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.bar input[type=range]{flex:1;min-width:150px;accent-color:var(--cy)}
+.bar .t{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--gr);min-width:140px;text-align:right}
+
+/* risultati */
+.out{margin-top:16px}
+.out h3{font-size:13.5px;font-weight:700;color:var(--tx2);margin:18px 0 4px}
+.out h3:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--ln);font-size:14px}
+.row > span:first-child{color:var(--tx2)}
+.row .v{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--gr);text-align:right;white-space:nowrap}
+.row .v small{color:var(--tx3);font-size:12.5px;margin-left:6px}
+.row .n{grid-column:1/-1;font-size:12.5px;color:var(--tx3);margin-top:-2px}
+.row.key .v{font-size:17px}
+.row.warn .v{color:var(--am)}
+.note{font-size:13px;color:var(--tx3);margin:12px 0 0;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 26px}
+
+/* grafici */
+.chart{position:relative;margin-top:14px;background:#000;border:1px solid var(--ln);border-radius:var(--r);padding:8px 8px 4px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ttl{font-size:13px;color:var(--tx2);margin:2px 4px 6px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.chart .ttl b{color:var(--tx);font-weight:700;margin-right:6px}
+.chart .ttl i{display:inline-block;width:14px;height:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.chart .tip{position:absolute;pointer-events:none;background:var(--pn2);border:1px solid var(--ln2);border-radius:4px;padding:5px 8px;font-size:12.5px;font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--tx);white-space:nowrap;z-index:5}
+.chart .tip span{display:block}
+.chart text{font-family:var(--num);font-size:11px;fill:var(--tx3)}
+.chart .ax{stroke:var(--ln2);stroke-width:1}
+.chart .gd{stroke:var(--ln);stroke-width:1}
+
+/* tabelle di dati */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+.tbl th{text-align:left;font-weight:400;color:var(--tx3);border-bottom:1px solid var(--ln2);padding:6px 8px 6px 0}
+.tbl td{border-bottom:1px solid var(--ln);padding:6px 8px 6px 0}
+.tbl td.num,.tbl th.num{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.tbl td.num{color:var(--gr)}
+
+/* piede */
+.foot{max-width:1240px;margin:0 auto;padding:22px 18px 40px;border-top:1px solid var(--ln);color:var(--tx3);font-size:13px;display:flex;gap:8px 20px;flex-wrap:wrap}
+.foot a{color:var(--tx2)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* solo per questa pagina */
+.sy{color:var(--tx3);margin-left:2px}
+.grp{height:1px;background:var(--ln);margin:10px 0 8px}
+.view .v3{position:absolute;inset:0}
+.view .v3 > canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.view svg text{font-family:var(--ui);font-size:12px;fill:var(--tx2)}
+.view svg text.sm{font-size:11px;fill:var(--tx3)}
+.view svg text.g{fill:var(--gr)}
+.view svg text.v{fill:var(--vi)}
+.tl .btn[aria-pressed=true]{border-color:var(--cy);color:var(--cy)}
+.bar .btn.icon{flex:none}
+.info{max-width:900px}
+.info .pnl p,.info .pnl li{font-size:14.5px;color:var(--tx2);margin:6px 0}
+.info .pnl ul{margin:6px 0;padding-left:20px}
+.info .pnl > h2{font-size:15.5px;margin-bottom:6px}
+.fx{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--tx);background:var(--pn2);border-radius:var(--r);padding:7px 12px;margin:8px 0;overflow-x:auto;white-space:nowrap;font-size:14px}
+.tblw{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+  <div class="ph">
+    <div>
+      <h1 data-en="Orbits and manoeuvres">Orbite e manovre</h1>
+      <p class="lead" data-en="Give any two numbers of an orbit: the page works out the rest, draws it and flies it. Then pick a manoeuvre and see how much Δv it takes.">Dai due numeri qualsiasi di un'orbita: la pagina ricava il resto, la disegna e la fa percorrere. Poi scegli una manovra e guarda quanto Δv costa.</p>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist" id="seg" aria-label="Cosa calcolare" data-en-aria-label="What to calculate">
+    <button role="tab" data-m="orb" aria-controls="m-orb" aria-selected="true" data-en="Orbit">Orbita</button>
+    <button role="tab" data-m="man" aria-controls="m-man" aria-selected="false" data-en="Manoeuvres">Manovre</button>
+    <button role="tab" data-m="info" aria-controls="m-info" aria-selected="false" data-en="How it works">Come funziona</button>
+  </div>
+
+  <!-- ===================== ORBITA ===================== -->
+  <section id="m-orb" class="lab">
+    <form class="stack" id="fo" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Start from a real satellite">Parti da un satellite reale</h2>
+        <div id="sat"></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Central body">Corpo centrale</h2>
+        <div class="f nou"><label for="body" data-en="Orbit around">Orbita attorno a</label><select id="body">
+          <option value="earth" data-en="Earth">Terra</option>
+          <option value="moon" data-en="Moon">Luna</option>
+          <option value="mars" data-en="Mars">Marte</option>
+          <option value="venus" data-en="Venus">Venere</option>
+          <option value="jupiter" data-en="Jupiter">Giove</option>
+          <option value="sun" data-en="Sun">Sole</option>
+        </select></div>
+        <p class="hint" id="bodyN"></p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Shape of the orbit">Forma dell'orbita</h2>
+        <p class="why" data-en="Two independent values are enough, any pair. The empty fields show in green what the page works out.">Bastano due valori indipendenti, in qualunque coppia. I campi vuoti mostrano in verde quello che la pagina ricava.</p>
+        <div class="f"><label for="a" data-en='Semi-major axis <span class="sy">a</span>'>Semiasse maggiore <span class="sy">a</span></label><input id="a"><span class="u">km</span></div>
+        <div class="f"><label for="e" data-en='Eccentricity <span class="sy">e</span>'>Eccentricità <span class="sy">e</span></label><input id="e" inputmode="decimal"><span class="u"></span></div>
+        <div class="grp"></div>
+        <div class="f"><label for="rp"><span data-l="rp">Raggio al perigeo</span> <span class="sy">r<sub>p</sub></span></label><input id="rp" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="ra"><span data-l="ra">Raggio all'apogeo</span> <span class="sy">r<sub>a</sub></span></label><input id="ra" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="hp"><span data-l="hp">Quota al perigeo</span> <span class="sy">h<sub>p</sub></span></label><input id="hp"><span class="u">km</span></div>
+        <div class="f"><label for="ha"><span data-l="ha">Quota all'apogeo</span> <span class="sy">h<sub>a</sub></span></label><input id="ha" inputmode="decimal"><span class="u">km</span></div>
+        <div class="grp"></div>
+        <div class="f"><label for="T" data-en='Period <span class="sy">T</span>'>Periodo <span class="sy">T</span></label><input id="T" inputmode="decimal"><span class="u">min</span></div>
+        <div class="f"><label for="p" data-en='Semi-latus rectum <span class="sy">p</span>'>Semilato retto <span class="sy">p</span></label><input id="p" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f"><label for="eps" data-en='Specific energy <span class="sy">ε</span>'>Energia specifica <span class="sy">ε</span></label><input id="eps"><span class="u">km²/s²</span></div>
+        <div class="f"><label for="vp"><span data-l="vp">Velocità al perigeo</span> <span class="sy">v<sub>p</sub></span></label><input id="vp" inputmode="decimal"><span class="u">km/s</span></div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Orientation">Orientamento</h2>
+        <p class="why" data-en="Used by the 3D view and by the J2 effects. An empty field counts as 0.">Serve alla vista 3D e agli effetti di J2. Un campo vuoto vale 0.</p>
+        <div class="f"><label for="inc" data-en='Inclination <span class="sy">i</span>'>Inclinazione <span class="sy">i</span></label><input id="inc" inputmode="decimal" placeholder="0"><span class="u">°</span></div>
+        <div class="f"><label for="raan" data-en='Ascending node <span class="sy">Ω</span>'>Nodo ascendente <span class="sy">Ω</span></label><input id="raan" placeholder="0"><span class="u">°</span></div>
+        <div class="f"><label for="argp"><span data-l="argp">Argomento del perigeo</span> <span class="sy">ω</span></label><input id="argp" placeholder="0"><span class="u">°</span></div>
+        <div class="f"><label for="nu" data-en='True anomaly <span class="sy">ν</span>'>Anomalia vera <span class="sy">ν</span></label><input id="nu" placeholder="0"><span class="u">°</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="oex" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="oclr" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" id="oexn" aria-live="polite"></p>
+    </form>
+    <div>
+      <div id="omsg" aria-live="polite"></div>
+      <div class="view" id="ov">
+        <div class="v3" id="ov3"></div>
+        <svg id="ov2" role="img" aria-label="Disegno dell'orbita nel suo piano" data-en-aria-label="Drawing of the orbit in its plane" hidden></svg>
+        <div class="tl" role="group" aria-label="Vista" data-en-aria-label="View">
+          <button class="btn sm" type="button" data-v="3d" aria-pressed="true">3D</button>
+          <button class="btn sm" type="button" data-v="2d" aria-pressed="false">2D</button>
+        </div>
+        <div class="cap" id="ocap"></div>
+      </div>
+      <div class="bar">
+        <button class="btn icon" type="button" id="oplay"></button>
+        <input type="range" id="otm" min="0" max="1" step="any" value="0" aria-label="Tempo" data-en-aria-label="Time">
+        <span class="t" id="otl">—</span>
+      </div>
+      <div class="out cols"><div id="oo1"></div><div id="oo2"></div></div>
+      <div class="cols"><div id="och1"></div><div id="och2"></div></div>
+      <p class="note" id="ochn"></p>
+    </div>
+  </section>
+
+  <!-- ===================== MANOVRE ===================== -->
+  <section id="m-man" class="lab" hidden>
+    <form class="stack" id="fm" novalidate autocomplete="off">
+      <div class="pnl">
+        <h2 data-en="Manoeuvre">Manovra</h2>
+        <div class="f nou"><label for="mv" data-en="Type">Tipo</label><select id="mv">
+          <option value="hoh">Hohmann</option>
+          <option value="bie" data-en="Bi-elliptic">Bi-ellittica</option>
+          <option value="pla" data-en="Plane change">Cambio di piano</option>
+          <option value="pha" data-en="Phasing">Fasatura</option>
+          <option value="esc" data-en="Escape">Fuga</option>
+        </select></div>
+        <div class="f nou"><label for="mb" data-en="Central body">Corpo centrale</label><select id="mb">
+          <option value="earth" data-en="Earth">Terra</option>
+          <option value="moon" data-en="Moon">Luna</option>
+          <option value="mars" data-en="Mars">Marte</option>
+          <option value="venus" data-en="Venus">Venere</option>
+          <option value="jupiter" data-en="Jupiter">Giove</option>
+          <option value="sun" data-en="Sun">Sole</option>
+        </select></div>
+        <p class="why" id="mwhy" style="margin:10px 0 0"></p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Data">Dati</h2>
+        <p class="why" data-en="For each orbit the altitude or the radius is enough. The empty fields show in green what the page works out.">Per ogni orbita basta la quota o il raggio. I campi vuoti mostrano in verde quello che la pagina ricava.</p>
+        <div class="f" data-r="h1"><label for="h1" id="l-h1">Quota iniziale</label><input id="h1" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f" data-r="r1"><label for="r1" id="l-r1">Raggio iniziale</label><input id="r1" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f" data-r="h2"><label for="h2" id="l-h2">Quota finale</label><input id="h2" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f" data-r="r2"><label for="r2" id="l-r2">Raggio finale</label><input id="r2" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f" data-r="hb"><label for="hb" id="l-hb">Quota intermedia</label><input id="hb" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f" data-r="rb"><label for="rb" id="l-rb">Raggio intermedio</label><input id="rb" inputmode="decimal"><span class="u">km</span></div>
+        <div class="f" data-r="di"><label for="di" id="l-di">Variazione d'inclinazione</label><input id="di" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f" data-r="th"><label for="th" id="l-th">Angolo di fase</label><input id="th" inputmode="decimal"><span class="u">°</span></div>
+        <div class="f nou" data-r="dir"><label for="dir" id="l-dir">Il bersaglio è</label><select id="dir"><option value="ahead" data-en="ahead of you">davanti a te</option><option value="behind" data-en="behind you">dietro di te</option></select></div>
+        <div class="f" data-r="k"><label for="k" id="l-k">Giri di fasatura</label><input id="k" inputmode="numeric"><span class="u" data-en="revs">giri</span></div>
+        <div class="f" data-r="vinf"><label for="vinf" id="l-vinf">Velocità all'infinito</label><input id="vinf" inputmode="decimal"><span class="u">km/s</span></div>
+        <div class="f" data-r="c3"><label for="c3" id="l-c3">Energia caratteristica</label><input id="c3" inputmode="decimal"><span class="u">km²/s²</span></div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button" id="mex" data-en="Fill in an example">Compila un esempio</button>
+        <button class="btn" type="button" id="mclr" data-en="Clear">Svuota</button>
+      </div>
+      <p class="hint" id="mexn" aria-live="polite"></p>
+    </form>
+    <div>
+      <div id="mmsg" aria-live="polite"></div>
+      <div class="view" id="mvw">
+        <svg id="mv2" role="img" aria-label="Disegno della manovra" data-en-aria-label="Drawing of the manoeuvre"></svg>
+        <div class="cap" id="mcap"></div>
+      </div>
+      <div class="bar">
+        <button class="btn icon" type="button" id="mplay"></button>
+        <input type="range" id="mtm" min="0" max="1" step="any" value="0" aria-label="Tempo della manovra" data-en-aria-label="Manoeuvre time">
+        <span class="t" id="mtl">—</span>
+      </div>
+      <div class="out cols"><div id="mo1"></div><div id="mo2"></div></div>
+      <div id="mch"></div>
+      <p class="note" id="mchn"></p>
+    </div>
+  </section>
+
+  <!-- ===================== COME FUNZIONA ===================== -->
+  <section id="m-info" class="info" hidden>
+    <div class="stack">
+      <div class="pnl">
+        <h2 data-en="Assumptions">Ipotesi</h2>
+        <ul>
+          <li data-en="Two bodies: the planet pulls as if all its mass were at the centre, and the satellite weighs nothing in comparison.">Due corpi: il pianeta attira come se tutta la sua massa fosse nel centro, e il satellite al confronto non pesa nulla.</li>
+          <li data-en="No atmosphere, no sunlight pressure, no pull from other bodies.">Niente atmosfera, niente pressione della luce del Sole, niente attrazione di altri corpi.</li>
+          <li data-en="Instant burns: the speed changes at once at the burn point. A real engine fires for minutes and spends a little more (gravity losses).">Accensioni istantanee: la velocità cambia di colpo nel punto della manovra. Un motore vero spinge per minuti e spende qualcosa in più (perdite per gravità).</li>
+          <li data-en="Spherical planet. The oblateness (J2) only enters the drift of the node and of the periapsis and the Sun-synchronous inclination.">Pianeta sferico. Lo schiacciamento (J2) entra solo nella rotazione del nodo e del pericentro e nell'inclinazione eliosincrona.</li>
+          <li data-en="A real satellite starts from the mean elements of its TLE: good for understanding the orbit, not for knowing where it is to the kilometre.">Un satellite reale parte dagli elementi medi del suo TLE: vanno bene per capire l'orbita, non per sapere dove si trova al chilometro.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="The orbit">L'orbita</h2>
+        <p data-en="From any two values the page works out the periapsis radius r<sub>p</sub> and the eccentricity e, then everything else. a, T and ε say the same thing (the energy), and so do r<sub>p</sub> and h<sub>p</sub>: a pair taken inside one of these groups is not enough.">Da due valori qualsiasi la pagina ricava il raggio al pericentro r<sub>p</sub> e l'eccentricità e, poi tutto il resto. a, T ed ε dicono la stessa cosa (l'energia), e così r<sub>p</sub> e h<sub>p</sub>: una coppia presa dentro uno di questi gruppi non basta.</p>
+        <div class="fx">r = p / (1 + e cos ν) &nbsp;&nbsp; p = a (1 − e²) = h² / μ</div>
+        <div class="fx">v² = μ (2/r − 1/a) &nbsp;&nbsp; ε = v²/2 − μ/r = −μ / (2a)</div>
+        <div class="fx">r<sub>p</sub> = a (1 − e) &nbsp;&nbsp; r<sub>a</sub> = a (1 + e) &nbsp;&nbsp; T = 2π √(a³/μ)</div>
+        <div class="fx">tan γ = e sin ν / (1 + e cos ν)</div>
+        <p data-en="γ is the flight-path angle, between the velocity and the local horizontal: it is zero at periapsis and apoapsis. The time from periapsis comes from Kepler's equation: M = E − e sin E for the ellipse, M = e sinh F − F for the hyperbola, Barker's equation for the parabola.">γ è l'angolo di volo, tra la velocità e l'orizzontale locale: vale zero al pericentro e all'apocentro. Il tempo dal pericentro viene dall'equazione di Keplero: M = E − e sin E per l'ellisse, M = e sinh F − F per l'iperbole, equazione di Barker per la parabola.</p>
+        <p data-en="With e ≥ 1 the orbit is open: no period and no apoapsis. For the hyperbola a is negative, and:">Con e ≥ 1 l'orbita è aperta: niente periodo e niente apocentro. Per l'iperbole a è negativo, e:</p>
+        <div class="fx">v∞ = √(−μ/a) &nbsp;&nbsp; C3 = v∞² &nbsp;&nbsp; δ = 2 arcsin(1/e) &nbsp;&nbsp; ν∞ = arccos(−1/e)</div>
+        <p data-en="δ is the angle by which the planet bends the path, ν∞ the true anomaly of the asymptote.">δ è l'angolo di cui il pianeta piega la traiettoria, ν∞ l'anomalia vera dell'asintoto.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Oblateness, J2">Lo schiacciamento, J2</h2>
+        <div class="fx">dΩ/dt = −(3/2) n J2 (R/p)² cos i</div>
+        <div class="fx">dω/dt = (3/4) n J2 (R/p)² (5 cos² i − 1)</div>
+        <p data-en="A Sun-synchronous orbit keeps the same angle to the Sun: the node must turn once per year of the planet (0.9856° per day for the Earth). If the cos i this needs falls outside −1…1, it cannot be done at that altitude. At 63.4° and 116.6° the periapsis stays still: that is the inclination of Molniya orbits.">Un'orbita eliosincrona tiene lo stesso angolo con il Sole: il nodo deve fare un giro in un anno del pianeta (0,9856° al giorno per la Terra). Se il cos i che serve esce da −1…1, a quella quota non si può. A 63,4° e a 116,6° il pericentro resta fermo: è l'inclinazione delle orbite Molniya.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="The manoeuvres">Le manovre</h2>
+        <p data-en="Hohmann, between two circular orbits:">Hohmann, tra due orbite circolari:</p>
+        <div class="fx">a<sub>t</sub> = (r₁ + r₂) / 2 &nbsp;&nbsp; t = π √(a<sub>t</sub>³/μ)</div>
+        <div class="fx">Δv₁ = √(μ/r₁) (√(2r₂/(r₁+r₂)) − 1) &nbsp;&nbsp; Δv₂ = √(μ/r₂) (1 − √(2r₁/(r₁+r₂)))</div>
+        <p data-en="Bi-elliptic: a first ellipse from r₁ to r<sub>b</sub>, a second one from r<sub>b</sub> to r₂, three burns; the time is π (√(a₁³/μ) + √(a₂³/μ)). Below r₂/r₁ = 11.94 Hohmann always costs less. Between 11.94 and 15.58 it depends on r<sub>b</sub>. Above 15.58 the bi-elliptic costs less with any r<sub>b</sub> larger than r₂, but the trip takes much longer.">Bi-ellittica: una prima ellisse da r₁ a r<sub>b</sub>, una seconda da r<sub>b</sub> a r₂, tre accensioni; la durata è π (√(a₁³/μ) + √(a₂³/μ)). Se r₂/r₁ è sotto 11,94 Hohmann costa sempre meno. Tra 11,94 e 15,58 dipende da r<sub>b</sub>. Sopra 15,58 la bi-ellittica costa meno con qualunque r<sub>b</sub> più grande di r₂, ma il viaggio dura molto di più.</p>
+        <p data-en="Plane change on its own, and together with another burn at the same point:">Cambio di piano da solo, e insieme a un'altra accensione nello stesso punto:</p>
+        <div class="fx">Δv = 2 v sin(Δi/2) &nbsp;&nbsp; Δv = √(v₁² + v₂² − 2 v₁ v₂ cos Δi)</div>
+        <p data-en="It costs less where the speed is low, so at the apoapsis of the transfer. The page also looks for the split of Δi between the two burns that spends the least.">Costa meno dove la velocità è bassa, quindi all'apocentro del trasferimento. La pagina cerca anche la divisione di Δi tra le due accensioni che spende meno.</p>
+        <p data-en="Phasing: to recover an angle θ in k revolutions, the phasing orbit has the period below (minus sign if the target is ahead, plus if it is behind). Its a follows from the period; two equal and opposite burns, at the start and at the end.">Fasatura: per recuperare un angolo θ in k giri, l'orbita di fasatura ha il periodo qui sotto (segno meno se il bersaglio è davanti, più se è dietro). Dal periodo viene a; servono due accensioni uguali e opposte, all'inizio e alla fine.</p>
+        <div class="fx">T<sub>f</sub> = T (1 ∓ θ / (360° k)) &nbsp;&nbsp; a<sub>f</sub> = ∛(μ (T<sub>f</sub>/2π)²)</div>
+        <p data-en="Escape from a circular orbit of radius r with a leftover speed v∞. Burning low, where you are fast, pays more than escaping first and speeding up later far away: this is the Oberth effect.">Fuga da un'orbita circolare di raggio r con una velocità residua v∞. Accendere in basso, dove si va veloci, rende di più che fuggire prima e accelerare poi lontano: è l'effetto Oberth.</p>
+        <div class="fx">v<sub>p</sub> = √(v∞² + 2μ/r) &nbsp;&nbsp; Δv = v<sub>p</sub> − √(μ/r)</div>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Central bodies">Corpi centrali</h2>
+        <div class="tblw" id="btab"></div>
+        <p class="note" data-en="J2 is used only for the Earth, Mars, Venus and Jupiter. Around the Moon the Earth's pull and the lumps of the lunar field matter more, so the page does not compute it there.">J2 serve solo per Terra, Marte, Venere e Giove. Attorno alla Luna contano di più l'attrazione della Terra e le irregolarità del campo lunare, quindi lì la pagina non lo calcola.</p>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Limits">Limiti</h2>
+        <ul>
+          <li data-en="On the Earth, below about 200 km, the atmosphere brings a satellite down within days: the page does not compute it.">Sulla Terra, sotto i 200 km circa, l'atmosfera fa scendere un satellite in pochi giorni: la pagina non lo calcola.</li>
+          <li data-en="Around the Moon and in very high orbits the Earth and the Sun change the orbit over time: here it stays the two-body one.">Attorno alla Luna e nelle orbite molto alte la Terra e il Sole cambiano l'orbita nel tempo: qui resta quella dei due corpi.</li>
+          <li data-en="For a hyperbola the page draws the part near the planet, up to about five times r<sub>p</sub>; it does not compute the sphere of influence.">Per un'iperbole la pagina disegna il tratto vicino al pianeta, fino a circa cinque volte r<sub>p</sub>; non calcola la sfera d'influenza.</li>
+          <li data-en="Transfer and phasing times leave out J2.">I tempi di trasferimento e di fasatura non tengono conto di J2.</li>
+        </ul>
+      </div>
+      <div class="pnl">
+        <h2 data-en="Sources">Fonti</h2>
+        <ul>
+          <li data-en="H. D. Curtis, «Orbital Mechanics for Engineering Students», 4th ed., Butterworth-Heinemann, 2020, chapters 2–6.">H. D. Curtis, «Orbital Mechanics for Engineering Students», 4ª ed., Butterworth-Heinemann, 2020, capitoli 2–6.</li>
+          <li data-en="D. A. Vallado, «Fundamentals of Astrodynamics and Applications», 4th ed., Microcosm Press, 2013, chapters 2, 6 and 9. Example 6-1 (Hohmann to geostationary orbit) is part of the page's self-check.">D. A. Vallado, «Fundamentals of Astrodynamics and Applications», 4ª ed., Microcosm Press, 2013, capitoli 2, 6 e 9. L'esempio 6-1 (Hohmann verso l'orbita geostazionaria) fa parte della prova interna della pagina.</li>
+          <li data-en="Constants: Earth from WGS 84 and EGM96; μ of the other bodies from the JPL ephemerides; radii from the IAU (WGCCRE 2015); J2 and year length from the NASA Planetary Fact Sheets.">Costanti: Terra da WGS 84 ed EGM96; μ degli altri corpi dalle effemeridi del JPL; raggi dall'IAU (WGCCRE 2015); J2 e durata dell'anno dalle NASA Planetary Fact Sheets.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+/* Keplario · laboratorio: funzioni comuni a tutte le pagine di calcolo.
+   K.bar(...)       barra in alto con Cielo, le sei materie e la lingua
+   K.en, K.t(it,en) lingua (stessa scelta dell'app: #en/#it, ?lang=, localStorage «atlante-lingua», lingua del browser)
+   K.num(id)        legge un campo: null se vuoto, NaN se non è un numero (accetta virgola, spazi, 1e-3, −)
+   K.fmt, K.sig     numeri all'italiana o all'inglese (spazio per le migliaia)
+   K.der(id, x)     mostra in verde, dentro un campo lasciato vuoto, il valore che la pagina ha ricavato
+   K.rows(el, ...)  righe di risultati; K.msg(el, testo) avvisi
+   K.live(el, fn)   ricalcola a ogni modifica; K.keep(ids) ricorda i dati nell'indirizzo (#a=…&e=…)
+   K.sat(el, fn)    «parti da un satellite reale»: cerca nel catalogo data/active.txt e dà gli elementi medi del TLE
+   K.earth(THREE)   Terra realistica (giorno, notte, riflesso del mare, nuvole, atmosfera)
+   K.chart(el, ...) grafico a linee con assi, legenda e lettura al passaggio del puntatore */
+'use strict';
+const K = (() => {
+  const $ = id => typeof id === 'string' ? document.getElementById(id) : id;
+
+  /* ---------- lingua ---------- */
+  const lang = (() => {
+    const h = (location.hash || '').slice(1);
+    if (h === 'en' || h === 'it') return h;
+    const q = (location.search.match(/[?&]lang=(en|it)\b/) || [])[1]; if (q) return q;
+    try { const s = localStorage.getItem('atlante-lingua'); if (s === 'en' || s === 'it') return s; } catch (e) {}
+    return /^it\b/i.test(navigator.language || 'it') ? 'it' : 'en';
+  })();
+  const en = lang === 'en';
+  const t = (it, e) => en ? e : it;
+  function applyLang(root) {
+    document.documentElement.lang = lang;
+    if (!en) return;
+    (root || document).querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-en'); });
+    for (const a of ['title', 'aria-label', 'placeholder', 'content', 'alt'])
+      (root || document).querySelectorAll('[data-en-' + a + ']').forEach(el => el.setAttribute(a, el.getAttribute('data-en-' + a)));
+  }
+
+  /* ---------- barra in alto ---------- */
+  const SUBJ = [
+    ['orbite', 'Orbite e manovre', 'Orbits and manoeuvres'],
+    ['assetto', 'Assetto e controllo', 'Attitude and control'],
+    ['propulsione', 'Propulsione e lanciatori', 'Propulsion and launchers'],
+    ['strutture', 'Strutture e materiali', 'Structures and materials'],
+    ['comunicazioni', 'Comunicazioni e navigazione', 'Communications and navigation'],
+    ['sistemi', 'Sistemi e missione', 'Systems and mission'],
+  ];
+  const sky = () => en ? 'en/' : './';
+  function bar(cur) {
+    const satQ = (location.search.match(/[?&](sat=\d+)/) || [])[1], q = satQ ? '?' + satQ : '';
+    const h = document.createElement('header'); h.className = 'kb';
+    h.innerHTML = '<div class="kb-in"><a class="kb-home" href="' + sky() + '">Keplario</a>' +
+      '<a class="kb-sky" href="' + sky() + '#cielo">' + t('Cielo', 'Sky') + '</a><span class="kb-sep" aria-hidden="true"></span>' +
+      '<nav class="kb-nav" aria-label="' + t('Laboratorio', 'Lab') + '">' +
+      SUBJ.map(s => '<a href="' + s[0] + '.html' + q + '"' + (s[0] === cur ? ' aria-current="page"' : '') + '>' + (en ? s[2] : s[1]) + '</a>').join('') +
+      '</nav><button class="btn sm kb-lang" type="button" title="' + (en ? 'Italiano' : 'English') + '">' + (en ? 'IT' : 'EN') + '</button></div>';
+    document.body.prepend(h);
+    h.querySelector('.kb-lang').onclick = () => {
+      try { localStorage.setItem('atlante-lingua', en ? 'it' : 'en'); } catch (e) {}
+      const u = new URL(location.href); u.searchParams.delete('lang'); if (u.hash === '#en' || u.hash === '#it') u.hash = '';
+      location.replace(u.href);
+    };
+    const cn = h.querySelector('[aria-current=page]'); if (cn && cn.scrollIntoView) setTimeout(() => cn.scrollIntoView({ block: 'nearest', inline: 'center' }), 0);
+    const f = document.createElement('footer'); f.className = 'foot';
+    f.innerHTML = '<span>' + t('Strumento didattico: non usarlo per operazioni di volo.', 'A learning tool: not for flight operations.') + '</span>' +
+      '<a href="' + sky() + '">' + t('Torna al cielo', 'Back to the sky') + '</a><a href="LICENZE.txt">' + t('Licenze', 'Licences') + '</a>';
+    document.body.append(f);
+  }
+  function init(cur) { applyLang(); bar(cur); }
+
+  /* ---------- numeri ---------- */
+  function num(id) {
+    const el = $(id); if (!el) return null;
+    let v = String(el.value).trim(); if (v === '') return null;
+    v = v.replace(/[\s  ']/g, '').replace(/−/g, '-').replace(/[×x]10\^?/i, 'e');
+    // separatore decimale: con punto e virgola insieme vale l'ultimo dei due (1.234,5 e 1,234.5);
+    // da soli, un punto o una virgola sono decimali (0.366 e 0,366); ripetuti sono migliaia (1.234.567)
+    const dot = v.lastIndexOf('.'), com = v.lastIndexOf(',');
+    if (dot >= 0 && com >= 0) v = dot > com ? v.replace(/,/g, '') : v.replace(/\./g, '').replace(',', '.');
+    else if ((v.match(/\./g) || []).length > 1) v = v.replace(/\./g, '');
+    else if ((v.match(/,/g) || []).length > 1) v = v.replace(/,/g, '');
+    else v = v.replace(',', '.');
+    const x = Number(v); return Number.isFinite(x) ? x : NaN;
+  }
+  const DEC = en ? '.' : ',';
+  function group(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmt(x, d) {
+    if (x == null || !Number.isFinite(x)) return '—';
+    d = d == null ? 2 : d;
+    let s = Math.abs(x).toFixed(d); const p = s.split('.');
+    const neg = x < 0 && Number(s) !== 0;
+    return (neg ? '−' : '') + group(p[0]) + (p[1] ? DEC + p[1] : '');
+  }
+  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function sig(x, n) {     // n cifre significative; potenze di dieci fuori da 10⁻³…10⁷
+    if (x == null || !Number.isFinite(x)) return '—';
+    n = n || 4; if (x === 0) return '0';
+    const ax = Math.abs(x), e = Math.floor(Math.log10(ax));
+    if (e < -3 || e > 7) {
+      const m = x / Math.pow(10, e);
+      return fmt(m, n - 1).replace(new RegExp('\\' + DEC + '?0+$'), '') + '·10' + String(e).split('').map(c => SUP[c]).join('');
+    }
+    return fmt(x, Math.max(0, n - 1 - e));
+  }
+  const plain = (x, d) => (x == null || !Number.isFinite(x)) ? '' : fmt(x, d).replace(/ /g, ' ');
+
+  /* ---------- campi ricavati e campi in conflitto ---------- */
+  function der(id, x, d) {
+    const el = $(id); if (!el) return;
+    if (el.dataset.ph === undefined) el.dataset.ph = el.placeholder || '';
+    if (el.value.trim() !== '') return;
+    const ok = x != null && Number.isFinite(x);
+    el.placeholder = ok ? (typeof d === 'string' ? d : (d == null ? sig(x, 5) : plain(x, d))) : el.dataset.ph;
+    el.classList.toggle('der', ok);
+  }
+  function clear(scope) {
+    (scope ? $(scope) : document).querySelectorAll('input').forEach(el => {
+      if (el.dataset.ph !== undefined) el.placeholder = el.dataset.ph;
+      el.classList.remove('der', 'bad');
+    });
+  }
+  function bad(id, on) { const el = $(id); if (el) el.classList.toggle('bad', on !== false); }
+  const given = id => { const el = $(id); return !!el && el.value.trim() !== ''; };
+
+  /* ---------- risultati e avvisi ---------- */
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // voce: ['#', 'Titolo'] oppure [etichetta, valore, unità, nota, classe]  (valore già formattato)
+  function rows(el, list) {
+    $(el).innerHTML = list.filter(Boolean).map(r => r[0] === '#' ? '<h3>' + r[1] + '</h3>' :
+      '<div class="row' + (r[4] ? ' ' + r[4] : '') + '"><span>' + r[0] + '</span><span class="v">' + r[1] + (r[2] ? '<small>' + r[2] + '</small>' : '') + '</span>' +
+      (r[3] ? '<span class="n">' + r[3] + '</span>' : '') + '</div>').join('');
+  }
+  function msg(el, text, kind) { $(el).innerHTML = text ? '<p class="msg' + (kind ? ' ' + kind : '') + '">' + text + '</p>' : ''; }
+
+  /* ---------- ricalcolo e memoria nell'indirizzo ---------- */
+  function live(scope, fn, ms) {
+    let tm = 0; const go = () => { clearTimeout(tm); tm = setTimeout(fn, ms == null ? 160 : ms); };
+    $(scope).addEventListener('input', go); $(scope).addEventListener('change', go); return go;
+  }
+  let keepIds = [], keepExtra = {};
+  function keep(ids, extra) {          // salva i campi compilati nell'indirizzo, così il calcolo si può condividere
+    keepIds = ids; keepExtra = extra || {};
+    const h = (location.hash || '').slice(1);
+    if (h && h.includes('=')) {
+      const p = new URLSearchParams(h);
+      ids.forEach(id => { const el = $(id); if (!el || !p.has(id)) return; if (el.type === 'checkbox') el.checked = p.get(id) === '1'; else el.value = p.get(id); });
+      return p;
+    }
+    return null;
+  }
+  function save(extra) {
+    const p = new URLSearchParams();
+    Object.entries(Object.assign({}, keepExtra, extra || {})).forEach(([k, v]) => { if (v != null && v !== '') p.set(k, v); });
+    keepIds.forEach(id => { const el = $(id); if (!el) return; if (el.type === 'checkbox') { if (el.checked) p.set(id, '1'); } else if (el.value.trim() !== '') p.set(id, el.value.trim()); });
+    const s = p.toString(); try { history.replaceState(null, '', location.pathname + location.search + (s ? '#' + s : '')); } catch (e) {}
+  }
+  function fill(map) { Object.entries(map).forEach(([id, v]) => { const el = $(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }); }
+  function wipe(scope) { $(scope).querySelectorAll('input:not([type=checkbox]):not([type=range]):not([data-keep])').forEach(el => { el.value = ''; }); clear(scope); }
+
+  /* ---------- costanti e utilità di meccanica orbitale ---------- */
+  const MU = 398600.4418, RE = 6378.137, J2 = 1.08262668e-3, D2R = Math.PI / 180, G0 = 9.80665, OMEGA_E = 7.2921159e-5;
+  function kepler(M, e) { let E = e < 0.8 ? M : Math.PI; for (let k = 0; k < 50; k++) { const d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E)); E -= d; if (Math.abs(d) < 1e-13) break; } return E; }
+  function nuFromM(M, e) { const E = kepler(((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), e); return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)); }
+  function gmst(date) {   // tempo siderale medio di Greenwich, rad (IAU 1982)
+    const jd = date.getTime() / 86400000 + 2440587.5, T = (jd - 2451545) / 36525;
+    let s = 67310.54841 + (876600 * 3600 + 8640184.812866) * T + 0.093104 * T * T - 6.2e-6 * T * T * T;
+    return ((s % 86400 + 86400) % 86400) / 86400 * 2 * Math.PI;
+  }
+  // perifocale → inerziale (ECI). Angoli in radianti.
+  function pqw2eci(x, y, i, raan, argp) {
+    const cw = Math.cos(argp), sw = Math.sin(argp), ci = Math.cos(i), si = Math.sin(i), co = Math.cos(raan), so = Math.sin(raan);
+    const x1 = x * cw - y * sw, y1 = x * sw + y * cw, y2 = y1 * ci, z2 = y1 * si;
+    return [x1 * co - y2 * so, x1 * so + y2 * co, z2];
+  }
+
+  /* ---------- satelliti reali dal catalogo dell'app ---------- */
+  let CAT = null;
+  function catalog() {
+    if (CAT) return CAT;
+    CAT = fetch('data/active.txt').then(r => { if (!r.ok) throw new Error('catalogo'); return r.text(); }).then(txt => {
+      const L = txt.split(/\r?\n/), out = [];
+      for (let k = 0; k < L.length - 2; k++) {
+        if (L[k + 1].startsWith('1 ') && L[k + 2].startsWith('2 ') && !L[k].startsWith('1 ') && !L[k].startsWith('2 ')) {
+          out.push({ name: L[k].trim().replace(/^0 /, ''), l1: L[k + 1], l2: L[k + 2], norad: +L[k + 1].slice(2, 7) }); k += 2;
+        }
+      }
+      return out;
+    });
+    CAT.catch(() => { CAT = null; });
+    return CAT;
+  }
+  function elements(s) {   // elementi medi del TLE (non osculanti): bastano per i calcoli del laboratorio
+    const l1 = s.l1, l2 = s.l2;
+    const i = +l2.slice(8, 16), raan = +l2.slice(17, 25), e = +('0.' + l2.slice(26, 33).trim()), argp = +l2.slice(34, 42), M = +l2.slice(43, 51), nrev = +l2.slice(52, 63);
+    const yy = +l1.slice(18, 20), day = +l1.slice(20, 32), year = yy < 57 ? 2000 + yy : 1900 + yy;
+    const epoch = new Date(Date.UTC(year, 0, 1) + (day - 1) * 86400000);
+    const n = nrev * 2 * Math.PI / 86400, a = Math.cbrt(MU / (n * n));
+    const nu = nuFromM(M * D2R, e) / D2R;
+    return { name: s.name, norad: s.norad, i, raan, e, argp, M, nu: (nu + 360) % 360, a, n, revDay: nrev, epoch, hp: a * (1 - e) - RE, ha: a * (1 + e) - RE, T: 2 * Math.PI / n };
+  }
+  const POP = [25544, 20580, 48274, 40697, 41866, 49260, 43013, 39084];
+  let satN = 0;
+  function sat(host, onPick) {
+    host = $(host); host.classList.add('sat'); const id = 'sat' + (++satN);
+    host.innerHTML = '<label class="vh" for="' + id + 'Q">' + t('Cerca un satellite', 'Search for a satellite') + '</label>' +
+      '<input id="' + id + 'Q" type="search" autocomplete="off" spellcheck="false" placeholder="' + t('Nome o numero NORAD, es. ISS', 'Name or NORAD number, e.g. ISS') + '" role="combobox" aria-expanded="false" aria-controls="' + id + 'L">' +
+      '<ul id="' + id + 'L" role="listbox" hidden></ul><p class="satnote">' + t('Oppure inserisci i tuoi numeri qui sotto.', 'Or type your own numbers below.') + '</p>';
+    const q = host.querySelector('input'), ul = host.querySelector('ul'), note = host.querySelector('.satnote');
+    let list = [], sel = -1;
+    const close = () => { ul.hidden = true; q.setAttribute('aria-expanded', 'false'); sel = -1; };
+    const draw = () => {
+      ul.innerHTML = list.map((s, k) => '<li role="option" id="' + id + 'O' + k + '" aria-selected="' + (k === sel) + '" data-k="' + k + '"><span>' + esc(s.name) + '</span><small>' + s.norad + '</small></li>').join('');
+      ul.hidden = !list.length; q.setAttribute('aria-expanded', String(!!list.length));
+      if (sel >= 0) q.setAttribute('aria-activedescendant', id + 'O' + sel); else q.removeAttribute('aria-activedescendant');
+    };
+    const search = () => catalog().then(cat => {
+      const v = q.value.trim().toLowerCase();
+      if (!v) list = POP.map(n => cat.find(s => s.norad === n)).filter(Boolean);
+      else if (/^\d+$/.test(v)) list = cat.filter(s => String(s.norad).startsWith(v)).slice(0, 12);
+      else { const a = cat.filter(s => s.name.toLowerCase().startsWith(v)), b = cat.filter(s => !s.name.toLowerCase().startsWith(v) && s.name.toLowerCase().includes(v)); list = a.concat(b).slice(0, 12); }
+      sel = -1; draw();
+    }).catch(() => { note.textContent = t('Catalogo non disponibile: inserisci i dati a mano.', 'Catalogue not available: type the data by hand.'); });
+    const pick = s => {
+      close(); q.value = s.name; const el = elements(s);
+      note.innerHTML = t('Elementi medi del TLE del ', 'Mean TLE elements, epoch ') + el.epoch.toISOString().slice(0, 16).replace('T', ' ') + ' UTC · <a href="' + sky() + '#sat-' + s.norad + '">' + t('vedilo nel cielo', 'see it in the sky') + '</a>';
+      onPick(el);
+    };
+    q.addEventListener('focus', search); q.addEventListener('input', search);
+    q.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { sel = Math.min(list.length - 1, sel + 1); draw(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); draw(); e.preventDefault(); }
+      else if (e.key === 'Enter') { if (list[sel >= 0 ? sel : 0]) pick(list[sel >= 0 ? sel : 0]); e.preventDefault(); }
+      else if (e.key === 'Escape') close();
+    });
+    ul.addEventListener('mousedown', e => { const li = e.target.closest('li'); if (li) { e.preventDefault(); pick(list[+li.dataset.k]); } });
+    q.addEventListener('blur', () => setTimeout(close, 120));
+    // ?sat=25544 nell'indirizzo (arriva dalla scheda di un satellite nel cielo)
+    const want = +((location.search.match(/[?&]sat=(\d+)/) || [])[1] || 0);
+    if (want) catalog().then(cat => { const s = cat.find(x => x.norad === want); if (s) pick(s); }).catch(() => {});
+    return { pick };
+  }
+
+  /* ---------- Terra realistica (three.js r128) ---------- */
+  function earth(THREE, R, opt) {
+    R = R || 1; opt = opt || {};
+    const TL = new THREE.TextureLoader(), tx = n => { const x = TL.load('tex/' + n + '.jpg'); x.anisotropy = 8; return x; };
+    const sun = (opt.sun || new THREE.Vector3(5, 2.5, 4)).clone().normalize();
+    const g = new THREE.Group();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { day: { value: tx('day') }, night: { value: tx('night') }, spec: { value: tx('spec') }, sun: { value: sun } },
+      vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+      fragmentShader: 'uniform sampler2D day,night,spec; uniform vec3 sun; varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vec3 n=normalize(vN); vec3 L=normalize((viewMatrix*vec4(sun,0.)).xyz); float d=dot(n,L); float k=smoothstep(-0.12,0.18,d); vec3 dc=texture2D(day,vUv).rgb; vec3 nc=texture2D(night,vUv).rgb*1.4; vec3 c=mix(nc,dc*(0.25+0.95*max(d,0.)),k); float sp=texture2D(spec,vUv).r; vec3 h=normalize(L+vV); c+=sp*pow(max(dot(n,h),0.),48.)*0.45*k; float f=pow(1.-max(dot(n,vV),0.),3.); c+=vec3(.25,.5,1.)*f*0.3*(0.2+k); gl_FragColor=vec4(c,1.); }'
+    });
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), mat); g.add(ball);
+    const cm = new THREE.MeshPhongMaterial({ transparent: true, opacity: 0.5, depthWrite: false });
+    TL.load('tex/clouds.jpg', x => { cm.alphaMap = x; cm.needsUpdate = true; });
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(R * 1.008, 96, 72), cm); g.add(clouds);
+    const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 64, 48), new THREE.ShaderMaterial({
+      transparent: true, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+      fragmentShader: 'varying vec3 vN; void main(){ float i=pow(0.72-dot(vN,vec3(0.,0.,1.)),3.); gl_FragColor=vec4(.3,.55,1.,1.)*i*0.42; }'
+    }));
+    g.add(atm);
+    return { group: g, ball, clouds, setSun(v) { mat.uniforms.sun.value.copy(v).normalize(); } };
+  }
+  function stars(THREE, n, r) {
+    n = n || 1400; r = r || 80;
+    const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    for (let k = 0; k < n; k++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * 6.283, s = Math.sqrt(1 - u * u), rr = r * (1 + Math.random() * 0.4);
+      pos.set([rr * s * Math.cos(a), rr * u, rr * s * Math.sin(a)], k * 3);
+      const b = 0.45 + Math.random() * 0.55; col.set([b, b, b * (0.92 + Math.random() * 0.12)], k * 3);
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return new THREE.Points(g, new THREE.PointsMaterial({ size: r * 0.0018, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
+  }
+  // ECI (km) → coordinate three.js con l'asse y in alto e il raggio terrestre come unità
+  const v3 = (THREE, p, unit) => new THREE.Vector3(p[0] / (unit || RE), p[2] / (unit || RE), -p[1] / (unit || RE));
+  // scena pronta: renderer, camera, controlli, ridimensionamento, ciclo di disegno che si ferma fuori dallo schermo
+  function scene3(THREE, host, opt) {
+    host = $(host); opt = opt || {};
+    const cv = document.createElement('canvas'); host.prepend(cv);
+    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(opt.fov || 38, 1, 0.01, 2000);
+    scene.add(new THREE.AmbientLight(0x8a8a9a, opt.ambient == null ? 0.9 : opt.ambient));
+    const light = new THREE.DirectionalLight(0xfff1e0, 1.5); light.position.set(5, 2.5, 4); scene.add(light);
+    let controls = null;
+    if (THREE.OrbitControls && opt.controls !== false) { controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = false; }
+    const size = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+    if (window.ResizeObserver) new ResizeObserver(size).observe(host); else addEventListener('resize', size);
+    size();
+    let vis = true, hooks = [];
+    if (window.IntersectionObserver) new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(host);
+    let last = performance.now();
+    (function loop(now) {
+      requestAnimationFrame(loop);
+      if (!vis || document.hidden) { last = now; return; }
+      const dt = Math.min(0.1, (now - last) / 1000); last = now;
+      hooks.forEach(f => f(dt, now));
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    })(last);
+    return { THREE, renderer, scene, camera, controls, light, cv, size, onFrame(f) { hooks.push(f); } };
+  }
+  const has3D = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } };
+
+  /* ---------- grafici a linee ---------- */
+  const C = { cy: '#35d4f2', gr: '#58e07f', vi: '#a995ff', ic: '#cfe3f5', am: '#ffb224', tx3: '#85919d' };
+  function ticks(lo, hi, n) {
+    if (!(hi > lo)) { hi = lo + 1; }
+    const span = hi - lo, step0 = span / (n || 5), mag = Math.pow(10, Math.floor(Math.log10(step0))), r = step0 / mag;
+    const step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag, out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    return { out, step };
+  }
+  function tickFmt(v, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e6 || (Math.abs(v) < 1e-3 && v !== 0) ? sig(v, 2) : fmt(v, Math.min(d, 6)); }
+  // o = { title, x: [...], series: [{ name, y: [...], color, dash }], xLabel, yLabel, yFmt(v), xFmt(v), marks: [{ x, label }], yMin, yMax, h }
+  function chart(host, o) {
+    host = $(host); host.classList.add('chart');
+    const draw = () => {
+      const W = Math.max(280, host.clientWidth - 16), H = o.h || 230, L = 56, Rm = 14, T = 10, B = 34;
+      const xs = o.x, all = [];
+      o.series.forEach(s => s.y.forEach(v => { if (Number.isFinite(v)) all.push(v); }));
+      let y0 = o.yMin != null ? o.yMin : Math.min(...all), y1 = o.yMax != null ? o.yMax : Math.max(...all);
+      if (y0 === y1) { y0 -= 1; y1 += 1; }
+      const pad = (y1 - y0) * 0.06; if (o.yMin == null) y0 -= pad; if (o.yMax == null) y1 += pad;
+      const x0 = xs[0], x1 = xs[xs.length - 1];
+      const X = v => L + (v - x0) / (x1 - x0 || 1) * (W - L - Rm), Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+      const ty = ticks(y0, y1, 5), tx = ticks(x0, x1, Math.max(3, Math.floor(W / 110)));
+      let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(o.title || '') + '">';
+      ty.out.forEach(v => { if (v < y0 || v > y1) return; s += '<line class="gd" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(v) : tickFmt(v, ty.step)) + '</text>'; });
+      tx.out.forEach(v => { if (v < x0 || v > x1) return; s += '<line class="gd" y1="' + T + '" y2="' + (H - B) + '" x1="' + X(v) + '" x2="' + X(v) + '" opacity=".6"/><text x="' + X(v) + '" y="' + (H - B + 15) + '" text-anchor="middle">' + (o.xFmt ? o.xFmt(v) : tickFmt(v, tx.step)) + '</text>'; });
+      s += '<line class="ax" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + (H - B) + '" y2="' + (H - B) + '"/>';
+      if (o.xLabel) s += '<text x="' + (W - Rm) + '" y="' + (H - 4) + '" text-anchor="end">' + esc(o.xLabel) + '</text>';
+      if (o.yLabel) s += '<text x="' + 4 + '" y="' + (T + 2) + '" text-anchor="start" dominant-baseline="hanging" opacity="0">' + '</text>';
+      (o.marks || []).forEach(m => { if (m.x < x0 || m.x > x1) return; s += '<line x1="' + X(m.x) + '" x2="' + X(m.x) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="' + (m.color || C.tx3) + '" stroke-dasharray="3 3"/><text x="' + (X(m.x) + 4) + '" y="' + (T + 11) + '" style="fill:' + (m.color || C.tx3) + '">' + esc(m.label || '') + '</text>'; });
+      (o.bands || []).forEach(b => { s += '<rect x="' + X(b.x0) + '" width="' + Math.max(0, X(b.x1) - X(b.x0)) + '" y="' + T + '" height="' + (H - T - B) + '" fill="' + (b.color || '#fff') + '" opacity="' + (b.op || 0.06) + '"/>'; });
+      o.series.forEach(se => {
+        let d = '', pen = false;
+        se.y.forEach((v, k) => { if (!Number.isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(xs[k]).toFixed(1) + ' ' + Y(Math.max(y0, Math.min(y1, v))).toFixed(1); pen = true; });
+        s += '<path d="' + d + '" fill="none" stroke="' + (se.color || C.cy) + '" stroke-width="2" stroke-linejoin="round"' + (se.dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+      });
+      s += '<line class="hx" y1="' + T + '" y2="' + (H - B) + '" stroke="' + C.ic + '" stroke-opacity=".5" visibility="hidden"/>';
+      o.series.forEach((se, k) => { s += '<circle data-k="' + k + '" r="4" fill="' + (se.color || C.cy) + '" stroke="#000" stroke-width="2" visibility="hidden"/>'; });
+      s += '<rect x="' + L + '" y="' + T + '" width="' + (W - L - Rm) + '" height="' + (H - T - B) + '" fill="transparent" style="cursor:crosshair"/></svg>';
+      const head = '<div class="ttl"><b>' + esc(o.title || '') + '</b>' + (o.yLabel ? '<span>' + esc(o.yLabel) + '</span>' : '') +
+        (o.series.length > 1 ? o.series.map(se => '<span style="color:' + (se.color || C.cy) + '"><i></i><span style="color:var(--tx2)">' + esc(se.name) + '</span></span>').join('') : '') + '</div>';
+      host.innerHTML = head + s + '<div class="tip" hidden></div>';
+      const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), hx = svg.querySelector('.hx'), dots = svg.querySelectorAll('circle'), hit = svg.querySelector('rect:last-of-type');
+      const show = ev => {
+        const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+        const xv = x0 + (px - L) / (W - L - Rm) * (x1 - x0);
+        let k = 0, best = Infinity; xs.forEach((v, j) => { const d = Math.abs(v - xv); if (d < best) { best = d; k = j; } });
+        hx.setAttribute('x1', X(xs[k])); hx.setAttribute('x2', X(xs[k])); hx.setAttribute('visibility', 'visible');
+        let html = '<span style="color:var(--tx2)">' + (o.xName ? esc(o.xName) + ' ' : '') + (o.xFmt ? o.xFmt(xs[k]) : sig(xs[k], 4)) + '</span>';
+        o.series.forEach((se, j) => { const v = se.y[k]; const c = dots[j]; if (Number.isFinite(v)) { c.setAttribute('cx', X(xs[k])); c.setAttribute('cy', Y(Math.max(y0, Math.min(y1, v)))); c.setAttribute('visibility', 'visible'); } else c.setAttribute('visibility', 'hidden');
+          html += '<span style="color:' + (se.color || C.cy) + '">' + (o.series.length > 1 ? esc(se.name) + ' ' : '') + (o.yFmt ? o.yFmt(v) : sig(v, 4)) + (o.unit ? ' ' + esc(o.unit) : '') + '</span>'; });
+        tip.innerHTML = html; tip.hidden = false;
+        const hr = host.getBoundingClientRect(), tw = tip.offsetWidth, cx = ev.clientX - hr.left;
+        tip.style.left = Math.min(hr.width - tw - 6, Math.max(6, cx + 12)) + 'px'; tip.style.top = (ev.clientY - hr.top - 46) + 'px';
+      };
+      const hide = () => { tip.hidden = true; hx.setAttribute('visibility', 'hidden'); dots.forEach(c => c.setAttribute('visibility', 'hidden')); };
+      hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show); hit.addEventListener('pointerleave', hide);
+    };
+    draw();
+    if (!host._ro && window.ResizeObserver) { let w = host.clientWidth; host._ro = new ResizeObserver(() => { if (host._draw && Math.abs(host.clientWidth - w) > 4) { w = host.clientWidth; host._draw(); } }); host._ro.observe(host); }
+    host._draw = draw;
+  }
+
+  function unchart(host) { host = $(host); if (!host) return; host._draw = null; host.innerHTML = ''; }   // toglie un grafico (non si ridisegna più)
+
+  /* ---------- salvare i risultati ---------- */
+  function csv(name, head, data) {
+    const sep = en ? ',' : ';', dec = v => typeof v === 'number' ? (en ? String(v) : String(v).replace('.', ',')) : '"' + String(v).replace(/"/g, '""') + '"';
+    const txt = [head.map(dec).join(sep)].concat(data.map(r => r.map(dec).join(sep))).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + txt], { type: 'text/csv' })); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ---------- schede di modo ---------- */
+  function tabs(host, onChange) {     // <div class="seg" role="tablist"><button role="tab" data-m="..." aria-controls="...">
+    host = $(host); const bs = [...host.querySelectorAll('[role=tab]')];
+    const set = m => { bs.forEach(b => { const on = b.dataset.m === m; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; const p = $(b.getAttribute('aria-controls')); if (p) p.hidden = !on; }); onChange && onChange(m); };
+    host.addEventListener('click', e => { const b = e.target.closest('[role=tab]'); if (b) set(b.dataset.m); });
+    host.addEventListener('keydown', e => { const k = bs.indexOf(document.activeElement); if (k < 0) return; let j = k; if (e.key === 'ArrowRight') j = (k + 1) % bs.length; else if (e.key === 'ArrowLeft') j = (k - 1 + bs.length) % bs.length; else return; bs[j].focus(); set(bs[j].dataset.m); e.preventDefault(); });
+    return { set, get: () => (bs.find(b => b.getAttribute('aria-selected') === 'true') || bs[0]).dataset.m };
+  }
+
+  return { $, lang, en, t, init, applyLang, SUBJ, sky, num, fmt, sig, plain, der, clear, bad, given, esc, rows, msg, live, keep, save, fill, wipe,
+    MU, RE, J2, D2R, G0, OMEGA_E, kepler, nuFromM, gmst, pqw2eci, catalog, elements, sat, earth, stars, v3, scene3, has3D, C, chart, unchart, ticks, csv, tabs };
+})();
+</script>
+<script>
+'use strict';
+K.init('orbite');
+const { $, t, num, fmt, sig, D2R } = K;
+const en = K.en, TAU = 2 * Math.PI, R2D = 180 / Math.PI, DAY = 86400, C = K.C;
+const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const tabs = K.tabs('seg', m => onTab(m));
+
+/* ---------- corpi centrali: μ km³/s², raggio equatoriale km, J2, anno (giorni), rotazione siderale (s) ---------- */
+const BODIES = {
+  earth:   { it: 'Terra', en: 'Earth', the: ['la Terra', 'the Earth'], of: ['della Terra', 'of the Earth'], mu: K.MU, R: K.RE, J2: K.J2, year: 365.2421897, rot: TAU / K.OMEGA_E, pe: ['perigeo', 'perigee'], ap: ['apogeo', 'apogee'] },
+  moon:    { it: 'Luna', en: 'Moon', the: ['la Luna', 'the Moon'], of: ['della Luna', 'of the Moon'], mu: 4902.800, R: 1737.4, rot: 27.321661 * DAY, tex: 'moon', pe: ['perilunio', 'perilune'], ap: ['apolunio', 'apolune'] },
+  mars:    { it: 'Marte', en: 'Mars', the: ['Marte', 'Mars'], of: ['di Marte', 'of Mars'], mu: 42828.37, R: 3396.19, J2: 1960.45e-6, year: 686.980, rot: 88642.66, tex: 'mars', pe: ['pericentro', 'periapsis'], ap: ['apocentro', 'apoapsis'] },
+  venus:   { it: 'Venere', en: 'Venus', the: ['Venere', 'Venus'], of: ['di Venere', 'of Venus'], mu: 324858.59, R: 6051.8, J2: 4.458e-6, year: 224.701, rot: -243.0226 * DAY, tex: 'venus', pe: ['pericentro', 'periapsis'], ap: ['apocentro', 'apoapsis'] },
+  jupiter: { it: 'Giove', en: 'Jupiter', the: ['Giove', 'Jupiter'], of: ['di Giove', 'of Jupiter'], mu: 126686534, R: 71492, J2: 14736e-6, year: 4332.589, rot: 35730, tex: 'jupiter', pe: ['perigiovio', 'perijove'], ap: ['apogiovio', 'apojove'] },
+  sun:     { it: 'Sole', en: 'Sun', the: ['il Sole', 'the Sun'], of: ['del Sole', 'of the Sun'], mu: 132712440018, R: 695700, rot: 25.38 * DAY, tex: 'sun', pe: ['perielio', 'perihelion'], ap: ['afelio', 'aphelion'] },
+};
+Object.keys(BODIES).forEach(k => { BODIES[k].key = k; });
+const body = id => BODIES[$(id).value] || BODIES.earth;
+const L2 = a => a[en ? 1 : 0];
+const bName = B => en ? B.en : B.it, bThe = B => L2(B.the), peW = B => L2(B.pe), apW = B => L2(B.ap);
+
+/* ---------- formati e piccoli aiuti ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+function sv(parent, tag, at, text) { const x = document.createElementNS(NS, tag); for (const k in at) if (at[k] != null) x.setAttribute(k, at[k]); if (text != null) x.textContent = text; parent.appendChild(x); return x; }
+const km = x => fmt(x, Math.abs(x) < 1e5 ? 1 : 0);
+const dg = (x, d) => fmt(x, d == null ? 2 : d);
+const fE = x => x === 0 ? '0' : fmt(x, x < 1e-3 ? 7 : 5);
+const decs = x => { const s = String(x).split('.')[1]; return s ? s.length : 0; };
+function dur(s) {          // durata leggibile: 45,2 s · 12 min 05 s · 5 h 16 min · 3 d 4 h
+  if (!Number.isFinite(s)) return '—';
+  const neg = s < 0; s = Math.abs(s); let r;
+  if (s < 59.95) r = fmt(s, 1) + ' s';
+  else if (s < 3599.5) { const S = Math.round(s), m = Math.floor(S / 60); r = m + ' min ' + String(S - 60 * m).padStart(2, '0') + ' s'; }
+  else if (s < 3 * DAY) { const M = Math.round(s / 60), h = Math.floor(M / 60); r = h + ' h ' + String(M - 60 * h).padStart(2, '0') + ' min'; }
+  else if (s < 1000 * DAY) { const H = Math.round(s / 3600), d = Math.floor(H / 24); r = fmt(d, 0) + ' d ' + (H - 24 * d) + ' h'; }
+  else r = fmt(s / (365.25 * DAY), 2) + t(' anni', ' years');
+  return (neg ? '−' : '') + r;
+}
+const NOTNUM = t('Un valore non è un numero: correggi il campo in ambra.', 'A value is not a number: fix the amber field.');
+function showMsgs(id, list) { $(id).innerHTML = list.map(m => '<p class="msg' + (m[1] ? ' ' + m[1] : '') + '">' + m[0] + '</p>').join(''); }
+function clearChart(id) { const h = $(id); h.innerHTML = ''; h.classList.remove('chart'); h._draw = () => {}; }
+function arrowMk(g, color, w) { return { l: sv(g, 'line', { stroke: color, 'stroke-width': w || 2, 'stroke-linecap': 'round' }), h: sv(g, 'path', { fill: color }) }; }
+function arrowSet(A, x0, y0, x1, y1) {
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, s = Math.min(9, L * 0.5), f = v => v.toFixed(1);
+  A.l.setAttribute('x1', f(x0)); A.l.setAttribute('y1', f(y0)); A.l.setAttribute('x2', f(x1 - ux * s * 0.7)); A.l.setAttribute('y2', f(y1 - uy * s * 0.7));
+  A.h.setAttribute('d', 'M' + f(x1) + ' ' + f(y1) + 'L' + f(x1 - ux * s - uy * s * 0.5) + ' ' + f(y1 - uy * s + ux * s * 0.5) + 'L' + f(x1 - ux * s + uy * s * 0.5) + ' ' + f(y1 - uy * s - ux * s * 0.5) + 'Z');
+}
+
+/* ---------- coniche: forma, tempo dal pericentro, stato ---------- */
+function hypF(M, e) {       // e sinh F − F = M (Newton)
+  let F = M === 0 ? 0 : Math.sign(M) * Math.log(2 * Math.abs(M) / e + 1.8);
+  for (let k = 0; k < 80; k++) { const d = (e * Math.sinh(F) - F - M) / (e * Math.cosh(F) - 1); F -= d; if (Math.abs(d) < 1e-13 * (1 + Math.abs(F))) break; }
+  return F;
+}
+function conic(rp, e, mu) {
+  if (Math.abs(e - 1) < 1e-9) e = 1;
+  if (e < 1e-12) e = 0;
+  const o = { rp, e, mu, p: rp * (1 + e), alpha: (1 - e) / rp };
+  o.a = e === 1 ? Infinity : 1 / o.alpha;
+  o.h = Math.sqrt(mu * o.p); o.eps = -mu * o.alpha / 2; o.vp = Math.sqrt(mu * (1 + e) / rp);
+  o.closed = e < 1;
+  o.kind = e === 0 ? 'circ' : e < 1 ? 'ell' : e === 1 ? 'par' : 'hyp';
+  if (o.closed) { o.ra = o.a * (1 + e); o.va = o.h / o.ra; o.b = o.a * Math.sqrt(1 - e * e); o.n = Math.sqrt(mu / (o.a * o.a * o.a)); o.T = TAU / o.n; }
+  else if (e > 1) { const A = -o.a; o.n = Math.sqrt(mu / (A * A * A)); o.vinf = Math.sqrt(mu / A); o.nuInf = Math.acos(-1 / e); o.delta = 2 * Math.asin(1 / e); o.bImp = A * Math.sqrt(e * e - 1); }
+  else { o.n = 2 * Math.sqrt(mu / (o.p * o.p * o.p)); o.vinf = 0; o.nuInf = Math.PI; o.delta = Math.PI; }
+  if (!o.closed) o.C3 = o.vinf * o.vinf;
+  o.r = nu => o.p / (1 + e * Math.cos(nu));
+  return o;
+}
+function nu2E(o, nu) { const k = Math.floor(nu / TAU), f = nu - k * TAU; return k * TAU + 2 * Math.atan2(Math.sqrt(1 - o.e) * Math.sin(f / 2), Math.sqrt(1 + o.e) * Math.cos(f / 2)); }
+function tOf(o, nu) {      // tempo dal pericentro; continuo anche oltre un giro
+  const e = o.e;
+  if (o.closed) { const E = nu2E(o, nu), k = Math.floor(E / TAU), f = E - k * TAU; return k * o.T + (f - e * Math.sin(f)) / o.n; }
+  if (e > 1) { const F = 2 * Math.atanh(Math.sqrt((e - 1) / (e + 1)) * Math.tan(nu / 2)); return (e * Math.sinh(F) - F) / o.n; }
+  const D = Math.tan(nu / 2); return (D + D * D * D / 3) / o.n;
+}
+function at(o, tt) {       // stato al tempo tt dal pericentro, nel piano dell'orbita (x verso il pericentro)
+  const e = o.e; let nu;
+  if (o.closed) { let M = (o.n * tt) % TAU; if (M < 0) M += TAU; const E = K.kepler(M, e); nu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)); }
+  else if (e > 1) { const F = hypF(o.n * tt, e); nu = 2 * Math.atan(Math.sqrt((e + 1) / (e - 1)) * Math.tanh(F / 2)); }
+  else { const s = 1.5 * o.n * tt, q = Math.sqrt(s * s + 1); nu = 2 * Math.atan(Math.cbrt(s + q) + Math.cbrt(s - q)); }
+  const c = Math.cos(nu), sn = Math.sin(nu), r = o.p / (1 + e * c), k = o.mu / o.h, vx = -k * sn, vy = k * (e + c);
+  return { nu, r, x: r * c, y: r * sn, vx, vy, v: Math.hypot(vx, vy), gam: Math.atan2(e * sn, 1 + e * c) };
+}
+function ssoInc(o, B) {    // inclinazione eliosincrona (rad) o NaN
+  if (!B.J2 || !o.closed) return NaN;
+  const k2 = 1.5 * o.n * B.J2 * Math.pow(B.R / o.p, 2), ci = -(TAU / (B.year * DAY)) / k2;
+  return Math.abs(ci) <= 1 ? Math.acos(ci) : NaN;
+}
+
+/* ---------- forma: da due valori qualsiasi a (r_p, e) ---------- */
+const SH = ['a', 'e', 'rp', 'ra', 'hp', 'ha', 'T', 'p', 'eps', 'vp'];
+// famiglie: valori che dicono la stessa cosa (A: energia; P: pericentro; Q: apocentro)
+const FAM = { a: 'A', T: 'A', eps: 'A', e: 'E', rp: 'P', hp: 'P', ra: 'Q', ha: 'Q', p: 'L', vp: 'V' };
+const FORD = 'AEPQLV';
+const SYM = { a: 'a', e: 'e', rp: 'r<sub>p</sub>', ra: 'r<sub>a</sub>', hp: 'h<sub>p</sub>', ha: 'h<sub>a</sub>', T: 'T', p: 'p', eps: 'ε', vp: 'v<sub>p</sub>' };
+const UNIT = { a: 'km', e: '', rp: 'km', ra: 'km', hp: 'km', ha: 'km', T: 'min', p: 'km', eps: 'km²/s²', vp: 'km/s' };
+const DEC = { a: 1, rp: 1, ra: 1, hp: 1, ha: 1, T: 2, p: 1, vp: 4 };
+const TOL = { a: [1e-3, 0.5], e: [1e-3, 1e-4], rp: [1e-3, 0.5], ra: [1e-3, 0.5], hp: [1e-3, 0.5], ha: [1e-3, 0.5], T: [1e-3, 0.01], p: [1e-3, 0.5], eps: [1e-3, 1e-4], vp: [1e-3, 1e-4] };
+function fv(id, x) { if (id === 'e') return fE(x); if (id === 'eps') return sig(x, 5); return fmt(x, Math.abs(x) >= 1e6 ? 0 : DEC[id]); }
+const fp = (id, x) => fv(id, x).replace(/ /g, ' ');
+function canon(id, v, B) {
+  if (id === 'a') return 1 / v;
+  if (id === 'T') return 1 / Math.cbrt(B.mu * Math.pow(v * 60 / TAU, 2));
+  if (id === 'eps') return -2 * v / B.mu;
+  if (id === 'hp' || id === 'ha') return v + B.R;
+  return v;
+}
+function domain(id, v, B) {
+  if (id === 'a' && v === 0) return t('a non può valere zero.', 'a cannot be zero.');
+  if (id === 'T' && v <= 0) return t('Il periodo deve essere maggiore di zero.', 'The period must be greater than zero.');
+  if (id === 'e' && v < 0) return t("L'eccentricità non può essere negativa.", 'The eccentricity cannot be negative.');
+  if ((id === 'rp' || id === 'ra' || id === 'p' || id === 'vp') && v <= 0) return SYM[id] + t(' deve essere maggiore di zero.', ' must be greater than zero.');
+  if ((id === 'hp' || id === 'ha') && v <= -B.R) return SYM[id] + t(' porta sotto il centro del corpo: la quota deve superare −', ' takes you below the centre of the body: the altitude must be above −') + km(B.R) + ' km.';
+  return null;
+}
+function solvePair(x, y, B) {   // x, y con famiglie in ordine FORD; restituisce { rp, e } oppure { err, id }
+  const mu = B.mu, pe = peW(B), ap = apW(B), E = (it, msg) => ({ err: msg, id: it ? it.id : null });
+  let rp, e;
+  switch (x.f + y.f) {
+    case 'AE': {
+      const al = x.c; e = y.c;
+      if (al === 0) return Math.abs(e - 1) < 1e-9 ? E(null, t("Con ε = 0 ed e = 1 l'orbita è una parabola, ma manca la sua misura: aggiungi il raggio al ", 'With ε = 0 and e = 1 the orbit is a parabola, but its size is missing: add the radius at ') + pe + '.') : E(y, t("Con ε = 0 l'orbita è una parabola: e deve valere 1.", 'With ε = 0 the orbit is a parabola: e must be 1.'));
+      if (al > 0 && e >= 1) return E(y, t("Con a positivo l'orbita è chiusa: e deve essere minore di 1.", 'With a positive a the orbit is closed: e must be less than 1.'));
+      if (al < 0 && e <= 1) return E(y, t("Con a negativo l'orbita è un'iperbole: e deve essere maggiore di 1.", 'With a negative a the orbit is a hyperbola: e must be greater than 1.'));
+      rp = (1 - e) / al; break;
+    }
+    case 'AP': rp = y.c; e = 1 - rp * x.c;
+      if (e < -1e-12) return E(y, t('Il raggio al ', 'The radius at ') + pe + t(' non può superare a = ', ' cannot exceed a = ') + km(1 / x.c) + ' km.'); break;
+    case 'AQ': {
+      const al = x.c, ra = y.c;
+      if (al <= 0) return E(y, t("L'", 'An ') + ap + t(" esiste solo se l'orbita è chiusa, cioè con a positivo.", ' exists only if the orbit is closed, that is with a positive a.'));
+      e = ra * al - 1;
+      if (e < -1e-12) return E(y, t("Il raggio all'", 'The radius at ') + ap + t(' non può essere minore di a = ', ' cannot be less than a = ') + km(1 / al) + ' km.');
+      if (e >= 1) return E(y, t("Il raggio all'", 'The radius at ') + ap + t(' deve essere minore di 2a = ', ' must be less than 2a = ') + km(2 / al) + ' km.');
+      e = Math.max(0, e); rp = ra * (1 - e) / (1 + e); break;
+    }
+    case 'AL': { const q = 1 - y.c * x.c;
+      if (q < -1e-12) return E(y, t('p non può superare a = ', 'p cannot exceed a = ') + km(1 / x.c) + t(' km, perché p = a (1 − e²).', ' km, because p = a (1 − e²).'));
+      e = Math.sqrt(Math.max(0, q)); rp = y.c / (1 + e); break; }
+    case 'AV': { const al = x.c, vp = y.c, den = vp * vp / mu + al;
+      if (den <= 0) return E(y, SYM.vp + t(' deve superare v∞ = ', ' must exceed v∞ = ') + fmt(Math.sqrt(-mu * al), 4) + ' km/s.');
+      rp = 2 / den; e = 1 - rp * al;
+      if (e < -1e-12) return E(y, SYM.vp + t(' è troppo bassa: al ', ' is too low: at ') + pe + t(' serve almeno la velocità circolare √(μ/a) = ', ' you need at least the circular speed √(μ/a) = ') + fmt(Math.sqrt(mu * al), 4) + ' km/s.');
+      break; }
+    case 'EP': e = x.c; rp = y.c; break;
+    case 'EQ': e = x.c;
+      if (e >= 1) return E(x, t("Con e ≥ 1 l'orbita è aperta e non ha ", 'With e ≥ 1 the orbit is open and has no ') + ap + '.');
+      rp = y.c * (1 - e) / (1 + e); break;
+    case 'EL': e = x.c; rp = y.c / (1 + e); break;
+    case 'EV': e = x.c; rp = mu * (1 + e) / (y.c * y.c); break;
+    case 'PQ': rp = x.c;
+      if (y.c < rp * (1 - 1e-12)) return E(y, t("Il raggio all'", 'The radius at ') + ap + t(' deve essere almeno quello al ', ' must be at least the one at ') + pe + t(': forse hai scambiato i due valori.', ': perhaps the two values are swapped.'));
+      e = (y.c - rp) / (y.c + rp); break;
+    case 'PL': rp = x.c; e = y.c / rp - 1;
+      if (e < -1e-12) return E(y, t('p non può essere minore del raggio al ', 'p cannot be less than the radius at ') + pe + t(', perché p = r<sub>p</sub> (1 + e).', ', because p = r<sub>p</sub> (1 + e).')); break;
+    case 'PV': rp = x.c; e = rp * y.c * y.c / mu - 1;
+      if (e < -1e-12) return E(y, SYM.vp + t(' è troppo bassa: a questo raggio la velocità circolare è ', ' is too low: at this radius the circular speed is ') + fmt(Math.sqrt(mu / rp), 4) + t(' km/s, e al ', ' km/s, and at ') + pe + t(' serve almeno quella.', ' you need at least that.')); break;
+    case 'QL': { const ra = x.c; e = 1 - y.c / ra;
+      if (e < -1e-12) return E(y, t('p non può superare il raggio all\'', 'p cannot exceed the radius at ') + ap + '.');
+      e = Math.max(0, e); rp = y.c / (1 + e); break; }
+    case 'QV': { const ra = x.c, v2 = y.c * y.c;
+      rp = (-v2 * ra + Math.sqrt(v2 * v2 * ra * ra + 8 * mu * ra * v2)) / (2 * v2);
+      if (rp > ra * (1 + 1e-9)) return E(y, SYM.vp + t(" è troppo bassa: con questo raggio all'", ' is too low: with this radius at ') + ap + t(' serve almeno ', ' you need at least ') + fmt(Math.sqrt(mu / ra), 4) + ' km/s.');
+      rp = Math.min(rp, ra); e = (ra - rp) / (ra + rp); break; }
+    case 'LV': { const p = x.c; rp = Math.sqrt(mu * p) / y.c; e = p / rp - 1;
+      if (e < -1e-12) return E(y, SYM.vp + t(' è troppo bassa per questo p: serve almeno √(μ/p) = ', ' is too low for this p: you need at least √(μ/p) = ') + fmt(Math.sqrt(mu / p), 4) + ' km/s.'); break; }
+  }
+  if (e < 0) e = 0;
+  if (!(rp > 0) || !Number.isFinite(rp) || !Number.isFinite(e)) return E(y, t("Questi due valori non descrivono un'orbita.", 'These two values do not describe an orbit.'));
+  return { rp, e };
+}
+function fieldVal(id, o, B) {   // valore di un campo per l'orbita o; undefined se non esiste
+  switch (id) {
+    case 'a': return o.e === 1 ? undefined : o.a;
+    case 'e': return o.e;
+    case 'rp': return o.rp;
+    case 'hp': return o.rp - B.R;
+    case 'ra': return o.closed ? o.ra : undefined;
+    case 'ha': return o.closed ? o.ra - B.R : undefined;
+    case 'T': return o.closed ? o.T / 60 : undefined;
+    case 'p': return o.p;
+    case 'eps': return o.eps;
+    case 'vp': return o.vp;
+  }
+}
+function famVal(id, rep, B) {    // valore di un campo ricavabile da un solo valore della stessa famiglia
+  const c = rep.c;
+  if (FAM[id] === 'A') { if (id === 'eps') return -B.mu * c / 2; if (c === 0) return undefined; const a = 1 / c; if (id === 'a') return a; return c > 0 ? TAU * Math.sqrt(a * a * a / B.mu) / 60 : undefined; }
+  if (id === 'hp' || id === 'ha') return c - B.R;
+  return c;
+}
+const off = (id, v, x) => Math.abs(v - x) > Math.max(TOL[id][0] * Math.abs(x), TOL[id][1]);
+const mismatch = (id, v, x) => SYM[id] + t(' non torna con gli altri dati: dovrebbe valere ', ' does not match the other data: it should be ') + fv(id, x) + (UNIT[id] ? ' ' + UNIT[id] : '') + t(' (hai scritto ', ' (you typed ') + fv(id, v) + ').';
+function check(it, o, B) {
+  const x = fieldVal(it.id, o, B);
+  if (x === undefined) {
+    if (it.id === 'a') return t("Con e = 1 l'orbita è una parabola e a è infinito: togli a.", 'With e = 1 the orbit is a parabola and a is infinite: remove a.');
+    return t("Con e ≥ 1 l'orbita è aperta: non ha ", 'With e ≥ 1 the orbit is open: it has no ') + (it.id === 'T' ? t('periodo', 'period') : apW(B)) + t('. Togli ', '. Remove ') + SYM[it.id] + '.';
+  }
+  return off(it.id, it.v, x) ? mismatch(it.id, it.v, x) : null;
+}
+function solveShape(items, B) {   // items: [{ id, v }] nell'ordine in cui sono stati scritti
+  const R = { bad: [] };
+  items.forEach(it => { const m = domain(it.id, it.v, B); if (m) R.bad.push({ id: it.id, msg: m }); });
+  if (R.bad.length) return R;
+  const rep = {}, fams = [];
+  items.forEach(it => { it.f = FAM[it.id]; it.c = canon(it.id, it.v, B); if (!rep[it.f]) { rep[it.f] = it; fams.push(it.f); } });
+  R.fams = fams; R.rep = rep;
+  for (let i = 0; i < fams.length && !R.o; i++) for (let j = i + 1; j < fams.length && !R.o; j++) {
+    let x = rep[fams[i]], y = rep[fams[j]];
+    if (FORD.indexOf(x.f) > FORD.indexOf(y.f)) [x, y] = [y, x];
+    const s = solvePair(x, y, B);
+    if (s.err) { if (!R.err) R.err = s; continue; }
+    R.o = conic(s.rp, s.e, B.mu); R.used = [x.id, y.id]; R.err = null;
+  }
+  if (R.o) items.forEach(it => { if (R.used.includes(it.id)) return; const m = check(it, R.o, B); if (m) R.bad.push({ id: it.id, msg: m }); });
+  return R;
+}
+
+/* ---------- Orbita: lettura dei campi e risultati ---------- */
+let ORD = [];   // ordine in cui hai compilato i campi della forma: i primi due comandano, gli altri si controllano
+function orderNow() { const full = SH.filter(id => $(id).value.trim() !== ''); return ORD.filter(id => full.includes(id)).concat(full.filter(id => !ORD.includes(id))); }
+$('fo').addEventListener('input', ev => { const id = ev.target.id; if (!SH.includes(id)) return; const full = ev.target.value.trim() !== ''; if (!full) ORD = ORD.filter(x => x !== id); else if (!ORD.includes(id)) ORD.push(id); });
+
+const AN = { O: null, clock: 0, play: !REDUCED, warp: 1, epoch: new Date() };
+let curB = BODIES.earth, VIEW = K.has3D() && window.THREE ? '3d' : '2d';
+function words(B) {
+  const pe = peW(B), ap = apW(B), L = { rp: t('Raggio al ', 'Radius at ') + pe, ra: t("Raggio all'", 'Radius at ') + ap, hp: t('Quota al ', 'Altitude at ') + pe, ha: t("Quota all'", 'Altitude at ') + ap, vp: t('Velocità al ', 'Speed at ') + pe, argp: t('Argomento del ', 'Argument of ') + pe };
+  document.querySelectorAll('[data-l]').forEach(s => { s.textContent = L[s.dataset.l]; });
+  $('bodyN').textContent = 'μ = ' + fmt(B.mu, decs(B.mu)) + ' km³/s² · ' + t('raggio ', 'radius ') + fmt(B.R, decs(B.R)) + ' km';
+  $('otm').setAttribute('aria-label', t('Tempo dal ', 'Time from ') + pe);
+}
+function capOrb() {
+  const B = curB, it = (c, txt, dot) => '<span style="color:' + c + '"><i' + (dot ? ' class="dot"' : '') + '></i>' + txt + '</span>';
+  const aps = AN.O && !AN.O.o.closed ? peW(B) : peW(B) + t(' e ', ' and ') + apW(B);
+  $('ocap').innerHTML = VIEW === '3d'
+    ? it('var(--cy)', t('orbita', 'orbit')) + it('var(--gr)', t('satellite', 'satellite'), 1) + it('var(--ic)', aps, 1) + it('var(--tx3)', t('piano equatoriale', 'equatorial plane'))
+    : it('var(--cy)', t('orbita', 'orbit')) + it('var(--gr)', t('satellite e velocità', 'satellite and velocity'), 1) + it('var(--ic)', aps, 1) + it('var(--tx3)', t('orizzontale locale', 'local horizontal'));
+}
+function partial(S, items, B, msgs) {
+  if (!items.length) { msgs.push([t('Scrivi due valori qualsiasi della forma, per esempio le quote al ', 'Type any two values of the shape, for example the altitudes at ') + peW(B) + t(" e all'", ' and at ') + apW(B) + '.', 'info']); return; }
+  const f = S.fams[0], rep = S.rep[f];
+  SH.forEach(id => {
+    if (FAM[id] !== f || id === rep.id || (f !== 'A' && f !== 'P' && f !== 'Q')) return;
+    const x = famVal(id, rep, B); if (x === undefined) return;
+    const it = items.find(j => j.id === id);
+    if (!it) K.der(id, x, fp(id, x)); else if (off(id, it.v, x)) { K.bad(id); msgs.push([mismatch(id, it.v, x)]); }
+  });
+  const same = items.length > 1 ? items.map(j => SYM[j.id]).join(t(' e ', ' and ')) + t(' dicono la stessa cosa. ', ' say the same thing. ') : '';
+  msgs.push([same + t('Serve un altro valore indipendente, per esempio ', 'One more independent value is needed, for example ') + (f === 'E' ? t('la quota al ', 'the altitude at ') + peW(B) : 'e') + '.', 'info']);
+}
+function runOrb() {
+  K.clear('fo');
+  const B = curB = body('body'); words(B); capOrb();
+  const msgs = [], items = []; let nan = false;
+  orderNow().forEach(id => { const v = num(id); if (Number.isNaN(v)) { K.bad(id); nan = true; } else items.push({ id, v }); });
+  const ang = {};
+  ['inc', 'raan', 'argp', 'nu'].forEach(id => { const v = num(id); if (Number.isNaN(v)) { K.bad(id); nan = true; } ang[id] = v == null || Number.isNaN(v) ? 0 : v; });
+  if (nan) { showMsgs('omsg', [[NOTNUM]]); return noOrbit(B); }
+  const S = solveShape(items, B);
+  S.bad.forEach(b => { K.bad(b.id); msgs.push([b.msg]); });
+  if (!S.o) {
+    if (S.err) { if (S.err.id) K.bad(S.err.id); msgs.push([S.err.err]); }
+    else if (!S.bad.length) partial(S, items, B, msgs);
+    showMsgs('omsg', msgs); return noOrbit(B);
+  }
+  const o = S.o;
+  SH.forEach(id => {
+    if (K.given(id)) return;
+    const x = fieldVal(id, o, B);
+    if (x !== undefined) K.der(id, x, fp(id, x));
+    else if (id === 'a') K.der('a', 0, '∞');
+    else { K.der(id, null); $(id).placeholder = '—'; }
+  });
+  if (ang.inc < 0 || ang.inc > 180) { K.bad('inc'); msgs.push([t("L'inclinazione va da 0° a 180°.", 'The inclination goes from 0° to 180°.')]); showMsgs('omsg', msgs); return noOrbit(B); }
+  let nu = ((ang.nu % 360) + 540) % 360 - 180;
+  if (!o.closed && Math.abs(nu) >= o.nuInf * R2D - 1e-6) {
+    K.bad('nu'); msgs.push([t('Su questa traiettoria ν va da −', 'On this path ν goes from −') + dg(o.nuInf * R2D, 1) + t('° a +', '° to +') + dg(o.nuInf * R2D, 1) + t('°: uso ν = 0.', '°: using ν = 0.')]); nu = 0;
+  }
+  if (o.rp < B.R) msgs.push([t('Il ', 'The ') + peW(B) + t(' è ', ' is ') + km(B.R - o.rp) + t(' km sotto la superficie: questa orbita finisce contro ', ' km below the surface: this orbit runs into ') + bThe(B) + '.']);
+  else if (B.key === 'earth' && o.rp - B.R < 120) msgs.push([t("Il perigeo è dentro l'atmosfera (sotto 120 km): l'orbita decade in fretta.", 'The perigee is inside the atmosphere (below 120 km): the orbit decays quickly.'), 'info']);
+  showMsgs('omsg', msgs);
+  const O = { o, B, used: S.used, i: ang.inc * D2R, raan: ang.raan * D2R, argp: ang.argp * D2R, nu: nu * D2R };
+  O.tnu = tOf(o, O.nu);
+  if (!o.closed) {
+    let rl = 5 * o.rp; const rn = o.r(O.nu); if (rn > rl * 0.9) rl = rn * 1.15;
+    O.nuLim = Math.acos(Math.max(-1, Math.min(1, (o.p / rl - 1) / o.e)));
+    O.tl = tOf(o, O.nuLim);
+  }
+  AN.O = O; AN.clock = 0; AN.warp = o.closed ? o.T / 20 : 2 * O.tl / 14; capOrb();
+  const tm = $('otm'); tm.disabled = false; $('oplay').disabled = false;
+  tm.min = o.closed ? 0 : -O.tl; tm.max = o.closed ? o.T : O.tl;
+  orbResults(O, S);
+  if (VIEW === '3d') draw3(O, B); else draw2(O, B);
+  orbCharts(O); showOrb();
+  K.save({ m: tabs.get(), v: VIEW });
+}
+function noOrbit(B) {
+  AN.O = null; capOrb();
+  K.rows('oo1', []); K.rows('oo2', []);
+  clearChart('och1'); clearChart('och2'); $('ochn').textContent = '';
+  $('otm').disabled = true; $('oplay').disabled = true; $('otl').textContent = '—';
+  if (VIEW === '3d') draw3(null, B); else draw2(null, B);
+  K.save({ m: tabs.get(), v: VIEW });
+}
+function periodMain(T) { return T < 3 * 3600 ? [fmt(T / 60, 2), 'min'] : T < 3 * DAY ? [fmt(T / 3600, 3), 'h'] : [fmt(T / DAY, 3), 'd']; }
+function orbResults(O, S) {
+  const o = O.o, B = O.B, pe = peW(B), ap = apW(B), alt = r => t('quota ', 'altitude ') + km(r - B.R) + ' km';
+  const kind = { circ: t('circolare', 'circular'), ell: t('ellittica', 'elliptical'), par: t('parabolica', 'parabolic'), hyp: t('iperbolica', 'hyperbolic') }[o.kind];
+  const kn = o.closed ? t('chiusa: ripassa sempre dagli stessi punti', 'closed: it keeps passing through the same points') : o.e === 1 ? t('al limite della fuga: non torna', 'on the edge of escape: it does not come back') : t('aperta: lascia ', 'open: it leaves ') + bThe(B);
+  const L = [['#', t('Forma', 'Shape')],
+    [t('Orbita', 'Orbit'), kind, '', kn + ' · ' + t('ricavata da ', 'worked out from ') + SYM[S.used[0]] + t(' e ', ' and ') + SYM[S.used[1]]],
+    [t('Semiasse maggiore', 'Semi-major axis') + ' a', o.e === 1 ? '∞' : km(o.a), 'km', o.e > 1 ? t("negativo nell'iperbole", 'negative for a hyperbola') : ''],
+    [t('Eccentricità', 'Eccentricity') + ' e', fE(o.e)],
+    o.closed && o.e > 0 ? [t('Semiasse minore', 'Semi-minor axis') + ' b', km(o.b), 'km'] : null,
+    [t('Semilato retto', 'Semi-latus rectum') + ' p', km(o.p), 'km'],
+    [t('Raggio al ', 'Radius at ') + pe + ' r<sub>p</sub>', km(o.rp), 'km', alt(o.rp)],
+    o.closed ? [t("Raggio all'", 'Radius at ') + ap + ' r<sub>a</sub>', km(o.ra), 'km', alt(o.ra)] : null];
+  if (o.closed) L.push(['#', t('Tempo', 'Time')],
+    [t('Periodo', 'Period') + ' T', ...periodMain(o.T), fmt(o.T, 1) + ' s = ' + fmt(o.T / 60, 2) + ' min = ' + fmt(o.T / 3600, 4) + ' h' + (o.T > 2 * DAY ? ' = ' + fmt(o.T / DAY, 3) + ' d' : ''), 'key'],
+    [t('Moto medio', 'Mean motion') + ' n', sig(o.n, 5), 'rad/s', fmt(DAY / o.T, 4) + t(' giri al giorno', ' revolutions per day')]);
+  else L.push(['#', t('Geometria', 'Geometry')],
+    [t('Angolo di deviazione', 'Turning angle') + ' δ', dg(o.delta * R2D, 3), '°', t('di quanto ', 'how much ') + bThe(B) + t(' piega la traiettoria', ' bends the path')],
+    [t("Anomalia vera dell'asintoto", 'True anomaly of the asymptote') + ' ν∞', dg(o.nuInf * R2D, 3), '°'],
+    o.e > 1 ? [t("Parametro d'impatto", 'Impact parameter') + ' b', km(o.bImp), 'km', t("distanza tra l'asintoto e il centro", 'distance between the asymptote and the centre')] : null);
+  const vesc = Math.sqrt(2 * B.mu / o.rp), st = at(o, O.tnu), kk = B.mu / o.h;
+  const R = [['#', t('Velocità ed energia', 'Speed and energy')],
+    !o.closed ? [t("Velocità all'infinito", 'Hyperbolic excess speed') + ' v∞', fmt(o.vinf, 4), 'km/s', 'C3 = v∞² = ' + fmt(o.C3, 3) + ' km²/s²', 'key'] : null,
+    [t('Velocità al ', 'Speed at ') + pe + ' v<sub>p</sub>', fmt(o.vp, 4), 'km/s'],
+    o.closed ? [t("Velocità all'", 'Speed at ') + ap + ' v<sub>a</sub>', fmt(o.va, 4), 'km/s'] : null,
+    [t('Velocità di fuga al ', 'Escape speed at ') + pe, fmt(vesc, 4), 'km/s', o.closed ? t('per uscire da qui servono ', 'to escape from here you need ') + fmt(vesc - o.vp, 4) + t(' km/s in più', ' km/s more') : ''],
+    [t('Energia specifica', 'Specific energy') + ' ε', sig(o.eps, 6), 'km²/s²', o.eps < 0 ? t('negativa: orbita chiusa', 'negative: closed orbit') : o.eps === 0 ? t('zero: parabola', 'zero: parabola') : t('positiva: orbita aperta', 'positive: open orbit')],
+    [t('Momento angolare', 'Angular momentum') + ' h', sig(o.h, 6), 'km²/s'],
+    ['#', t('Nel punto scelto, ν = ', 'At the chosen point, ν = ') + dg(O.nu * R2D, 1) + '°'],
+    [t('Distanza dal centro', 'Distance from the centre') + ' r', km(st.r), 'km', alt(st.r)],
+    [t('Velocità', 'Speed') + ' v', fmt(st.v, 4), 'km/s', t('radiale ', 'radial ') + fmt(kk * o.e * Math.sin(st.nu), 4) + ' · ' + t('orizzontale ', 'horizontal ') + fmt(kk * (1 + o.e * Math.cos(st.nu)), 4) + ' km/s'],
+    [t('Angolo di volo', 'Flight-path angle') + ' γ', dg(st.gam * R2D, 3), '°', t("tra la velocità e l'orizzontale locale", 'between the velocity and the local horizontal')],
+    [t('Tempo dal ', 'Time from ') + pe, dur(O.tnu), '', O.tnu < 0 ? t('negativo: prima del ', 'negative: before ') + pe : '']];
+  if (B.J2 && o.closed) {
+    const k2 = o.n * B.J2 * Math.pow(B.R / o.p, 2), ci = Math.cos(O.i), w5 = 5 * ci * ci - 1;
+    const dO = -1.5 * k2 * ci * R2D * DAY, dw = 0.75 * k2 * w5 * R2D * DAY, iS = ssoInc(o, B), rate = 360 / B.year, pd = t('°/giorno', '°/day');
+    L.push(['#', t('Schiacciamento ', 'Oblateness ') + L2(B.of) + ' (J2)'],
+      [t('Rotazione del nodo', 'Node drift') + ' dΩ/dt', fmt(dO, 4), pd, Math.abs(ci) < 1e-9 ? t('ferma: orbita polare', 'still: polar orbit') : dO < 0 ? t('verso ovest', 'westward') : t('verso est', 'eastward')],
+      [t('Rotazione del ', 'Drift of the ') + pe + ' dω/dt', fmt(dw, 4), pd, Math.abs(w5) < 0.01 ? t('quasi ferma: inclinazione critica 63,4°', 'almost still: critical inclination 63.4°') : dw > 0 ? t('avanza nel verso del moto', 'moves forward with the motion') : t('arretra', 'moves backward')],
+      Number.isFinite(iS) ? [t('Inclinazione eliosincrona', 'Sun-synchronous inclination'), dg(iS * R2D, 2), '°', t('il nodo segue il Sole: ', 'the node follows the Sun: ') + fmt(rate, 4) + ' ' + pd]
+        : [t('Inclinazione eliosincrona', 'Sun-synchronous inclination'), t('non possibile', 'not possible'), '', t('a questa quota J2 non fa girare il nodo di ', 'at this altitude J2 cannot turn the node by ') + fmt(rate, 4) + ' ' + pd, 'warn']);
+  }
+  K.rows('oo1', L); K.rows('oo2', R);
+}
+
+/* ---------- vista 3D ---------- */
+let S3 = null, frameKey = '';
+const sunECI = d => { const n = d.getTime() / 864e5 + 2440587.5 - 2451545, L = (280.460 + 0.9856474 * n) * D2R, g = (357.528 + 0.9856003 * n) * D2R, lam = L + (1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * D2R, ob = (23.439 - 4e-7 * n) * D2R; return [Math.cos(lam), Math.cos(ob) * Math.sin(lam), Math.sin(ob) * Math.sin(lam)]; };
+function init3() {
+  if (S3) return S3;
+  if (!K.has3D() || !window.THREE) return null;
+  S3 = K.scene3(THREE, 'ov3');
+  S3.bod = {};
+  const E = K.earth(THREE, 1); S3.scene.add(E.group); S3.bod.earth = { g: E.group, E };
+  const line = c => { const l = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: c })); S3.scene.add(l); return l; };
+  S3.orbit = line(0x35d4f2); S3.eq = line(0x414b57);
+  const dot = c => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), new THREE.MeshBasicMaterial({ color: c })); S3.scene.add(m); return m; };
+  S3.sat = dot(0x58e07f); S3.per = dot(0xcfe3f5); S3.apo = dot(0xcfe3f5);
+  const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3));
+  S3.focus = new THREE.Points(fg, new THREE.PointsMaterial({ color: 0xcfe3f5, size: 5, sizeAttenuation: false })); S3.scene.add(S3.focus);
+  setSun();
+  S3.onFrame(frame3);
+  return S3;
+}
+function setSun() { if (!S3) return; const s = K.v3(THREE, sunECI(AN.epoch), 1).normalize(); S3.bod.earth.E.setSun(s); S3.light.position.copy(s).multiplyScalar(10); }
+function bodyMesh(B) {
+  if (S3.bod[B.key]) return S3.bod[B.key];
+  const tx = new THREE.TextureLoader().load('tex/' + B.tex + '.jpg'); tx.anisotropy = 8;
+  const mat = B.key === 'sun' ? new THREE.MeshBasicMaterial({ map: tx }) : new THREE.MeshStandardMaterial({ map: tx, roughness: 1, metalness: 0 });
+  const g = new THREE.Group(); g.add(new THREE.Mesh(new THREE.SphereGeometry(1, 96, 64), mat)); S3.scene.add(g);
+  return (S3.bod[B.key] = { g });
+}
+const toV3 = (O, x, y) => K.v3(THREE, K.pqw2eci(x, y, O.i, O.raan, O.argp), O.B.R);
+function draw3(O, B) {
+  if (!init3()) return;
+  S3.B = B;
+  for (const k in S3.bod) S3.bod[k].g.visible = false;
+  bodyMesh(B).g.visible = true;
+  const has = !!O;
+  S3.orbit.visible = S3.sat.visible = S3.per.visible = S3.eq.visible = has;
+  S3.apo.visible = has && O.o.closed && O.o.e > 1e-4;
+  if (!O) { frameCam(1.25, null, B.key); return; }
+  const o = O.o, pts = [];
+  if (o.closed) for (let k = 0; k <= 720; k++) { const E = TAU * k / 720; pts.push(toV3(O, o.a * (Math.cos(E) - o.e), o.b * Math.sin(E))); }
+  else for (let k = 0; k <= 600; k++) { const nu = -O.nuLim + 2 * O.nuLim * k / 600, r = o.r(nu); pts.push(toV3(O, r * Math.cos(nu), r * Math.sin(nu))); }
+  S3.orbit.geometry.dispose(); S3.orbit.geometry = new THREE.BufferGeometry().setFromPoints(pts);
+  S3.per.position.copy(toV3(O, o.rp, 0));
+  if (o.closed) S3.apo.position.copy(toV3(O, -o.ra, 0));
+  let rmax = 1; pts.forEach(p => { rmax = Math.max(rmax, p.length()); });
+  const ring = [], rr = rmax * 1.08;
+  for (let k = 0; k <= 180; k++) { const a = TAU * k / 180; ring.push(new THREE.Vector3(rr * Math.cos(a), 0, -rr * Math.sin(a))); }
+  S3.eq.geometry.dispose(); S3.eq.geometry = new THREE.BufferGeometry().setFromPoints(ring);
+  frameCam(rmax, O, B.key);
+}
+function frameCam(rmax, O, key) {     // inquadra l'orbita guardandola un po' dall'alto del suo piano
+  const fk = key + '|' + rmax.toPrecision(2) + '|' + (O ? [O.i, O.raan, O.argp].map(x => x.toFixed(3)).join(',') : '-');
+  if (fk === frameKey) return; frameKey = fk;
+  const cam = S3.camera, d = Math.max(3.8, rmax * 3.0), sun = K.v3(THREE, sunECI(AN.epoch), 1).normalize();
+  let dir = new THREE.Vector3(0.55, 0.38, 0.75).normalize();
+  if (O) {     // 40° sopra il piano dell'orbita, dalla parte illuminata
+    const h = K.v3(THREE, [Math.sin(O.i) * Math.sin(O.raan), -Math.sin(O.i) * Math.cos(O.raan), Math.cos(O.i)], 1);
+    if (h.y < -0.2) h.negate();
+    const q = K.v3(THREE, K.pqw2eci(0, 1, O.i, O.raan, O.argp), 1), p = K.v3(THREE, K.pqw2eci(1, 0, O.i, O.raan, O.argp), 1);
+    let best = -9;
+    for (let j = 0; j < 12; j++) {
+      const f = j * TAU / 12, c = h.clone().multiplyScalar(Math.cos(50 * D2R)).addScaledVector(q, -Math.sin(50 * D2R) * Math.cos(f)).addScaledVector(p, Math.sin(50 * D2R) * Math.sin(f)).normalize();
+      if (c.dot(sun) > best + 1e-9) { best = c.dot(sun); dir = c; }
+    }
+  } else if (sun.dot(dir) < 0) dir.set(sun.x, 0.45, sun.z).normalize();
+  cam.position.copy(dir.multiplyScalar(d)); cam.near = d / 2000; cam.far = d * 60; cam.updateProjectionMatrix();
+  if (S3.controls) { S3.controls.target.set(0, 0, 0); S3.controls.minDistance = 1.15; S3.controls.maxDistance = d * 5; S3.controls.update(); } else cam.lookAt(0, 0, 0);
+  const sr = d * 15;
+  if (!S3.sky || S3.sky.userData.r < sr * 0.6 || S3.sky.userData.r > sr * 1.6) {
+    if (S3.sky) { S3.scene.remove(S3.sky); S3.sky.geometry.dispose(); S3.sky.material.dispose(); }
+    S3.sky = K.stars(THREE, 1600, sr); S3.sky.userData.r = sr; S3.scene.add(S3.sky);
+  }
+}
+function frame3() {
+  if (!S3 || !S3.B) return;
+  const cam = S3.camera, f = 2 * Math.tan(cam.fov * D2R / 2) / (S3.cv.clientHeight || 400), B = S3.B, b = S3.bod[B.key];
+  if (b) b.g.rotation.y = B.key === 'earth' ? K.gmst(AN.epoch) + K.OMEGA_E * AN.clock : TAU * AN.clock / B.rot;
+  if (AN.O) { const st = at(AN.O.o, simT()); S3.sat.position.copy(toV3(AN.O, st.x, st.y)); }
+  [[S3.sat, 4.5], [S3.per, 3], [S3.apo, 3]].forEach(([m, px]) => m.scale.setScalar(px * f * cam.position.distanceTo(m.position)));
+  S3.focus.visible = 1 / (cam.position.length() * f) < 2.5;    // corpo piccolo sullo schermo: un punto segna il fuoco
+}
+
+/* ---------- vista 2D: il piano dell'orbita, pericentro a destra ---------- */
+const V2 = {};
+function draw2(O, B) {
+  const svg = $('ov2'), host = $('ov'), W = host.clientWidth, H = host.clientHeight;
+  V2.sat = null;
+  if (!W || !H || svg.hasAttribute('hidden')) return;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.innerHTML = '';
+  const o = O && O.o, pts = [];
+  if (o) {
+    if (o.closed) for (let k = 0; k <= 360; k++) { const E = TAU * k / 360; pts.push([o.a * (Math.cos(E) - o.e), o.b * Math.sin(E)]); }
+    else for (let k = 0; k <= 300; k++) { const nu = -O.nuLim + 2 * O.nuLim * k / 300, r = o.r(nu); pts.push([r * Math.cos(nu), r * Math.sin(nu)]); }
+  }
+  let x0 = -B.R, x1 = B.R, y0 = -B.R, y1 = B.R;
+  pts.forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+  const mx = W < 500 ? 30 : 48, mt = 30, mb = W < 500 ? 60 : 46;
+  const k = Math.min((W - 2 * mx) / (x1 - x0), (H - mt - mb) / (y1 - y0)), ox = W / 2 - k * (x0 + x1) / 2, oy = mt + (H - mt - mb) / 2 + k * (y0 + y1) / 2;
+  const X = x => ox + k * x, Y = y => oy - k * y, g = sv(svg, 'g', {});
+  if (o && o.closed && o.e > 1e-4) sv(g, 'line', { x1: X(o.rp), y1: Y(0), x2: X(-o.ra), y2: Y(0), stroke: '#414b57', 'stroke-dasharray': '4 4' });
+  if (o && o.e > 1) {     // asintoti, dal centro dell'iperbole verso l'esterno
+    const cx = -o.a * o.e, L = 40 * (x1 - x0);
+    [1, -1].forEach(s => sv(g, 'line', { x1: X(cx), y1: Y(0), x2: X(cx + L * Math.cos(o.nuInf)), y2: Y(s * L * Math.sin(o.nuInf)), stroke: '#414b57', 'stroke-dasharray': '4 4' }));
+  }
+  const br = Math.max(3, k * B.R);
+  sv(g, 'circle', { cx: X(0), cy: Y(0), r: br, fill: '#10141a', stroke: '#414b57' });
+  if (br > 30) sv(g, 'text', { x: X(0), y: Y(0) + 4, 'text-anchor': 'middle', class: 'sm' }, bName(B));
+  if (!o) return;
+  sv(g, 'path', { d: 'M' + pts.map(([x, y]) => X(x).toFixed(1) + ' ' + Y(y).toFixed(1)).join('L'), fill: 'none', stroke: C.cy, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+  if (o.closed && o.e > 0.02) sv(g, 'circle', { cx: X(-2 * o.a * o.e), cy: Y(0), r: 3, fill: 'none', stroke: C.tx3 });
+  const lab = (x, txt, right) => { const px = X(x); let anc = right ? 'start' : 'end', lx = px + (right ? 8 : -8); if (right && lx + 120 > W) { anc = 'end'; lx = px - 8; } if (!right && lx - 120 < 0) { anc = 'start'; lx = px + 8; } sv(g, 'text', { x: lx, y: Y(0) - 8, 'text-anchor': anc }, txt); };
+  sv(g, 'circle', { cx: X(o.rp), cy: Y(0), r: 3.5, fill: C.ic });
+  if (o.e > 1e-3) lab(o.rp, peW(B) + ' ' + km(o.rp - B.R) + ' km', true);
+  if (o.closed && o.e > 1e-3) { sv(g, 'circle', { cx: X(-o.ra), cy: Y(0), r: 3.5, fill: C.ic }); lab(-o.ra, apW(B) + ' ' + km(o.ra - B.R) + ' km', false); }
+  V2.hz = sv(g, 'line', { stroke: C.tx3, 'stroke-dasharray': '3 3' });
+  V2.rv = sv(g, 'line', { x1: X(0), y1: Y(0), stroke: C.tx3, 'stroke-width': 1, opacity: 0.7 });
+  V2.va = arrowMk(g, C.gr, 2);
+  V2.sat = sv(g, 'circle', { r: 5, fill: C.gr, stroke: '#000', 'stroke-width': 1.5 });
+  Object.assign(V2, { X, Y, vmax: o.vp });
+  if (AN.O) place2(at(o, simT()));
+}
+function place2(st) {
+  if (!V2.sat) return;
+  const sx = V2.X(st.x), sy = V2.Y(st.y), hx = -Math.sin(st.nu), hy = Math.cos(st.nu);
+  V2.rv.setAttribute('x2', sx.toFixed(1)); V2.rv.setAttribute('y2', sy.toFixed(1));
+  V2.hz.setAttribute('x1', (sx - 26 * hx).toFixed(1)); V2.hz.setAttribute('y1', (sy + 26 * hy).toFixed(1)); V2.hz.setAttribute('x2', (sx + 26 * hx).toFixed(1)); V2.hz.setAttribute('y2', (sy - 26 * hy).toFixed(1));
+  const L = 16 + 54 * st.v / V2.vmax;
+  arrowSet(V2.va, sx, sy, sx + L * st.vx / st.v, sy - L * st.vy / st.v);
+  V2.sat.setAttribute('cx', sx.toFixed(1)); V2.sat.setAttribute('cy', sy.toFixed(1));
+}
+function simT() {
+  const O = AN.O, o = O.o; let x = O.tnu + AN.clock;
+  if (o.closed) { x %= o.T; if (x < 0) x += o.T; } else { const L = 2 * O.tl; x = ((x + O.tl) % L + L) % L - O.tl; }
+  return x;
+}
+function showOrb() {
+  const O = AN.O; if (!O) return;
+  const tt = simT(), st = at(O.o, tt);
+  if (VIEW === '2d') place2(st);
+  $('otm').value = tt;
+  $('otl').textContent = dur(tt) + t(' dal ', ' from ') + peW(O.B) + ' · ν ' + dg(st.nu * R2D, 1) + '° · h ' + km(st.r - O.B.R) + ' km · v ' + fmt(st.v, 3) + ' km/s';
+}
+
+/* ---------- grafici dell'orbita ---------- */
+function tUnit(span) { return span <= 3 * 3600 ? { f: 60, u: 'min' } : span <= 3 * DAY ? { f: 3600, u: 'h' } : { f: DAY, u: 'd' }; }
+function orbCharts(O) {
+  const o = O.o, B = O.B, t0 = o.closed ? 0 : -O.tl, t1 = o.closed ? o.T : O.tl, U = tUnit(t1 - t0), N = 240, xs = [], hs = [], vs = [];
+  for (let k = 0; k <= N; k++) { const tt = t0 + (t1 - t0) * k / N, s = at(o, tt); xs.push(tt / U.f); hs.push(s.r - B.R); vs.push(s.v); }
+  const xl = t('tempo dal ', 'time from ') + peW(B) + ', ' + U.u, mk = [{ x: O.tnu / U.f, label: 'ν ' + dg(O.nu * R2D, 0) + '°', color: C.gr }];
+  K.chart('och1', { title: t('Quota nel tempo', 'Altitude over time'), x: xs, series: [{ name: t('quota', 'altitude'), y: hs, color: C.cy }], xLabel: xl, yLabel: 'km', unit: 'km', xName: 't', marks: mk });
+  K.chart('och2', { title: t('Velocità nel tempo', 'Speed over time'), x: xs, series: [{ name: 'v', y: vs, color: C.vi }], xLabel: xl, yLabel: 'km/s', unit: 'km/s', xName: 't', marks: mk });
+  $('ochn').textContent = o.closed && o.e > 0.05
+    ? t('Vicino al ', 'Near ') + peW(B) + t(" il satellite corre e passa in fretta; dalla parte dell'", ' the satellite is fast and goes by quickly; on the ') + apW(B) + t(' rallenta e ci resta più a lungo: è la seconda legge di Keplero.', " side it slows down and stays longer: this is Kepler's second law.")
+    : !o.closed ? t('Il satellite accelera fino al ', 'The satellite speeds up until ') + peW(B) + t(', poi si allontana sempre più lento, verso v∞.', ', then moves away ever slower, towards v∞.') : '';
+}
+
+/* ---------- Manovre: i conti ---------- */
+function hohmann(mu, r1, r2) {
+  const at_ = (r1 + r2) / 2, v1 = Math.sqrt(mu / r1), v2 = Math.sqrt(mu / r2), vt1 = Math.sqrt(mu * (2 / r1 - 1 / at_)), vt2 = Math.sqrt(mu * (2 / r2 - 1 / at_));
+  const dv1 = Math.abs(vt1 - v1), dv2 = Math.abs(v2 - vt2);
+  return { at: at_, et: Math.abs(r2 - r1) / (r1 + r2), v1, v2, vt1, vt2, dv1, dv2, dv: dv1 + dv2, tt: Math.PI * Math.sqrt(at_ * at_ * at_ / mu) };
+}
+function bielliptic(mu, r1, r2, rb) {
+  const a1 = (r1 + rb) / 2, a2 = (r2 + rb) / 2, v1 = Math.sqrt(mu / r1), v2 = Math.sqrt(mu / r2);
+  const w1 = Math.sqrt(mu * (2 / r1 - 1 / a1)), wb1 = Math.sqrt(mu * (2 / rb - 1 / a1)), wb2 = Math.sqrt(mu * (2 / rb - 1 / a2)), w2 = Math.sqrt(mu * (2 / r2 - 1 / a2));
+  const dv1 = Math.abs(w1 - v1), dv2 = Math.abs(wb2 - wb1), dv3 = Math.abs(v2 - w2);
+  return { a1, a2, e1: (rb - r1) / (rb + r1), e2: (rb - r2) / (rb + r2), dv1, dv2, dv3, dv: dv1 + dv2 + dv3, tt: Math.PI * (Math.sqrt(a1 * a1 * a1 / mu) + Math.sqrt(a2 * a2 * a2 / mu)) };
+}
+const bieInf = R => (Math.SQRT2 - 1) * (1 + 1 / Math.sqrt(R));       // bi-ellittica con r_b → ∞, Δv/v1
+const law = (a, b, ang) => Math.sqrt(Math.max(0, a * a + b * b - 2 * a * b * Math.cos(ang)));
+function golden(f, a, b) {
+  const g = (Math.sqrt(5) - 1) / 2; let c = b - g * (b - a), d = a + g * (b - a), fc = f(c), fd = f(d);
+  for (let k = 0; k < 90; k++) { if (fc < fd) { b = d; d = c; fd = fc; c = b - g * (b - a); fc = f(c); } else { a = c; c = d; fc = fd; d = a + g * (b - a); fd = f(d); } }
+  return (a + b) / 2;
+}
+function planeChange(mu, r1, r2, di) {
+  const v1 = Math.sqrt(mu / r1), out = { v1, pure: 2 * v1 * Math.sin(di / 2) };
+  if (r2 == null) return out;
+  const H = hohmann(mu, r1, r2), up = r2 > r1;
+  out.H = H; out.v2 = H.v2; out.pure2 = 2 * H.v2 * Math.sin(di / 2);
+  out.sep = H.dv + Math.min(out.pure, out.pure2);
+  out.burnA = up ? H.dv1 : law(v1, H.vt1, di); out.burnB = up ? law(H.vt2, H.v2, di) : H.dv2;
+  out.comb = out.burnA + out.burnB;
+  const f = x => law(v1, H.vt1, x) + law(H.vt2, H.v2, di - x);
+  let x = golden(f, 0, di); if (f(0) < f(x)) x = 0; if (f(di) < f(x)) x = di;
+  out.opt = f(x); out.opt1 = x; out.opt2 = di - x;
+  return out;
+}
+function phasing(mu, r, th, ahead, k) {
+  const T = TAU * Math.sqrt(r * r * r / mu), vc = Math.sqrt(mu / r), Tp = T * (1 + (ahead ? -1 : 1) * th / (TAU * k));
+  if (!(Tp > 0)) return null;
+  const ap = Math.cbrt(mu * Math.pow(Tp / TAU, 2)), other = 2 * ap - r;
+  if (!(other > 0)) return null;
+  const vb = Math.sqrt(mu * (2 / r - 1 / ap));
+  return { T, Tp, ap, vc, vb, dv1: Math.abs(vb - vc), dv: 2 * Math.abs(vb - vc), time: k * Tp, rp: Math.min(r, other), ra: Math.max(r, other), lower: ap < r };
+}
+function escapeDv(mu, r, vinf) {
+  const vc = Math.sqrt(mu / r), vesc = Math.SQRT2 * vc, vp = Math.sqrt(vinf * vinf + vesc * vesc), e = 1 + r * vinf * vinf / mu;
+  return { vc, vesc, vp, dv: vp - vc, e, C3: vinf * vinf, vinf, nuInf: e === 1 ? Math.PI : Math.acos(-1 / e), twoStep: vesc - vc + vinf };
+}
+
+/* ---------- Manovre: il disegno (archi in 3D, proiettati in 2D) ---------- */
+const TOP = { az: 0, el: Math.PI / 2 }, OBL = { az: -0.5, el: 0.5 };
+function rot3(x, y, w, tilt) { const c = Math.cos(w), s = Math.sin(w), X = x * c - y * s, Y = x * s + y * c; return [X, Y * Math.cos(tilt), Y * Math.sin(tilt)]; }
+function leg(o, w, tilt, nu0, nu1, name) { const t0 = tOf(o, nu0); return { o, w, tilt, t0, dur: tOf(o, nu1) - t0, name }; }
+function legPos(L, tau) { const s = at(L.o, L.t0 + tau); return rot3(s.x, s.y, L.w, L.tilt); }
+function legVel(L, tau) { const s = at(L.o, L.t0 + tau); return rot3(s.vx, s.vy, L.w, L.tilt); }
+function arcPts(o, w, tilt, nu0, nu1) {
+  const pts = [], N = 220;
+  if (o.closed) { const E0 = nu2E(o, nu0), E1 = nu2E(o, nu1); for (let k = 0; k <= N; k++) { const E = E0 + (E1 - E0) * k / N; pts.push(rot3(o.a * (Math.cos(E) - o.e), o.b * Math.sin(E), w, tilt)); } }
+  else for (let k = 0; k <= N; k++) { const nu = nu0 + (nu1 - nu0) * k / N, r = o.r(nu); pts.push(rot3(r * Math.cos(nu), r * Math.sin(nu), w, tilt)); }
+  return pts;
+}
+const curve = (o, w, tilt, nu0, nu1, color, opt) => Object.assign({ pts: arcPts(o, w, tilt, nu0, nu1), color }, opt || {});
+const full = (o, w, tilt, color, opt) => curve(o, w, tilt, 0, TAU, color, opt);
+function mk(B, view, curves, legs, labels) {    // accensioni: dove un tratto finisce e il successivo comincia
+  const burns = []; let tc = 0;
+  for (let i = 0; i < legs.length - 1; i++) {
+    tc += legs[i].dur;
+    const p = legPos(legs[i], legs[i].dur), vb = legVel(legs[i], legs[i].dur), va = legVel(legs[i + 1], 0), d = [va[0] - vb[0], va[1] - vb[1], va[2] - vb[2]];
+    burns.push({ p, d, vb, va, mag: Math.hypot(d[0], d[1], d[2]), label: labels[i], t: tc });
+  }
+  return { B, view, curves, legs, burns, total: tc + legs[legs.length - 1].dur };
+}
+const NAMES = () => ({ ini: t('orbita iniziale', 'initial orbit'), tr: t('trasferimento', 'transfer'), fin: t('orbita finale', 'final orbit') });
+function sceneHoh(B, r1, r2, H) {
+  const mu = B.mu, up = r2 > r1, c1 = conic(r1, 0, mu), c2 = conic(r2, 0, mu), tr = conic(Math.min(r1, r2), H.et, mu), w = up ? 0 : Math.PI, n0 = up ? 0 : Math.PI, N = NAMES();
+  const legs = [leg(c1, 0, 0, -Math.PI / 2, 0, N.ini), leg(tr, w, 0, n0, n0 + Math.PI, N.tr), leg(c2, 0, 0, Math.PI, 1.5 * Math.PI, N.fin)];
+  const curves = [full(c1, 0, 0, C.cy), full(c2, 0, 0, C.ic), curve(tr, w, 0, n0 + Math.PI, n0 + TAU, C.vi, { dash: '4 5', op: 0.45, w: 1.5 }), curve(tr, w, 0, n0, n0 + Math.PI, C.vi)];
+  return mk(B, TOP, curves, legs, ['Δv₁', 'Δv₂']);
+}
+function sceneBie(B, r1, r2, rb, Bi) {
+  const mu = B.mu, c1 = conic(r1, 0, mu), c2 = conic(r2, 0, mu), t1 = conic(r1, Bi.e1, mu), t2 = conic(r2, Bi.e2, mu), N = NAMES();
+  const legs = [leg(c1, 0, 0, -Math.PI / 2, 0, N.ini), leg(t1, 0, 0, 0, Math.PI, t('prima ellisse', 'first ellipse')), leg(t2, 0, 0, Math.PI, TAU, t('seconda ellisse', 'second ellipse')), leg(c2, 0, 0, 0, Math.PI / 2, N.fin)];
+  const H = hohmann(mu, r1, r2), tr = conic(Math.min(r1, r2), H.et, mu), w = r2 > r1 ? 0 : Math.PI, n0 = r2 > r1 ? 0 : Math.PI;
+  const curves = [full(c1, 0, 0, C.cy), full(c2, 0, 0, C.ic), curve(tr, w, 0, n0, n0 + Math.PI, C.tx3, { dash: '2 4', w: 1.2 }),
+    curve(t1, 0, 0, Math.PI, TAU, C.vi, { dash: '4 5', op: 0.45, w: 1.5 }), curve(t2, 0, 0, 0, Math.PI, C.vi, { dash: '4 5', op: 0.45, w: 1.5 }),
+    curve(t1, 0, 0, 0, Math.PI, C.vi), curve(t2, 0, 0, Math.PI, TAU, C.vi)];
+  return mk(B, TOP, curves, legs, ['Δv₁', 'Δv₂', 'Δv₃']);
+}
+const nodeLine = r => ({ pts: Array.from({ length: 41 }, (_, k) => [-1.3 * r + 2.6 * r * k / 40, 0, 0]), color: C.tx3, dash: '3 5', w: 1 });
+function scenePla(B, r1, r2, di) {
+  const mu = B.mu, c1 = conic(r1, 0, mu), N = NAMES();
+  if (r2 == null) {
+    const legs = [leg(c1, 0, 0, -Math.PI, 0, N.ini), leg(c1, 0, di, 0, Math.PI, t('nuovo piano', 'new plane'))];
+    const S = mk(B, OBL, [full(c1, 0, 0, C.cy), full(c1, 0, di, C.ic), nodeLine(r1)], legs, ['Δv']);
+    S.tri = 0; S.triC = C.cy; return S;
+  }
+  const H = hohmann(mu, r1, r2), up = r2 > r1, c2 = conic(r2, 0, mu), tr = conic(Math.min(r1, r2), H.et, mu);
+  const legs = up ? [leg(c1, 0, 0, -Math.PI / 2, 0, N.ini), leg(tr, 0, 0, 0, Math.PI, N.tr), leg(c2, 0, di, Math.PI, TAU, N.fin)]
+    : [leg(c1, 0, 0, -Math.PI / 2, 0, N.ini), leg(tr, Math.PI, di, Math.PI, TAU, N.tr), leg(c2, 0, di, Math.PI, TAU, N.fin)];
+  const curves = [full(c1, 0, 0, C.cy), full(c2, 0, di, C.ic), up ? curve(tr, 0, 0, 0, Math.PI, C.vi) : curve(tr, Math.PI, di, Math.PI, TAU, C.vi), nodeLine(Math.max(r1, r2))];
+  const S = mk(B, OBL, curves, legs, ['Δv₁', 'Δv₂']);
+  S.tri = up ? 1 : 0; S.triC = up ? C.vi : C.cy; return S;
+}
+function scenePha(B, r, P, th, ahead, k) {
+  const mu = B.mu, c = conic(r, 0, mu), ph = conic(P.rp, (P.ra - P.rp) / (P.ra + P.rp), mu), w = P.lower ? Math.PI : 0, n0 = P.lower ? Math.PI : 0;
+  const legs = [leg(c, 0, 0, -Math.PI / 4, 0, t('in attesa', 'waiting')), leg(ph, w, 0, n0, n0 + TAU * k, t('fasatura', 'phasing')), leg(c, 0, 0, 0, Math.PI / 2, t('insieme al bersaglio', 'with the target'))];
+  const S = mk(B, TOP, [full(c, 0, 0, C.cy), full(ph, w, 0, C.vi)], legs, ['Δv₁', 'Δv₂']);
+  const phi0 = -Math.PI / 4 + (ahead ? 1 : -1) * th;
+  S.target = tt => { const a = phi0 + c.n * tt; return [r * Math.cos(a), r * Math.sin(a), 0]; };
+  S.phase = { r, a1: (ahead ? 1 : -1) * th };
+  S.revs = { k, t0: legs[0].dur, Tp: P.Tp };
+  return S;
+}
+function sceneEsc(B, r, X) {
+  const mu = B.mu, c = conic(r, 0, mu), hy = conic(r, X.e, mu), rl = 4.5 * r, nuEnd = Math.acos(Math.max(-1, Math.min(1, (hy.p / rl - 1) / hy.e)));
+  const legs = [leg(c, 0, 0, -Math.PI / 2, 0, t('orbita di partenza', 'parking orbit')), leg(hy, 0, 0, 0, nuEnd, t('uscita', 'departure'))];
+  const S = mk(B, TOP, [full(c, 0, 0, C.cy), curve(hy, 0, 0, 0, nuEnd, C.vi)], legs, ['Δv']);
+  if (X.vinf > 1e-6) S.vinf = { p: legPos(legs[1], legs[1].dur), d: [Math.cos(hy.nuInf), Math.sin(hy.nuInf), 0], mag: X.vinf };
+  return S;
+}
+
+/* ---------- Manovre: lettura dei campi, risultati, grafico ---------- */
+const MROWS = { hoh: ['h1', 'r1', 'h2', 'r2'], bie: ['h1', 'r1', 'h2', 'r2', 'hb', 'rb'], pla: ['h1', 'r1', 'h2', 'r2', 'di'], pha: ['h1', 'r1', 'th', 'dir', 'k'], esc: ['h1', 'r1', 'vinf', 'c3'] };
+const MFIELDS = ['h1', 'r1', 'h2', 'r2', 'hb', 'rb', 'di', 'th', 'k', 'vinf', 'c3'];
+function manLabels(mv) {
+  const one = mv === 'pha' || mv === 'esc', s = x => ' <span class="sy">' + x + '</span>';
+  const L = {
+    h1: one ? t("Quota dell'orbita", 'Orbit altitude') + s('h') : t('Quota iniziale', 'Initial altitude') + s('h<sub>1</sub>'),
+    r1: one ? t("Raggio dell'orbita", 'Orbit radius') + s('r') : t('Raggio iniziale', 'Initial radius') + s('r<sub>1</sub>'),
+    h2: t('Quota finale', 'Final altitude') + s('h<sub>2</sub>'), r2: t('Raggio finale', 'Final radius') + s('r<sub>2</sub>'),
+    hb: t('Quota intermedia', 'Intermediate altitude') + s('h<sub>b</sub>'), rb: t('Raggio intermedio', 'Intermediate radius') + s('r<sub>b</sub>'),
+    di: t("Variazione d'inclinazione", 'Inclination change') + s('Δi'), th: t('Angolo di fase', 'Phase angle') + s('θ'),
+    dir: t('Il bersaglio è', 'The target is'), k: t('Giri di fasatura', 'Phasing revolutions') + s('k'),
+    vinf: t("Velocità all'infinito", 'Hyperbolic excess speed') + s('v∞'), c3: t('Energia caratteristica', 'Characteristic energy') + s('C3'),
+  };
+  for (const id in L) $('l-' + id).innerHTML = L[id];
+  document.querySelectorAll('#fm [data-r]').forEach(r => { r.hidden = !MROWS[mv].includes(r.dataset.r); });
+}
+const WHY = {
+  hoh: () => t("Due accensioni tangenti tra due orbite circolari nello stesso piano. È la via più economica finché un raggio non supera di 11,94 volte l'altro.", 'Two tangential burns between two circular orbits in the same plane. It is the cheapest way as long as one radius is less than 11.94 times the other.'),
+  bie: () => t("Tre accensioni: sali fino a r<sub>b</sub>, lì cambi la forma dell'orbita, poi scendi su quella finale. Conviene solo quando r₂/r₁ supera 11,94, e il viaggio dura molto di più.", 'Three burns: climb to r<sub>b</sub>, reshape the orbit there, then come down to the final one. It only pays off when r₂/r₁ is above 11.94, and the trip takes much longer.'),
+  pla: B => t("Ruota il piano dell'orbita di Δi. Se dai anche un'orbita finale, la rotazione si fa insieme all'accensione all'", 'Tilts the orbit plane by Δi. If you also give a final orbit, the tilt is done together with the burn at the ') + apW(B) + t(' del trasferimento di Hohmann, dove si va più piano. Lascia vuota l\'orbita finale per un cambio di piano puro.', ' of the Hohmann transfer, where the speed is lowest. Leave the final orbit empty for a pure plane change.'),
+  pha: () => t("Stessa orbita, posizioni diverse. Per raggiungere un bersaglio passi k giri su un'orbita un po' più bassa (se è davanti) o più alta (se è dietro), poi torni su quella di partenza.", 'Same orbit, different positions. To reach a target you spend k revolutions on a slightly lower orbit (if it is ahead) or a higher one (if it is behind), then return to the starting orbit.'),
+  esc: B => t('Una sola accensione dall\'orbita circolare per lasciare ', 'A single burn from the circular orbit to leave ') + bThe(B) + t(' con una velocità residua v∞. C3 = v∞² è il numero che si usa per le missioni interplanetarie.', ' with a leftover speed v∞. C3 = v∞² is the figure used for interplanetary missions.'),
+};
+function rad(hid, rid, B, msgs, name) {     // raggio da quota o raggio; null se mancano, NaN se sbagliati
+  const h = num(hid), r = num(rid);
+  if (Number.isNaN(h) || Number.isNaN(r)) { K.bad(Number.isNaN(h) ? hid : rid); msgs.push([NOTNUM]); return NaN; }
+  let R = h != null ? B.R + h : null;
+  if (r != null) {
+    if (R == null) R = r;
+    else if (Math.abs(r - R) > Math.max(1e-4 * R, 0.5)) { K.bad(rid); msgs.push([t('Raggio e quota non tornano: con ', 'Radius and altitude do not match: with ') + km(h) + t(' km di quota il raggio è ', ' km of altitude the radius is ') + km(R) + ' km.']); }
+  }
+  if (R == null) return null;
+  if (!(R > 0)) { K.bad(h != null ? hid : rid); msgs.push([name + t(' deve avere un raggio maggiore di zero.', ' must have a radius greater than zero.')]); return NaN; }
+  K.der(hid, R - B.R, 1); K.der(rid, R, 1);
+  if (R < B.R) msgs.push([name + t(' passa sotto la superficie: il raggio deve superare ', ' goes below the surface: the radius must exceed ') + km(B.R) + ' km.']);
+  return R;
+}
+const dvs = (x, u) => u === 'm' ? [fmt(x * 1000, 1), 'm/s'] : [fmt(x, 3), 'km/s'];
+const dvTxt = (x, u) => dvs(x, u).join(' ');
+function ratioChart(Ru, Rb) {
+  const xmax = Math.max(2, Math.log10(Ru) + 0.25), N = 320, xs = [], h = [], b = [], inf = [];
+  for (let k = 0; k <= N; k++) { const x = xmax * k / N, R = Math.pow(10, x); xs.push(x); h.push(hohmann(1, 1, R).dv); inf.push(bieInf(R)); if (Rb) b.push(Rb >= R ? bielliptic(1, 1, R, Rb).dv : NaN); }
+  const series = [{ name: 'Hohmann', y: h, color: C.cy }];
+  if (Rb) series.push({ name: t('bi-ellittica, il tuo rb', 'bi-elliptic, your rb'), y: b, color: C.vi });
+  series.push({ name: t('bi-ellittica, rb → ∞', 'bi-elliptic, rb → ∞'), y: inf, color: C.ic, dash: true });
+  return { title: t('Δv totale / v₁ al variare di r₂/r₁', 'Total Δv / v₁ against r₂/r₁'), x: xs, series, xLabel: t('r₂/r₁, scala logaritmica', 'r₂/r₁, log scale'), yLabel: 'Δv/v₁', xName: 'r₂/r₁', xFmt: x => sig(Math.round(Math.pow(10, x) * 1e4) / 1e4, 3), yFmt: v => fmt(v, 3), yMin: 0,
+    marks: [{ x: Math.log10(11.94), label: fmt(11.94, 2), color: C.tx3 }, { x: Math.log10(15.58), label: fmt(15.58, 2), color: C.tx3 }, { x: Math.log10(Ru), label: t('la tua', 'yours'), color: C.gr }] };
+}
+const MAN = {};
+MAN.hoh = (B, msgs) => {
+  const r1 = rad('h1', 'r1', B, msgs, t("L'orbita iniziale", 'The initial orbit')), r2 = rad('h2', 'r2', B, msgs, t("L'orbita finale", 'The final orbit'));
+  if (Number.isNaN(r1) || Number.isNaN(r2)) return null;
+  if (r1 == null || r2 == null) { msgs.push([t('Dai la quota o il raggio delle due orbite.', 'Give the altitude or the radius of both orbits.'), 'info']); return null; }
+  if (Math.abs(r2 - r1) < 1e-9 * r1) { msgs.push([t('Le due orbite coincidono: non serve nessuna manovra.', 'The two orbits are the same: no manoeuvre is needed.'), 'info']); return null; }
+  const H = hohmann(B.mu, r1, r2), S = sceneHoh(B, r1, r2, H), u = H.dv < 1 ? 'm' : 'k', up = r2 > r1, pe = peW(B), ap = apW(B), lo = Math.min(r1, r2), hi = Math.max(r1, r2), Rr = hi / lo;
+  const fr = up ? t('da ', 'from ') : t('frenata da ', 'braking from ');
+  S.unit = u; S.real = 12;
+  S.rows1 = [['#', t('Trasferimento di Hohmann', 'Hohmann transfer')],
+    [t('Prima accensione', 'First burn') + ' Δv<sub>1</sub>', ...dvs(H.dv1, u), fr + fmt(H.v1, 3) + t(' a ', ' to ') + fmt(H.vt1, 3) + ' km/s, ' + (up ? t('al ', 'at ') + pe : t("all'", 'at ') + ap) + t(' del trasferimento', ' of the transfer')],
+    [t('Seconda accensione', 'Second burn') + ' Δv<sub>2</sub>', ...dvs(H.dv2, u), fr + fmt(H.vt2, 3) + t(' a ', ' to ') + fmt(H.v2, 3) + t(" km/s: l'orbita torna circolare", ' km/s: the orbit is circular again')],
+    [t('Δv totale', 'Total Δv'), ...dvs(H.dv, u), '', 'key'],
+    [t('Durata', 'Time'), dur(H.tt), '', t("metà periodo dell'orbita di trasferimento", 'half the period of the transfer orbit')]];
+  S.rows2 = [['#', t('Orbita di trasferimento', 'Transfer orbit')],
+    [t('Semiasse maggiore', 'Semi-major axis') + ' a<sub>t</sub>', km(H.at), 'km'],
+    [t('Eccentricità', 'Eccentricity') + ' e<sub>t</sub>', fE(H.et)],
+    [t('Raggio al ', 'Radius at ') + pe, km(lo), 'km', t('quota ', 'altitude ') + km(lo - B.R) + ' km'],
+    [t("Raggio all'", 'Radius at ') + ap, km(hi), 'km', t('quota ', 'altitude ') + km(hi - B.R) + ' km'],
+    ['#', t('Confronto', 'Comparison')],
+    [t('Rapporto tra i raggi', 'Ratio of the radii'), fmt(Rr, 3), '', Rr < 11.94 ? t('sotto 11,94: Hohmann costa meno di qualunque bi-ellittica', 'below 11.94: Hohmann costs less than any bi-elliptic') : Rr < 15.58 ? t('tra 11,94 e 15,58: una bi-ellittica con r<sub>b</sub> grande può costare meno', 'between 11.94 and 15.58: a bi-elliptic with a large r<sub>b</sub> can cost less') : t('sopra 15,58: una bi-ellittica costa meno, ma ci mette molto di più', 'above 15.58: a bi-elliptic costs less, but takes much longer')],
+    ['Δv / v<sub>1</sub>', fmt(H.dv / Math.sqrt(B.mu / lo), 4), '', t("v<sub>1</sub> è la velocità dell'orbita più bassa, come nel grafico", 'v<sub>1</sub> is the speed of the lower orbit, as in the chart')]];
+  S.chart = ratioChart(Rr, null);
+  S.note = t('Il grafico vale per qualunque corpo centrale: conta solo il rapporto tra i raggi.', 'The chart holds for any central body: only the ratio of the radii matters.');
+  return S;
+};
+MAN.bie = (B, msgs) => {
+  const r1 = rad('h1', 'r1', B, msgs, t("L'orbita iniziale", 'The initial orbit')), r2 = rad('h2', 'r2', B, msgs, t("L'orbita finale", 'The final orbit')), rb = rad('hb', 'rb', B, msgs, t("L'orbita intermedia", 'The intermediate orbit'));
+  if ([r1, r2, rb].some(Number.isNaN)) return null;
+  if (r1 == null || r2 == null || rb == null) { msgs.push([t('Dai la quota o il raggio delle orbite iniziale e finale, e il raggio intermedio r<sub>b</sub>.', 'Give the altitude or the radius of the initial and final orbits, and the intermediate radius r<sub>b</sub>.'), 'info']); return null; }
+  const hi = Math.max(r1, r2), lo = Math.min(r1, r2);
+  if (rb < hi * (1 - 1e-9)) { K.bad(K.given('rb') ? 'rb' : 'hb'); msgs.push([t('r<sub>b</sub> deve essere almeno il raggio più grande tra r₁ e r₂, cioè ', 'r<sub>b</sub> must be at least the larger of r₁ and r₂, that is ') + km(hi) + ' km.']); return null; }
+  if (Math.abs(r2 - r1) < 1e-9 * r1) { msgs.push([t('Le due orbite coincidono: non serve nessuna manovra.', 'The two orbits are the same: no manoeuvre is needed.'), 'info']); return null; }
+  const Bi = bielliptic(B.mu, r1, r2, rb), H = hohmann(B.mu, r1, r2), S = sceneBie(B, r1, r2, rb, Bi), u = Bi.dv < 1 ? 'm' : 'k', save = H.dv - Bi.dv;
+  S.unit = u; S.real = 14;
+  S.rows1 = [['#', t('Trasferimento bi-ellittico', 'Bi-elliptic transfer')],
+    [t('Prima accensione', 'First burn') + ' Δv<sub>1</sub>', ...dvs(Bi.dv1, u), t('a r<sub>1</sub>, per salire fino a r<sub>b</sub>', 'at r<sub>1</sub>, to climb to r<sub>b</sub>')],
+    [t('Seconda accensione', 'Second burn') + ' Δv<sub>2</sub>', ...dvs(Bi.dv2, u), t('a r<sub>b</sub>, per portare il pericentro a r<sub>2</sub>', 'at r<sub>b</sub>, to move the periapsis to r<sub>2</sub>')],
+    [t('Terza accensione', 'Third burn') + ' Δv<sub>3</sub>', ...dvs(Bi.dv3, u), t("a r<sub>2</sub>, l'orbita torna circolare", 'at r<sub>2</sub>, the orbit is circular again')],
+    [t('Δv totale', 'Total Δv'), ...dvs(Bi.dv, u), '', 'key'],
+    [t('Durata', 'Time'), dur(Bi.tt), '', t('metà periodo di ciascuna ellisse', 'half the period of each ellipse')]];
+  S.rows2 = [['#', t('Confronto con Hohmann', 'Compared with Hohmann')],
+    [t('Δv totale con Hohmann', 'Total Δv with Hohmann'), ...dvs(H.dv, u)],
+    save >= 0 ? [t('Risparmio', 'Saving'), ...dvs(save, 'm'), t('la bi-ellittica costa meno', 'the bi-elliptic costs less')] : [t('Costo in più', 'Extra cost'), ...dvs(-save, 'm'), t('qui Hohmann conviene', 'here Hohmann is better'), 'warn'],
+    [t('Durata con Hohmann', 'Time with Hohmann'), dur(H.tt)],
+    [t('Tempo in più', 'Extra time'), dur(Bi.tt - H.tt)],
+    ['#', t('Le due ellissi', 'The two ellipses')],
+    [t('Prima', 'First') + ': a<sub>1</sub>', km(Bi.a1), 'km', 'e<sub>1</sub> = ' + fE(Bi.e1)],
+    [t('Seconda', 'Second') + ': a<sub>2</sub>', km(Bi.a2), 'km', 'e<sub>2</sub> = ' + fE(Bi.e2)],
+    [t('Rapporti', 'Ratios'), fmt(hi / lo, 3), '', 'r₂/r₁ · r<sub>b</sub>/r₁ = ' + fmt(rb / lo, 3)]];
+  S.chart = ratioChart(hi / lo, rb / lo);
+  S.note = t('Rapporti presi rispetto all\'orbita più bassa. La curva viola si ferma dove r₂ supererebbe il tuo r<sub>b</sub>.', 'Ratios taken against the lower orbit. The violet curve stops where r₂ would go past your r<sub>b</sub>.').replace(/<\/?sub>/g, '');
+  return S;
+};
+MAN.pla = (B, msgs) => {
+  const r1 = rad('h1', 'r1', B, msgs, t("L'orbita iniziale", 'The initial orbit')), r2 = rad('h2', 'r2', B, msgs, t("L'orbita finale", 'The final orbit')), di = num('di');
+  if (Number.isNaN(r1) || Number.isNaN(r2)) return null;
+  if (Number.isNaN(di)) { K.bad('di'); msgs.push([NOTNUM]); return null; }
+  if (r1 == null || di == null) { msgs.push([t("Dai la quota o il raggio dell'orbita e la variazione d'inclinazione Δi.", 'Give the altitude or the radius of the orbit and the inclination change Δi.'), 'info']); return null; }
+  if (!(di > 0 && di <= 180)) { K.bad('di'); msgs.push([t('Δi va da 0° a 180°.', 'Δi goes from 0° to 180°.')]); return null; }
+  const same = r2 != null && Math.abs(r2 - r1) < 1e-9 * r1, R2 = r2 == null || same ? null : r2, D = di * D2R, P = planeChange(B.mu, r1, R2, D), S = scenePla(B, r1, R2, D), pe = peW(B), ap = apW(B);
+  const u = (R2 ? P.comb : P.pure) < 1 ? 'm' : 'k';
+  S.unit = u; S.real = 12;
+  if (!R2) {
+    S.rows1 = [['#', t('Cambio di piano puro', 'Pure plane change')],
+      [t("Velocità dell'orbita", 'Orbit speed') + ' v', fmt(P.v1, 4), 'km/s'],
+      ['Δv = 2 v sin(Δi/2)', ...dvs(P.pure, u), t('accensione su uno dei due nodi', 'burn at one of the two nodes'), 'key']];
+    S.rows2 = [['#', t('Quanto costa un grado', 'What one degree costs')],
+      [t('Δv per 1°', 'Δv for 1°'), ...dvs(2 * P.v1 * Math.sin(D2R / 2), 'm'), t('più in alto si va piano e costa meno', 'higher up you go slower and it costs less')],
+      [t('Δv per 1° in GEO', 'Δv for 1° in GEO'), ...dvs(2 * Math.sqrt(K.MU / 42164.17) * Math.sin(D2R / 2), 'm'), t('per confronto, attorno alla Terra', 'for comparison, around the Earth')]];
+  } else {
+    const up = R2 > r1;
+    S.rows1 = [['#', t('Accensioni separate', 'Separate burns')],
+      [t('Hohmann', 'Hohmann') + ' Δv<sub>1</sub> + Δv<sub>2</sub>', ...dvs(P.H.dv, u)],
+      [t('Cambio di piano puro, nell\'orbita più lenta', 'Pure plane change, in the slower orbit'), ...dvs(Math.min(P.pure, P.pure2), u)],
+      [t('Totale', 'Total'), ...dvs(P.sep, u)],
+      ['#', t('Cambio di piano combinato', 'Combined plane change')],
+      [t('Prima accensione', 'First burn') + ' Δv<sub>1</sub>', ...dvs(P.burnA, u), up ? t('solo Hohmann, al ', 'Hohmann only, at ') + pe : t('Hohmann e Δi insieme, a r<sub>1</sub>', 'Hohmann and Δi together, at r<sub>1</sub>')],
+      [t('Seconda accensione', 'Second burn') + ' Δv<sub>2</sub>', ...dvs(P.burnB, u), up ? t("Δi e circolarizzazione insieme, all'", 'Δi and circularisation together, at ') + ap : t('solo circolarizzazione', 'circularisation only')],
+      [t('Totale combinato', 'Combined total'), ...dvs(P.comb, u), '', 'key'],
+      [t('Risparmio rispetto alle accensioni separate', 'Saving against separate burns'), ...dvs(P.sep - P.comb, u)]];
+    S.rows2 = [['#', t('Divisione migliore di Δi', 'Best split of Δi')],
+      [t('Alla prima accensione', 'At the first burn'), dg(P.opt1 * R2D, 2), '°'],
+      [t('Alla seconda accensione', 'At the second burn'), dg(P.opt2 * R2D, 2), '°'],
+      [t('Totale', 'Total'), ...dvs(P.opt, u), (P.comb - P.opt) * 1000 >= 0.05 ? fmt((P.comb - P.opt) * 1000, 1) + t(' m/s meno del combinato', ' m/s less than the combined one') : t('come il combinato', 'same as the combined one')],
+      ['#', t('Trasferimento', 'Transfer')],
+      [t('Durata', 'Time'), dur(P.H.tt), '', t('metà periodo del trasferimento di Hohmann', 'half the period of the Hohmann transfer')]];
+  }
+  const xmax = Math.max(60, Math.ceil(di * 1.3 / 10) * 10), xs = [], s1 = [], s2 = [], s3 = [];
+  for (let k = 0; k <= 180; k++) {
+    const x = xmax * k / 180, Q = planeChange(B.mu, r1, R2, x * D2R); xs.push(x);
+    if (!R2) s1.push(Q.pure); else { s1.push(Q.comb); s2.push(Q.opt); s3.push(Q.sep); }
+  }
+  S.chart = { title: t('Δv al variare di Δi', 'Δv against Δi'), x: xs, xLabel: 'Δi, °', yLabel: 'km/s', unit: 'km/s', xName: 'Δi', yMin: 0, marks: [{ x: di, label: t('il tuo', 'yours'), color: C.gr }],
+    series: !R2 ? [{ name: t('cambio di piano puro', 'pure plane change'), y: s1, color: C.cy }] : [{ name: t('combinato', 'combined'), y: s1, color: C.cy }, { name: t('divisione migliore', 'best split'), y: s2, color: C.vi }, { name: t('separato', 'separate'), y: s3, color: C.ic, dash: true }] };
+  S.note = R2 ? t("Unire la rotazione del piano all'accensione nel punto più lento costa molto meno che farla a parte.", 'Joining the plane rotation to the burn at the slowest point costs much less than doing it on its own.') : t('Il Δv cresce quasi in linea con Δi: per angoli grandi conviene salire prima, dove si va piano.', 'The Δv grows almost in line with Δi: for large angles it pays to climb first, where you go slower.');
+  return S;
+};
+MAN.pha = (B, msgs) => {
+  const r = rad('h1', 'r1', B, msgs, t("L'orbita", 'The orbit')), th = num('th'), kk = num('k'), ahead = $('dir').value !== 'behind';
+  if (Number.isNaN(r)) return null;
+  if (Number.isNaN(th) || Number.isNaN(kk)) { K.bad(Number.isNaN(th) ? 'th' : 'k'); msgs.push([NOTNUM]); return null; }
+  if (r == null || th == null) { msgs.push([t("Dai la quota o il raggio dell'orbita e l'angolo di fase θ.", 'Give the altitude or the radius of the orbit and the phase angle θ.'), 'info']); return null; }
+  if (!(th > 0 && th < 360)) { K.bad('th'); msgs.push([t('θ va da 0° a 360°, esclusi.', 'θ goes from 0° to 360°, both excluded.')]); return null; }
+  const k = kk == null ? 1 : kk;
+  if (kk == null) K.der('k', 1, '1');
+  if (!(k >= 1 && Math.abs(k - Math.round(k)) < 1e-9) || k > 200) { K.bad('k'); msgs.push([t('k è un numero intero di giri, da 1 a 200.', 'k is a whole number of revolutions, from 1 to 200.')]); return null; }
+  const P = phasing(B.mu, r, th * D2R, ahead, k);
+  if (!P) { K.bad('k'); msgs.push([t("Con così pochi giri l'orbita di fasatura passerebbe per il centro: aumenta k.", 'With so few revolutions the phasing orbit would pass through the centre: increase k.')]); return null; }
+  const S = scenePha(B, r, P, th * D2R, ahead, k), pe = peW(B), ap = apW(B);
+  if (P.rp < B.R) msgs.push([t("L'orbita di fasatura scende sotto la superficie (", 'The phasing orbit goes below the surface (') + pe + ' ' + km(P.rp - B.R) + t(' km): aumenta k per un\'orbita meno schiacciata.', ' km): increase k for a less stretched orbit.')]);
+  else if (B.key === 'earth' && P.rp - B.R < 150) msgs.push([t("Il perigeo della fasatura è nell'atmosfera (", 'The phasing perigee is in the atmosphere (') + km(P.rp - B.R) + t(' km): aumenta k.', ' km): increase k.'), 'info']);
+  S.unit = P.dv < 1 ? 'm' : 'k'; S.real = Math.min(4 + 3 * k, 24);
+  S.rows1 = [['#', t('Fasatura', 'Phasing')],
+    [t("Periodo dell'orbita", 'Orbit period') + ' T', dur(P.T)],
+    [t('Periodo di fasatura', 'Phasing period') + ' T<sub>f</sub>', dur(P.Tp), '', ahead ? t('più corto: recuperi terreno', 'shorter: you catch up') : t('più lungo: lasci arrivare il bersaglio', 'longer: you let the target come to you')],
+    [t('Δv per accensione', 'Δv per burn'), ...dvs(P.dv1, S.unit), (P.lower ? t('frena', 'brake') : t('accelera', 'speed up')) + t(', poi il contrario dopo ', ', then the opposite after ') + k + t(k === 1 ? ' giro' : ' giri', k === 1 ? ' revolution' : ' revolutions')],
+    [t('Δv totale', 'Total Δv'), ...dvs(P.dv, S.unit), '', 'key'],
+    [t('Durata', 'Time'), dur(P.time), '', k + ' × T<sub>f</sub>']];
+  S.rows2 = [['#', t('Orbita di fasatura', 'Phasing orbit')],
+    [t('Semiasse maggiore', 'Semi-major axis') + ' a<sub>f</sub>', km(P.ap), 'km'],
+    [t('Quota al ', 'Altitude at ') + pe, km(P.rp - B.R), 'km'],
+    [t("Quota all'", 'Altitude at ') + ap, km(P.ra - B.R), 'km'],
+    [t('Eccentricità', 'Eccentricity'), fE((P.ra - P.rp) / (P.ra + P.rp))]];
+  const kmax = Math.max(10, k + 4), xs = [], ys = [];
+  for (let j = 1; j <= kmax; j++) { const Q = phasing(B.mu, r, th * D2R, ahead, j); if (!Q) continue; xs.push(Q.time / 3600); ys.push(Q.dv * 1000); }
+  S.chart = xs.length > 1 ? { title: t('Δv totale e durata, da 1 a ', 'Total Δv and time, from 1 to ') + kmax + t(' giri', ' revolutions'), x: xs, series: [{ name: 'Δv', y: ys, color: C.cy }], xLabel: t('durata, h', 'time, h'), yLabel: 'm/s', unit: 'm/s', xName: 't', yMin: 0, marks: [{ x: P.time / 3600, label: 'k = ' + k, color: C.gr }] } : null;
+  S.note = t('Ogni giro in più allunga l\'attesa ma rende la fasatura più dolce e più economica.', 'Each extra revolution makes the wait longer but the phasing gentler and cheaper.');
+  return S;
+};
+MAN.esc = (B, msgs) => {
+  const r = rad('h1', 'r1', B, msgs, t("L'orbita", 'The orbit')), vi = num('vinf'), c3 = num('c3');
+  if (Number.isNaN(r)) return null;
+  if (Number.isNaN(vi) || Number.isNaN(c3)) { K.bad(Number.isNaN(vi) ? 'vinf' : 'c3'); msgs.push([NOTNUM]); return null; }
+  if (r == null) { msgs.push([t("Dai la quota o il raggio dell'orbita di partenza.", 'Give the altitude or the radius of the parking orbit.'), 'info']); return null; }
+  if (vi != null && vi < 0) { K.bad('vinf'); msgs.push([t('v∞ non può essere negativa.', 'v∞ cannot be negative.')]); return null; }
+  if (c3 != null && c3 < 0) { K.bad('c3'); msgs.push([t("C3 negativo vuol dire orbita chiusa: per fuggire serve C3 ≥ 0.", 'A negative C3 means a closed orbit: escaping needs C3 ≥ 0.')]); return null; }
+  let vinf = vi != null ? vi : c3 != null ? Math.sqrt(c3) : 0;
+  if (vi != null && c3 != null && Math.abs(c3 - vi * vi) > Math.max(1e-3 * vi * vi, 1e-3)) { K.bad('c3'); msgs.push([t('C3 non torna con v∞: dovrebbe valere ', 'C3 does not match v∞: it should be ') + fmt(vi * vi, 3) + ' km²/s².']); }
+  K.der('vinf', vinf, fmt(vinf, 3).replace(/ /g, ' ')); K.der('c3', vinf * vinf, fmt(vinf * vinf, 3).replace(/ /g, ' '));
+  const X = escapeDv(B.mu, r, vinf), S = sceneEsc(B, r, X), u = X.dv < 1 ? 'm' : 'k';
+  S.unit = u; S.real = 9;
+  S.rows1 = [['#', t('Fuga', 'Escape')],
+    [t('Velocità circolare', 'Circular speed'), fmt(X.vc, 4), 'km/s'],
+    [t('Velocità di fuga a questo raggio', 'Escape speed at this radius'), fmt(X.vesc, 4), 'km/s'],
+    [t("Velocità dopo l'accensione", 'Speed after the burn'), fmt(X.vp, 4), 'km/s', t("al pericentro dell'iperbole", 'at the periapsis of the hyperbola')],
+    ['Δv', ...dvs(X.dv, u), '', 'key'],
+    ['C3 = v∞²', fmt(X.C3, 3), 'km²/s²']];
+  S.rows2 = [['#', t("Iperbole d'uscita", 'Departure hyperbola')],
+    [t('Eccentricità', 'Eccentricity') + ' e', fE(X.e)],
+    [t('Direzione di uscita', 'Departure direction') + ' ν∞', dg(X.nuInf * R2D, 2), '°', t("angolo tra il punto dell'accensione e la direzione finale, visto dal centro", 'angle between the burn point and the final direction, seen from the centre')],
+    ['#', t('Effetto Oberth', 'Oberth effect')],
+    [t('Prima fuggi, poi acceleri lontano', 'Escape first, then speed up far away'), ...dvs(X.twoStep, u), fmt(X.vesc - X.vc, 3) + ' + ' + fmt(vinf, 3) + ' km/s'],
+    [t("Risparmio con un'accensione sola", 'Saving with a single burn'), ...dvs(X.twoStep - X.dv, u)]];
+  const xmax = Math.max(6, Math.ceil(vinf * 1.5)), xs = [], a = [], b = [];
+  for (let k = 0; k <= 160; k++) { const v = xmax * k / 160, Q = escapeDv(B.mu, r, v); xs.push(v); a.push(Q.dv); b.push(Q.twoStep); }
+  S.chart = { title: t('Δv al variare di v∞', 'Δv against v∞'), x: xs, xLabel: 'v∞, km/s', yLabel: 'km/s', unit: 'km/s', xName: 'v∞', yMin: 0, marks: [{ x: vinf, label: t('la tua', 'yours'), color: C.gr }],
+    series: [{ name: t("un'accensione in orbita", 'one burn in orbit'), y: a, color: C.cy }, { name: t('prima fuga, poi spinta lontano', 'escape first, push later'), y: b, color: C.ic, dash: true }] };
+  S.note = t('Le due curve partono insieme e si allontanano: più v∞ chiedi, più conviene accendere in basso, dove si va veloci.', 'The two curves start together and move apart: the more v∞ you ask for, the more it pays to burn low, where you are fast.');
+  return S;
+};
+const MA = { S: null, t: 0, play: !REDUCED, warp: 1 };
+function capMan(S, mv) {
+  const it = (c, txt, dot, dash) => '<span style="color:' + c + '"><i' + (dot ? ' class="dot"' : '') + (dash ? ' style="background:none;border-top:2px dashed currentColor;height:0"' : '') + '></i>' + txt + '</span>';
+  let h = '';
+  if (mv === 'pha') h = it('var(--cy)', t('orbita', 'orbit')) + it('var(--vi)', t('fasatura', 'phasing')) + it('var(--ic)', t('bersaglio', 'target'), 1) + it('var(--gr)', t('tu e Δv', 'you and Δv'), 1);
+  else if (mv === 'esc') h = it('var(--cy)', t('orbita di partenza', 'parking orbit')) + it('var(--vi)', t('iperbole e v∞', 'hyperbola and v∞')) + it('var(--gr)', 'Δv', 1);
+  else {
+    h = it('var(--cy)', t('orbita iniziale', 'initial orbit')) + (mv !== 'pla' || (S && S.legs.length > 2) ? it('var(--vi)', t('trasferimento', 'transfer')) : '') + it('var(--ic)', mv === 'pla' ? t('nuovo piano', 'new plane') : t('orbita finale', 'final orbit')) + it('var(--gr)', 'Δv', 1);
+    if (mv === 'bie') h += it('var(--tx3)', 'Hohmann', 0, 1);
+    if (mv === 'pla') h += it('var(--tx3)', t('linea dei nodi', 'line of nodes'), 0, 1);
+  }
+  $('mcap').innerHTML = S ? h : '';
+}
+function runMan() {
+  K.clear('fm');
+  const mv = $('mv').value, B = body('mb');
+  manLabels(mv); $('mwhy').innerHTML = WHY[mv](B);
+  const msgs = [], S = MAN[mv](B, msgs);
+  showMsgs('mmsg', msgs);
+  MA.S = S; MA.t = 0; capMan(S, mv);
+  const tm = $('mtm');
+  if (!S) {
+    K.rows('mo1', []); K.rows('mo2', []); clearChart('mch'); $('mchn').textContent = '';
+    tm.disabled = $('mplay').disabled = true; $('mtl').textContent = '—';
+  } else {
+    tm.disabled = $('mplay').disabled = false; tm.min = 0; tm.max = S.total; MA.warp = S.total / S.real;
+    K.rows('mo1', S.rows1); K.rows('mo2', S.rows2);
+    if (S.chart) K.chart('mch', S.chart); else clearChart('mch');
+    $('mchn').textContent = S.note || '';
+  }
+  drawMan(); showMan();
+  K.save({ m: tabs.get(), v: VIEW });
+}
+const MD = {};
+function project(p, V) { const ca = Math.cos(V.az), sa = Math.sin(V.az), x = p[0] * ca + p[1] * sa, y = -p[0] * sa + p[1] * ca, se = Math.sin(V.el), ce = Math.cos(V.el); return [x, y * se + p[2] * ce, -y * ce + p[2] * se]; }
+function runs(P, front) {     // tratti di una curva davanti (o dietro) al piano del corpo centrale
+  const out = []; let cur = null;
+  P.forEach((q, i) => {
+    const f = q[2] >= -1e-6 * (Math.abs(q[0]) + Math.abs(q[1]) + 1);
+    if (f === front) { if (!cur) { cur = i > 0 ? [P[i - 1]] : []; out.push(cur); } cur.push(q); }
+    else if (cur) { cur.push(q); cur = null; }
+  });
+  return out.filter(r => r.length > 1);
+}
+function drawMan() {
+  const svg = $('mv2'), host = $('mvw'), W = host.clientWidth, H = host.clientHeight;
+  MD.craft = null;
+  if (!W || !H) return;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.innerHTML = '';
+  const S = MA.S, B = S ? S.B : body('mb'), V = S ? S.view : TOP;
+  const PC = S ? S.curves.map(c => c.pts.map(p => project(p, V))) : [];
+  let x0 = -B.R, x1 = B.R, y0 = -B.R, y1 = B.R;
+  PC.forEach(a => a.forEach(q => { if (q[0] < x0) x0 = q[0]; if (q[0] > x1) x1 = q[0]; if (q[1] < y0) y0 = q[1]; if (q[1] > y1) y1 = q[1]; }));
+  const narrow = W < 520, mx = narrow ? 34 : 60, mt = 34, mb = narrow ? 60 : 46;
+  const k = Math.min((W - 2 * mx) / (x1 - x0), (H - mt - mb) / (y1 - y0)), ox = W / 2 - k * (x0 + x1) / 2, oy = mt + (H - mt - mb) / 2 + k * (y0 + y1) / 2;
+  const X = x => ox + k * x, Y = y => oy - k * y, P2 = p => { const q = project(p, V); return [X(q[0]), Y(q[1]), q[2]]; };
+  Object.assign(MD, { P2, cx: X(0), cy: Y(0), br: Math.max(3, k * B.R) });
+  const pathOf = r => 'M' + r.map(q => X(q[0]).toFixed(1) + ' ' + Y(q[1]).toFixed(1)).join('L'), g = sv(svg, 'g', {});
+  const stroke = (c, r, back) => sv(g, 'path', { d: pathOf(r), fill: 'none', stroke: c.color, 'stroke-width': c.w || 2, 'stroke-dasharray': c.dash, opacity: (c.op || 1) * (back ? 0.35 : 1), 'stroke-linejoin': 'round' });
+  if (S) S.curves.forEach((c, i) => runs(PC[i], false).forEach(r => stroke(c, r, true)));
+  sv(g, 'circle', { cx: MD.cx, cy: MD.cy, r: MD.br, fill: '#10141a', stroke: '#414b57' });
+  if (MD.br > 30 && V.el > 1.5) sv(g, 'text', { x: MD.cx, y: MD.cy + 4, 'text-anchor': 'middle', class: 'sm' }, bName(B));
+  if (!S) return;
+  S.curves.forEach((c, i) => runs(PC[i], true).forEach(r => stroke(c, r, false)));
+  if (S.phase) {      // angolo di fase al momento della prima accensione
+    const n = 48, R = S.phase.r * 1.14, pts = [];
+    for (let j = 0; j <= n; j++) { const a = S.phase.a1 * j / n; pts.push(P2([R * Math.cos(a), R * Math.sin(a), 0])); }
+    sv(g, 'path', { d: 'M' + pts.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L'), fill: 'none', stroke: C.tx3, 'stroke-dasharray': '3 3' });
+    const m = P2([R * 1.1 * Math.cos(S.phase.a1 / 2), R * 1.1 * Math.sin(S.phase.a1 / 2), 0]);
+    sv(g, 'text', { x: m[0], y: m[1] + 4, 'text-anchor': 'middle', class: 'sm' }, 'θ ' + dg(Math.abs(S.phase.a1) * R2D, 0) + '°');
+  }
+  const mmax = Math.max(...S.burns.map(b => b.mag), 1e-12), span = (x1 - x0) * 0.01;
+  const label = (gg, x, y, dx, dy, txt, cls) => {     // sugli schermi stretti: nome e valore su due righe
+    const anc = dx > 0.35 ? 'start' : dx < -0.35 ? 'end' : 'middle', wd = narrow ? 74 : 128;
+    let lx = x + dx * 8, ly = y + dy * 8 + (dy > 0.35 ? 10 : dy < -0.35 ? -3 : 4);
+    lx = anc === 'start' ? Math.min(lx, W - wd) : anc === 'end' ? Math.max(lx, wd) : Math.max(wd / 2 + 4, Math.min(W - wd / 2 - 4, lx));
+    ly = Math.max(14, Math.min(H - (narrow ? 24 : 8), ly));
+    const el = sv(gg, 'text', { x: lx.toFixed(1), y: ly.toFixed(1), 'text-anchor': anc, class: cls });
+    if (!narrow) { el.textContent = txt; return; }
+    const parts = txt.split(' ');
+    sv(el, 'tspan', { x: lx.toFixed(1), dy: 0 }, parts[0]); sv(el, 'tspan', { x: lx.toFixed(1), dy: 13 }, parts.slice(1).join(' '));
+  };
+  MD.arrows = S.burns.map(b => {
+    const gg = sv(g, 'g', {}), q = P2(b.p), sc = span / (b.mag || 1), q2 = P2([b.p[0] + b.d[0] * sc, b.p[1] + b.d[1] * sc, b.p[2] + b.d[2] * sc]);
+    let dx = q2[0] - q[0], dy = q2[1] - q[1]; const L0 = Math.hypot(dx, dy);
+    if (L0 < 1e-9) { dx = 0; dy = -1; } else { dx /= L0; dy /= L0; }
+    const L = 18 + 44 * b.mag / mmax, tx = q[0] + dx * L, ty = q[1] + dy * L;
+    arrowSet(arrowMk(gg, C.gr, 2.2), q[0], q[1], tx, ty);
+    sv(gg, 'circle', { cx: q[0].toFixed(1), cy: q[1].toFixed(1), r: 3.2, fill: C.gr });
+    // scritta spinta in fuori rispetto al centro, così non cade sulle orbite
+    const rx0 = q[0] - MD.cx, ry0 = q[1] - MD.cy, rl = Math.hypot(rx0, ry0) || 1, rx = rx0 / rl, ry = ry0 / rl;
+    label(gg, tx, ty + (Math.abs(rx) > 0.3 ? 4 * Math.sign(dy) : 0), rx, Math.abs(rx) > 0.3 ? 0 : ry, b.label + ' ' + dvTxt(b.mag, S.unit), 'g');
+    return gg;
+  });
+  if (S.vinf) {
+    const q = P2(S.vinf.p), q2 = P2([S.vinf.p[0] + S.vinf.d[0] * span * 10, S.vinf.p[1] + S.vinf.d[1] * span * 10, 0]);
+    let dx = q2[0] - q[0], dy = q2[1] - q[1]; const L0 = Math.hypot(dx, dy) || 1; dx /= L0; dy /= L0;
+    const gv = sv(g, 'g', {}); arrowSet(arrowMk(gv, C.vi, 2), q[0], q[1], q[0] + dx * 42, q[1] + dy * 42);
+    label(gv, q[0] + dx * 42, q[1] + dy * 42, dx, dy, 'v∞ ' + fmt(S.vinf.mag, 3) + ' km/s', 'v');
+  }
+  if (S.tri != null) {      // triangolo delle velocità all'accensione che ruota il piano
+    const b = S.burns[S.tri], vb = Math.hypot(...b.vb), va = Math.hypot(...b.va);
+    const ang = Math.acos(Math.max(-1, Math.min(1, (b.vb[0] * b.va[0] + b.vb[1] * b.va[1] + b.vb[2] * b.va[2]) / (vb * va))));
+    const bw = narrow ? 150 : 176, bh = narrow ? 100 : 118, bx = W - bw - 10, by = 10, gi = sv(svg, 'g', {});
+    sv(gi, 'rect', { x: bx, y: by, width: bw, height: bh, rx: 6, fill: '#000', 'fill-opacity': 0.88, stroke: '#252b33' });
+    sv(gi, 'text', { x: bx + 10, y: by + 16, class: 'sm' }, t('velocità a ', 'speeds at ') + b.label + ' · Δi ' + dg(ang * R2D, 1) + '°');
+    const s = (bw - 40) / Math.max(vb, va), x0b = bx + 14, y0b = by + bh - 18, ax = x0b + va * s * Math.cos(ang), ay = y0b - va * s * Math.sin(ang);
+    arrowSet(arrowMk(gi, S.triC, 1.8), x0b, y0b, x0b + vb * s, y0b);
+    arrowSet(arrowMk(gi, C.ic, 1.8), x0b, y0b, ax, ay);
+    arrowSet(arrowMk(gi, C.gr, 1.8), x0b + vb * s, y0b, ax, ay);
+    sv(gi, 'text', { x: x0b + 2, y: y0b + 13, class: 'sm' }, t('prima', 'before'));
+    sv(gi, 'text', { x: Math.min(ax, bx + bw - 30) - 4, y: Math.max(ay - 6, by + 30), 'text-anchor': 'end', class: 'sm' }, t('dopo', 'after'));
+    sv(gi, 'text', { x: ((x0b + vb * s + ax) / 2 + 6).toFixed(1), y: ((y0b + ay) / 2 + 6).toFixed(1), class: 'g' }, 'Δv');
+  }
+  if (S.target) MD.target = sv(g, 'circle', { r: 4.5, fill: C.ic, stroke: '#000', 'stroke-width': 1.5 });
+  MD.craft = sv(g, 'circle', { r: 5.5, fill: C.gr, stroke: '#000', 'stroke-width': 1.5 });
+  showMan();
+}
+function showMan() {
+  const S = MA.S; if (!S || !MD.craft) return;
+  const tt = Math.max(0, Math.min(S.total, MA.t)); let tc = 0, li = S.legs.length - 1;
+  for (let i = 0; i < S.legs.length; i++) { if (tt <= tc + S.legs[i].dur || i === S.legs.length - 1) { li = i; break; } tc += S.legs[i].dur; }
+  const L = S.legs[li], q = MD.P2(legPos(L, Math.min(tt - tc, L.dur)));
+  const hid = p => p[2] < 0 && Math.hypot(p[0] - MD.cx, p[1] - MD.cy) < MD.br;
+  MD.craft.setAttribute('cx', q[0].toFixed(1)); MD.craft.setAttribute('cy', q[1].toFixed(1)); MD.craft.setAttribute('opacity', hid(q) ? 0.25 : 1);
+  if (S.target && MD.target) { const p = MD.P2(S.target(tt)); MD.target.setAttribute('cx', p[0].toFixed(1)); MD.target.setAttribute('cy', p[1].toFixed(1)); }
+  (MD.arrows || []).forEach((a, i) => a.setAttribute('opacity', tt >= S.burns[i].t - 1e-9 ? 1 : 0.4));
+  $('mtm').value = tt;
+  let lab = L.name + ' · t ' + dur(tt);
+  if (S.revs && li === 1) lab += ' · ' + t('giro ', 'revolution ') + Math.min(S.revs.k, Math.floor((tt - S.revs.t0) / S.revs.Tp) + 1) + t(' di ', ' of ') + S.revs.k;
+  $('mtl').textContent = lab;
+}
+
+/* ---------- esempi ---------- */
+const OEX = [
+  { it: 'Stazione spaziale internazionale', en: 'International Space Station', v: { hp: '413', ha: '422', inc: '51.64', raan: '120', argp: '80', nu: '30' } },
+  { it: 'orbita Molniya: 12 ore, perigeo fermo grazie ai 63,4°', en: 'Molniya orbit: 12 hours, perigee held still by the 63.4°', v: { hp: '600', ha: '39700', inc: '63.4', raan: '60', argp: '270', nu: '0' } },
+  { it: 'trasferimento verso la geostazionaria (GTO) da Kourou', en: 'geostationary transfer orbit (GTO) from Kourou', v: { hp: '250', ha: '35786', inc: '6', raan: '0', argp: '178', nu: '0' } },
+  { it: 'eliosincrona a 786 km, la quota di Sentinel-2', en: 'Sun-synchronous at 786 km, the altitude of Sentinel-2', v: { hp: '786', ha: '786', inc: '98.54', raan: '30', argp: '0', nu: '0' } },
+  { it: 'passaggio iperbolico: r_p = 7 000 km, v∞ = 3 km/s', en: 'hyperbolic flyby: r_p = 7,000 km, v∞ = 3 km/s', v: { rp: '7000', eps: '4.5', inc: '30', raan: '0', argp: '0', nu: '-60' } },
+  { it: 'orbita polare bassa attorno alla Luna', en: 'low polar orbit around the Moon', v: { body: 'moon', hp: '100', ha: '100', inc: '90', raan: '0', argp: '0', nu: '0' } },
+  { it: 'eliosincrona attorno a Marte, come Mars Reconnaissance Orbiter', en: 'Sun-synchronous around Mars, like Mars Reconnaissance Orbiter', v: { body: 'mars', hp: '255', ha: '320', inc: '92.62', raan: '0', argp: '270', nu: '0' } },
+  { it: 'la Terra attorno al Sole', en: 'the Earth around the Sun', v: { body: 'sun', rp: '147098450', ra: '152097597', inc: '0', raan: '0', argp: '0', nu: '0' } },
+];
+const MEX = {
+  hoh: [{ it: "da un'orbita bassa a 300 km alla geostazionaria", en: 'from a 300 km low orbit to geostationary', v: { h1: '300', h2: '35786' } },
+    { it: 'dalla Terra a Marte attorno al Sole, con orbite circolari', en: 'from the Earth to Mars around the Sun, with circular orbits', v: { mb: 'sun', r1: '149597870.7', r2: '227939200' } }],
+  bie: [{ it: 'r₂/r₁ = 15 con r_b = 210 000 km: risparmia poco e ci mette giorni', en: 'r₂/r₁ = 15 with r_b = 210,000 km: it saves little and takes days', v: { r1: '7000', r2: '105000', rb: '210000' } },
+    { it: 'r₂/r₁ = 30: qui la bi-ellittica conviene', en: 'r₂/r₁ = 30: here the bi-elliptic pays off', v: { r1: '7000', r2: '210000', rb: '700000' } }],
+  pla: [{ it: 'da Cape Canaveral (28,5°) alla geostazionaria', en: 'from Cape Canaveral (28.5°) to geostationary', v: { h1: '300', h2: '35786', di: '28.5' } },
+    { it: "correggere di 1° l'inclinazione a 420 km", en: 'correcting the inclination by 1° at 420 km', v: { h1: '420', di: '1' } }],
+  pha: [{ it: 'raggiungere un bersaglio 20° più avanti in 3 giri, a 420 km', en: 'reaching a target 20° ahead in 3 revolutions, at 420 km', v: { h1: '420', th: '20', dir: 'ahead', k: '3' } },
+    { it: 'lasciare arrivare un bersaglio 30° più indietro, in 1 giro', en: 'letting a target 30° behind catch up, in 1 revolution', v: { h1: '420', th: '30', dir: 'behind', k: '1' } }],
+  esc: [{ it: 'partenza per Marte da 300 km: C3 ≈ 8,7 km²/s²', en: 'departure for Mars from 300 km: C3 ≈ 8.7 km²/s²', v: { h1: '300', c3: '8.67' } },
+    { it: 'lasciare la Luna da 100 km con v∞ = 1 km/s', en: 'leaving the Moon from 100 km with v∞ = 1 km/s', v: { mb: 'moon', h1: '100', vinf: '1' } }],
+};
+let oexI = 0;
+const loc = v => en ? String(v) : String(v).replace('.', ',');      // numeri scritti nei campi con la virgola in italiano
+const locAll = o => { const r = {}; for (const k in o) r[k] = /^(body|mb|dir)$/.test(k) ? o[k] : loc(o[k]); return r; };
+function fillOrb(ex) { K.fill(Object.assign({ body: 'earth', a: '', e: '', rp: '', ra: '', hp: '', ha: '', T: '', p: '', eps: '', vp: '', inc: '', raan: '', argp: '', nu: '' }, locAll(ex.v))); ORD = []; AN.epoch = new Date(); setSun(); }
+function fillMan(ex) { const v = { mb: 'earth', dir: 'ahead' }; MFIELDS.forEach(id => { v[id] = ''; }); K.fill(Object.assign(v, locAll(ex.v))); }
+$('oex').onclick = () => { oexI = (oexI + 1) % OEX.length; const ex = OEX[oexI]; fillOrb(ex); $('oexn').textContent = t('Esempio ', 'Example ') + (oexI + 1) + t(' di ', ' of ') + OEX.length + ': ' + (en ? ex.en : ex.it) + '.'; runOrb(); };
+$('oclr').onclick = () => { K.wipe('fo'); ORD = []; $('oexn').textContent = ''; const n = $('satN'); if (n) n.textContent = t('Oppure inserisci i tuoi numeri qui sotto.', 'Or type your own numbers below.'); runOrb(); };
+const mexI = {};
+function manExample(mv) { const L = MEX[mv]; mexI[mv] = ((mexI[mv] == null ? -1 : mexI[mv]) + 1) % L.length; const ex = L[mexI[mv]]; fillMan(ex); $('mexn').textContent = t('Esempio: ', 'Example: ') + (en ? ex.en : ex.it) + '.'; }
+$('mex').onclick = () => { manExample($('mv').value); runMan(); };
+$('mclr').onclick = () => { K.wipe('fm'); $('mexn').textContent = ''; runMan(); };
+const NEED = { hoh: ['h1|r1', 'h2|r2'], bie: ['h1|r1', 'h2|r2', 'hb|rb'], pla: ['h1|r1', 'di'], pha: ['h1|r1', 'th'], esc: ['h1|r1'] };
+$('mv').addEventListener('change', () => { const mv = $('mv').value; if (!NEED[mv].every(g => g.split('|').some(id => K.given(id)))) { mexI[mv] = -1; manExample(mv); } else $('mexn').textContent = ''; runMan(); });
+
+/* ---------- vista, tempo, schede ---------- */
+const ICON = { play: '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>', pause: '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 3h3v10H4zM9 3h3v10H9z" fill="currentColor"/></svg>' };
+function playBtn(id, on) { const b = $(id); b.innerHTML = on ? ICON.pause : ICON.play; b.setAttribute('aria-label', on ? t('Pausa', 'Pause') : t('Avvia', 'Play')); }
+$('oplay').onclick = () => { AN.play = !AN.play; playBtn('oplay', AN.play); };
+$('mplay').onclick = () => { MA.play = !MA.play; playBtn('mplay', MA.play); };
+$('otm').addEventListener('input', () => { if (!AN.O) return; AN.clock = +$('otm').value - AN.O.tnu; showOrb(); });
+$('mtm').addEventListener('input', () => { if (!MA.S) return; MA.t = +$('mtm').value; showMan(); });
+function setView(v) {
+  VIEW = v === '3d' && K.has3D() && window.THREE ? '3d' : '2d';
+  $('ov3').hidden = VIEW !== '3d'; $('ov2').toggleAttribute('hidden', VIEW !== '2d');     // svg: hidden va scritto come attributo
+  document.querySelectorAll('#ov .tl .btn').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.v === VIEW)); if (b.dataset.v === '3d' && !(K.has3D() && window.THREE)) b.hidden = true; });
+  capOrb();
+  if (VIEW === '3d') draw3(AN.O, curB); else draw2(AN.O, curB);
+}
+document.querySelector('#ov .tl').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; setView(b.dataset.v); K.save({ m: tabs.get(), v: VIEW }); });
+function onTab(m) { K.save({ m, v: VIEW }); if (m === 'man') drawMan(); else if (m === 'orb' && VIEW === '2d') draw2(AN.O, curB); }
+if (window.ResizeObserver) { new ResizeObserver(() => { if (VIEW === '2d') draw2(AN.O, curB); }).observe($('ov')); new ResizeObserver(() => drawMan()).observe($('mvw')); }
+const VIS = { ov: true, mvw: true };
+if (window.IntersectionObserver) { const io = new IntersectionObserver(es => es.forEach(e => { VIS[e.target.id] = e.isIntersecting; })); io.observe($('ov')); io.observe($('mvw')); }
+let last = 0;
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = last ? Math.min(0.1, (now - last) / 1000) : 0; last = now;
+  if (document.hidden) return;
+  const m = tabs.get();
+  if (m === 'orb' && AN.O && VIS.ov) { if (AN.play) AN.clock += dt * AN.warp; showOrb(); }
+  if (m === 'man' && MA.S && VIS.mvw) { if (MA.play) MA.t = (MA.t + dt * MA.warp) % MA.S.total; showMan(); }
+}
+function bodyTable() {
+  const rows = Object.values(BODIES).map(B => '<tr><td>' + bName(B) + '</td><td class="num">' + fmt(B.mu, decs(B.mu)) + '</td><td class="num">' + fmt(B.R, decs(B.R)) + '</td><td class="num">' + (B.J2 ? sig(B.J2, 5) : '—') + '</td><td class="num">' + (B.year ? fmt(B.year, Math.min(4, decs(B.year))) : '—') + '</td></tr>').join('');
+  $('btab').innerHTML = '<table class="tbl"><thead><tr><th>' + t('Corpo', 'Body') + '</th><th class="num">μ, km³/s²</th><th class="num">' + t('raggio, km', 'radius, km') + '</th><th class="num">J2</th><th class="num">' + t('anno, giorni', 'year, days') + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+/* ---------- prova interna: ?test ---------- */
+function selfTest() {
+  let all = true;
+  const ck = (name, got, exp, tol, abs) => { const pass = Number.isFinite(got) && Math.abs(got - exp) <= (abs ? tol : tol * Math.abs(exp)); all = all && pass; console.info('selfTest', (pass ? 'ok   ' : 'FAIL ') + name, 'got ' + (+got).toPrecision(8), 'expected ' + exp, (abs ? 'abs ' : 'rel ') + tol); };
+  const E = BODIES.earth, mu = E.mu;
+  let S = solveShape([{ id: 'a', v: 6798.1 }, { id: 'e', v: 0 }], E);
+  ck('ISS-like circular, a = 6798.1 km: T [min]', S.o.T / 60, 92.97, 1e-3);
+  S = solveShape([{ id: 'hp', v: 6798.1 - E.R }, { id: 'ha', v: 6798.1 - E.R }], E);
+  ck('same orbit from hp + ha: T [min]', S.o.T / 60, 92.97, 1e-3);
+  const r1 = E.R + 300, r2 = 42164.17, H = hohmann(mu, r1, r2), aT = (r1 + r2) / 2;
+  const x1 = Math.sqrt(mu * (2 / r1 - 1 / aT)) - Math.sqrt(mu / r1), x2 = Math.sqrt(mu / r2) - Math.sqrt(mu * (2 / r2 - 1 / aT));
+  ck('Hohmann 300 km → GEO: Δv1 vs vis-viva [km/s]', H.dv1, x1, 1e-3); ck('Hohmann: Δv2 vs vis-viva', H.dv2, x2, 1e-3); ck('Hohmann: total vs vis-viva', H.dv, x1 + x2, 1e-3);
+  ck('Hohmann: Δv1 ≈ 2.43', H.dv1, 2.43, 5e-3); ck('Hohmann: Δv2 ≈ 1.46', H.dv2, 1.46, 5e-3); ck('Hohmann: total ≈ 3.89', H.dv, 3.89, 5e-3);
+  const Sh = sceneHoh(E, r1, r2, H);
+  ck('Hohmann: Δv1 from the drawn velocity vectors', Sh.burns[0].mag, H.dv1, 1e-6); ck('Hohmann: Δv2 from the drawn velocity vectors', Sh.burns[1].mag, H.dv2, 1e-6);
+  ck('Hohmann: animated transfer leg = half period [s]', Sh.legs[1].dur, H.tt, 1e-9);
+  const Hv = hohmann(398600.4415, 6378.1363 + 191.34411, 6378.1363 + 35781.34857);
+  ck('Vallado ex. 6-1: Δva [km/s]', Hv.dv1, 2.457, 1e-3); ck('Vallado ex. 6-1: Δvb', Hv.dv2, 1.478, 1e-3); ck('Vallado ex. 6-1: total', Hv.dv, 3.935, 1e-3); ck('Vallado ex. 6-1: time [h]', Hv.tt / 3600, 5.256, 1e-3);
+  ck('Sun-synchronous inclination, 700 km circular [deg]', ssoInc(conic(E.R + 700, 0, mu), E) * R2D, 98.19, 1e-3);
+  S = solveShape([{ id: 'rp', v: 7000 }, { id: 'eps', v: 4.5 }], E);
+  const eh = 1 + 7000 * 9 / mu;
+  ck('hyperbola rp 7000 km, v∞ 3 km/s: e = 1 + rp v∞²/μ', S.o.e, eh, 1e-9);
+  ck('hyperbola: δ = 2 asin(1/e) [deg]', S.o.delta * R2D, 2 * Math.asin(1 / eh) * R2D, 1e-9);
+  ck('hyperbola: v∞ [km/s]', S.o.vinf, 3, 1e-9);
+  ck('escape page: same e', escapeDv(mu, 7000, 3).e, eh, 1e-9);
+  ck('hyperbola: ν from t(ν = 1.2 rad)', at(S.o, tOf(S.o, 1.2)).nu, 1.2, 1e-9);
+  const Pb = conic(7000, 1, mu); ck('parabola: ν from t(ν = 2 rad)', at(Pb, tOf(Pb, 2)).nu, 2, 1e-9);
+  const El = conic(7000, 0.7, mu); ck('ellipse e = 0.7: ν from t(ν = 3 rad)', at(El, tOf(El, 3)).nu, 3, 1e-9);
+  let lo = 5, hi = 14; for (let j = 0; j < 100; j++) { const m = (lo + hi) / 2; if (hohmann(1, 1, m).dv - bieInf(m) < 0) lo = m; else hi = m; }
+  ck('Hohmann = bi-elliptic with rb → ∞ at r2/r1', lo, 11.94, 1e-3);
+  ck('largest Hohmann Δv/v1 at r2/r1', golden(R => -hohmann(1, 1, R).dv, 5, 40), 15.58, 1e-3);
+  const rr = E.R + 420, P = phasing(mu, rr, 20 * D2R, true, 3), nn = Math.sqrt(mu / (rr * rr * rr));
+  let left = (20 * D2R + nn * 3 * P.Tp) % TAU; if (left > Math.PI) left -= TAU;
+  ck('phasing 20° ahead, k = 3: target back at the burn point [rad]', left, 0, 1e-9, true);
+  const Pc = planeChange(mu, r1, r2, 28.5 * D2R);
+  ck('plane change: combined burn = law of cosines', Pc.burnB, Math.sqrt(H.vt2 ** 2 + H.v2 ** 2 - 2 * H.vt2 * H.v2 * Math.cos(28.5 * D2R)), 1e-12);
+  ck('plane change: drawn combined burn', scenePla(E, r1, r2, 28.5 * D2R).burns[1].mag, Pc.burnB, 1e-6);
+  let pairs = 0, bad = 0;
+  [conic(7000, 0.3, mu), conic(7000, 0, mu), conic(7000, 1, mu), conic(7000, 1.5, mu)].forEach(ref => {
+    for (let i = 0; i < SH.length; i++) for (let j = i + 1; j < SH.length; j++) {
+      const a = SH[i], b = SH[j]; if (FAM[a] === FAM[b]) continue;
+      const va = fieldVal(a, ref, E), vb = fieldVal(b, ref, E); if (va === undefined || vb === undefined) continue;
+      if (ref.e === 1 && [FAM[a], FAM[b]].sort().join('') === 'AE') continue;     // ε = 0 ed e = 1: parabola senza misura
+      const R = solveShape([{ id: a, v: va }, { id: b, v: vb }], E); pairs++;
+      if (!R.o || Math.abs(R.o.rp - ref.rp) > 1e-6 * ref.rp || Math.abs(R.o.e - ref.e) > 1e-7) { bad++; console.info('selfTest', 'FAIL pair ' + a + ' + ' + b, 'e = ' + ref.e, R.o ? [R.o.rp, R.o.e] : R.err); }
+    }
+    const R = solveShape(SH.map(id => ({ id, v: fieldVal(id, ref, E) })).filter(x => x.v !== undefined), E);
+    if (!R.o || R.bad.length) { bad++; console.info('selfTest', 'FAIL all fields at once', 'e = ' + ref.e, R.bad); }
+  });
+  all = all && !bad;
+  console.info('selfTest', (bad ? 'FAIL ' : 'ok   ') + 'shape solver: ' + pairs + ' pairs on 4 orbits (circle, ellipse, parabola, hyperbola), ' + bad + ' wrong');
+  console.info('selfTest', all ? 'ALL OK' : 'SOME CHECKS FAILED');
+}
+
+/* ---------- avvio ---------- */
+const KEEP = ['body'].concat(SH, ['inc', 'raan', 'argp', 'nu', 'mv', 'mb', 'dir'], MFIELDS);
+const st = K.keep(KEEP);
+if (!st || !SH.some(id => st.has(id))) fillOrb(OEX[0]);
+if (!st || !MFIELDS.some(id => st.has(id))) fillMan(MEX[$('mv').value][0]);
+if (st && st.get('v') === '2d') VIEW = '2d';
+playBtn('oplay', AN.play); playBtn('mplay', MA.play);
+bodyTable();
+K.sat('sat', el => {
+  tabs.set('orb');
+  K.fill(locAll({ body: 'earth', a: el.a.toFixed(3), e: el.e.toFixed(7), rp: '', ra: '', hp: '', ha: '', T: '', p: '', eps: '', vp: '', inc: el.i.toFixed(4), raan: el.raan.toFixed(4), argp: el.argp.toFixed(4), nu: el.nu.toFixed(4) }));
+  ORD = []; AN.epoch = el.epoch; setSun(); $('oexn').textContent = ''; runOrb();
+});
+K.live('fo', runOrb); K.live('fm', runMan);
+setView(VIEW);
+runOrb(); runMan();
+if (st && st.get('m')) tabs.set(st.get('m'));
+requestAnimationFrame(loop);
+if (/[?&]test\b/.test(location.search)) selfTest();
+</script>
+</body>
+</html>
